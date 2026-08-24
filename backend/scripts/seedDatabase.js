@@ -8,7 +8,7 @@
 
 const { sequelize, User, Product, Scan, Violation, Report, syncDatabase } = require('../models');
 const bcrypt = require('bcryptjs');
-const { v4: uuidv4 } = require('uuid');
+const { randomUUID: uuidv4 } = require('crypto');
 
 const SEED_PRODUCTS = [
   // ── Fully Compliant Products ───────────────────────────────────────────────
