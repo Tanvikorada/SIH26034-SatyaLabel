@@ -18,13 +18,15 @@ router.get('/stats', optionalAuth, async (req, res) => {
     // ── Overview counts ──────────────────────────────────────────────────────
     const overview = await sequelize.query(`
       SELECT
-        COUNT(*)                                                    AS "totalScans",
-        COUNT(*) FILTER (WHERE overall_compliance = 'compliant')    AS "compliant",
-        COUNT(*) FILTER (WHERE overall_compliance = 'non_compliant') AS "nonCompliant",
-        COUNT(*) FILTER (WHERE overall_compliance = 'needs_review') AS "needsReview",
-        COALESCE(SUM(total_violations), 0)                          AS "totalViolations",
-        COALESCE(SUM(high_violations), 0)                           AS "highViolations",
-        COALESCE(ROUND(AVG(compliance_score)::NUMERIC, 1), 0)       AS "avgComplianceScore"
+        COUNT(*)                                                                         AS "totalScans",
+        COUNT(*) FILTER (WHERE overall_compliance IN ('PASS', 'compliant'))              AS "compliant",
+        COUNT(*) FILTER (WHERE overall_compliance IN ('POTENTIAL NON-COMPLIANCE', 'non_compliant')) AS "nonCompliant",
+        COUNT(*) FILTER (WHERE overall_compliance IN ('MANUAL REVIEW', 'needs_review')) AS "needsReview",
+        COUNT(*) FILTER (WHERE overall_compliance = 'NOT VERIFIED')                     AS "notVerified",
+        COUNT(*) FILTER (WHERE overall_compliance = 'NOT APPLICABLE')                   AS "notApplicable",
+        COALESCE(SUM(total_violations), 0)                                              AS "totalViolations",
+        COALESCE(SUM(high_violations), 0)                                               AS "highViolations",
+        COALESCE(ROUND(AVG(compliance_score)::NUMERIC, 1), 0)                           AS "avgComplianceScore"
       FROM scans
       WHERE status = 'complete'
     `, { type: QueryTypes.SELECT });
@@ -37,7 +39,7 @@ router.get('/stats', optionalAuth, async (req, res) => {
         severity,
         COUNT(*)      AS count
       FROM violations
-      WHERE status IN ('fail', 'estimated_fail')
+      WHERE status IN ('POTENTIAL NON-COMPLIANCE', 'MANUAL REVIEW', 'fail', 'estimated_fail')
       GROUP BY rule_id, rule_title, severity
       ORDER BY count DESC
       LIMIT 8
@@ -48,9 +50,10 @@ router.get('/stats', optionalAuth, async (req, res) => {
       SELECT
         DATE(created_at)            AS date,
         COUNT(*)                    AS count,
-        COUNT(*) FILTER (WHERE overall_compliance = 'compliant')    AS compliant,
-        COUNT(*) FILTER (WHERE overall_compliance = 'non_compliant') AS non_compliant,
-        COUNT(*) FILTER (WHERE overall_compliance = 'needs_review') AS needs_review
+        COUNT(*) FILTER (WHERE overall_compliance IN ('PASS', 'compliant'))              AS compliant,
+        COUNT(*) FILTER (WHERE overall_compliance IN ('POTENTIAL NON-COMPLIANCE', 'non_compliant')) AS non_compliant,
+        COUNT(*) FILTER (WHERE overall_compliance IN ('MANUAL REVIEW', 'needs_review')) AS needs_review,
+        COUNT(*) FILTER (WHERE overall_compliance = 'NOT VERIFIED')                     AS not_verified
       FROM scans
       WHERE status = 'complete'
         AND created_at >= NOW() - INTERVAL '7 days'
@@ -72,12 +75,12 @@ router.get('/stats', optionalAuth, async (req, res) => {
         p.product_name   AS "productName",
         p.brand_name     AS "brandName",
         COUNT(s.id)      AS "totalScans",
-        COUNT(s.id) FILTER (WHERE s.overall_compliance = 'non_compliant') AS "failScans"
+        COUNT(s.id) FILTER (WHERE s.overall_compliance IN ('POTENTIAL NON-COMPLIANCE', 'non_compliant')) AS "failScans"
       FROM scans s
       JOIN products p ON p.id = s.product_id
       WHERE s.status = 'complete'
       GROUP BY p.id, p.product_name, p.brand_name
-      HAVING COUNT(s.id) FILTER (WHERE s.overall_compliance = 'non_compliant') > 0
+      HAVING COUNT(s.id) FILTER (WHERE s.overall_compliance IN ('POTENTIAL NON-COMPLIANCE', 'non_compliant')) > 0
       ORDER BY "failScans" DESC
       LIMIT 5
     `, { type: QueryTypes.SELECT });
@@ -88,10 +91,12 @@ router.get('/stats', optionalAuth, async (req, res) => {
       compliant_count:      Number(overview[0].compliant)   || 0,
       non_compliant_count:  Number(overview[0].nonCompliant) || 0,
       needs_review_count:   Number(overview[0].needsReview) || 0,
+      not_verified_count:   Number(overview[0].notVerified) || 0,
+      not_applicable_count: Number(overview[0].notApplicable) || 0,
       total_violations:     Number(overview[0].totalViolations) || 0,
       high_violations:      Number(overview[0].highViolations) || 0,
       avg_compliance_score: Number(overview[0].avgComplianceScore) || 0,
-      top_violated_rules:   topViolations,  // spec 05: { rule_id, rule_title, count }
+      top_violated_rules:   topViolations,
       daily_scans:          dailyScans,
       recent_scans:         recentScans.map(s => ({
         id:                 s.id,

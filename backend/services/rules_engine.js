@@ -1,89 +1,125 @@
 // backend/services/rules_engine.js
 // ============================================================
 // LEGAL METROLOGY (PACKAGED COMMODITIES) RULES, 2011
-// Rule Validation Engine — SIH26034 SatyaLabel
+// Compliance Rule Engine — SIH26034 SatyaLabel
 // ============================================================
 //
 // Source: Legal Metrology (Packaged Commodities) Rules, 2011
-// as provided in 02_LEGAL_METROLOGY_RULES_ENGINE.md
+//         as structured in Legal_Metrology_PS_Compliance_Blueprint (2).docx
 //
-// ⚠️  CLAUSE NUMBER DISCLAIMER (from spec file 02):
-//   "Before final submission, cross-check clause numbers against the
-//    official gazette PDF at consumeraffairs.gov.in/pages/legal-metrology-act
-//    — some sub-rule numbering has been amended (e.g. GSR 629(E), 23.6.2017).
-//    Cite what you verify; don't invent clause numbers you haven't confirmed."
-//
-// ARCHITECTURE PRINCIPLE:
+// ARCHITECTURE:
 //   PURE MODULE — no I/O, no DB, no HTTP.
 //   Input:  fieldsMap { fieldName → fieldValue } + optional options
-//   Output: Array of ViolationResult objects (one per rule, pass OR fail)
+//   Output: { results, violations, stats, ruleVersion }
 //
-// RETURN SCHEMA (per spec file 02):
-// {
-//   rule_id:    string   — e.g. "Rule 6(1)(c)"
-//   rule_title: string   — human-readable rule name
-//   status:     "pass" | "fail" | "estimated"
-//   field:      string   — which extracted field this relates to
-//   severity:   "high" | "medium" | "low"
-//   detail:     string   — specific finding (what was expected vs found)
-//   confidence: "high" | "estimated"
-//                  "high"      → presence/pattern checks (Rule Set 1 & 3)
-//                  "estimated" → font size / PDP checks (Rule Set 2)
-// }
+// STATUS SYSTEM (5-status — blueprint §8):
+//   PASS                   — evidence sufficient, requirement met
+//   POTENTIAL NON-COMPLIANCE — automated evidence indicates requirement not satisfied
+//   MANUAL REVIEW          — evidence or legal context insufficient for auto-conclusion
+//   NOT APPLICABLE         — applicability/exemption engine says rule does not apply
+//   NOT VERIFIED           — required input, image quality or scale is missing
+//
+// PIPELINE ORDER (blueprint §1):
+//   1. Applicability gate (Rule 3)
+//   2. Exemption check (Rule 26)
+//   3. Declaration checks (Rules 6, 10, 11, 12, 13)
+//   4. Presentation checks (Rules 7, 8, 9)
+//   5. Advertisement/Listing check (Rule 31)
+//
+// CRITICAL DESIGN WARNINGS (blueprint §12):
+//   - Never treat OCR failure as proof that a declaration is legally absent.
+//   - Never convert pixels to mm without a scale/calibration source.
+//   - Never apply one unit rule to every commodity (Fourth Schedule has exceptions).
+//   - Keep original images, OCR boxes, confidence and evidence crops.
+//   - Use POTENTIAL NON-COMPLIANCE and MANUAL REVIEW not binary pass/fail.
+//   - Store rule version + effective date with every result.
 // ============================================================
+
+// ─── RULE VERSION METADATA (blueprint §2 Rule 1 & §14) ───────────────────────
+const RULE_VERSION = {
+  instrument:      'Legal Metrology (Packaged Commodities) Rules, 2011',
+  source_document: 'Legal_Metrology_PS_Compliance_Blueprint__2_.docx',
+  version_id:      'LM-PC-2011-v1.0',
+  effective_from:  '2011-04-01',
+  effective_to:    null,          // null = currently in force
+  checked_at:      new Date().toISOString(),
+};
+
+// ─── STATUS CONSTANTS ─────────────────────────────────────────────────────────
+const S = {
+  PASS:    'PASS',
+  PNOC:    'POTENTIAL NON-COMPLIANCE',  // blueprint abbrev
+  REVIEW:  'MANUAL REVIEW',
+  NA:      'NOT APPLICABLE',
+  NV:      'NOT VERIFIED',
+};
 
 // ─── RESULT FACTORIES ─────────────────────────────────────────────────────────
 
-function pass(rule_id, rule_title, field, confidence = 'high') {
-  return { rule_id, rule_title, status: 'pass', field, severity: null, detail: null, confidence };
+function makeResult(rule_id, rule_title, field, status, severity = null, detail = null, confidence = 'high') {
+  return {
+    rule_id,
+    rule_title,
+    field,
+    status,
+    severity,     // 'high' | 'medium' | 'low' | null
+    detail,
+    confidence,   // 'high' (presence/pattern) | 'estimated' (image-based)
+    rule_version: RULE_VERSION.version_id,
+  };
 }
 
-function fail(rule_id, rule_title, field, severity, detail, confidence = 'high') {
-  return { rule_id, rule_title, status: 'fail', field, severity, detail, confidence };
-}
+const pass   = (id, title, field, conf = 'high') =>
+  makeResult(id, title, field, S.PASS, null, null, conf);
 
-function estimated(rule_id, rule_title, field, severity, detail) {
-  return { rule_id, rule_title, status: 'estimated', field, severity, detail, confidence: 'estimated' };
-}
+const pnoc   = (id, title, field, severity, detail, conf = 'high') =>
+  makeResult(id, title, field, S.PNOC, severity, detail, conf);
+
+const review = (id, title, field, severity, detail, conf = 'estimated') =>
+  makeResult(id, title, field, S.REVIEW, severity, detail, conf);
+
+const na     = (id, title, field, detail = 'Rule not applicable to this package.') =>
+  makeResult(id, title, field, S.NA, null, detail, 'high');
+
+const nv     = (id, title, field, detail) =>
+  makeResult(id, title, field, S.NV, null, detail, 'estimated');
 
 // ─── HELPERS ──────────────────────────────────────────────────────────────────
 
 const isPresent = (val) =>
   val !== null && val !== undefined && String(val).trim().length > 0;
 
-// Recognized standard units per LM(PC) Rules
-// Use (?=\b|$|\d) lookahead so '500g' (no space) is matched too
-const STANDARD_UNITS = /(?:^|\s|\d)(g|gm|gms|gram|grams|kg|kgs|mg|ml|l|ltr|litre|litres|liters|liter|cm|m|mm|nos?\.?|pieces?|pcs?\.?|tablets?|tabs?|capsules?|caps?|sachets?|units?)(?=\b|$|\s)/i;
+// Standard SI units per LM(PC) Rules 2011 + Rule 13
+const STANDARD_UNITS = /(?:^|\s|\d)(g|gm|gms|gram|grams|kg|kgs|mg|ml|l|ltr|litre|litres|liters|liter|cm|m|mm|nos?\.?|pieces?|pcs?\.?|tablets?|tabs?|capsules?|caps?|sachets?|units?|pairs?|sets?|sheets?)(?=\b|$|\s)/i;
 
-// Non-metric / non-standard units — Rule 7 violation
-const NON_STANDARD_UNITS = /\b(oz|ounce|ounces|lb|pound|pounds|tola|seer|maund|fluid\s+oz|fl\.?\s*oz)\b/i;
+// Non-metric / non-standard units — Rule 13 violation
+const NON_STANDARD_UNITS = /\b(oz|ounce|ounces|lb|lbs|pound|pounds|tola|seer|maund|fluid\s+oz|fl\.?\s*oz)\b/i;
 
-// PIN code pattern (6 digits, optionally preceded by space/dash)
-const PIN_CODE = /\b[1-9][0-9]{5}\b/;
-
-// Indian city / state keywords for address heuristic
-const ADDRESS_KEYWORDS = /\b(mumbai|delhi|bangalore|bengaluru|chennai|kolkata|hyderabad|pune|ahmedabad|jaipur|lucknow|navi mumbai|gurugram|noida|gurgaon|thane|surat|vadodara|maharashtra|karnataka|tamil\s*nadu|gujarat|rajasthan|uttar\s*pradesh|west\s*bengal|andhra|telangana|haryana|punjab|kerala|india)\b/i;
-
-// Date patterns: "01/2025", "Jan 2025", "January 2025", "2025-01"
-const DATE_PATTERNS = [
-  /\b(0?[1-9]|1[0-2])[\/\-](20\d{2})\b/,             // MM/YYYY
-  /\b(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*\.?\s+20\d{2}\b/i, // Mon YYYY
-  /\b20\d{2}[\/\-](0?[1-9]|1[0-2])\b/,               // YYYY/MM
-];
+// Rule 12 — prohibited misleading quantity qualifiers
+const MISLEADING_QUALIFIERS = /\b(minimum|not\s+less\s+than|average|about|approximately|approx\.?|at\s+least|upto|up\s+to)\b/i;
 
 // MRP symbol check
 const MRP_SYMBOL = /[₹]|rs\.?/i;
-const INCL_TAX = /incl(?:usive)?\.?\s+(?:of\s+)?all\s+tax|incl\.?\s+all\s+taxes?|all\s+taxes?\s+incl|inclusive\s+of\s+taxes?/i;
+const INCL_TAX   = /incl(?:usive)?\.?\s+(?:of\s+)?all\s+tax|incl\.?\s+all\s+taxes?|all\s+taxes?\s+incl|inclusive\s+of\s+taxes?/i;
+
+// PIN code pattern (6 digits)
+const PIN_CODE = /\b[1-9][0-9]{5}\b/;
+
+// Indian city / state keywords for address heuristic
+const ADDRESS_KEYWORDS = /\b(mumbai|delhi|bangalore|bengaluru|chennai|kolkata|hyderabad|pune|ahmedabad|jaipur|lucknow|navi\s*mumbai|gurugram|noida|gurgaon|thane|surat|vadodara|maharashtra|karnataka|tamil\s*nadu|gujarat|rajasthan|uttar\s*pradesh|west\s*bengal|andhra|telangana|haryana|punjab|kerala|india)\b/i;
+
+// Date patterns: MM/YYYY, Month YYYY, YYYY-MM
+const DATE_PATTERNS = [
+  /\b(0?[1-9]|1[0-2])[\/\-](20\d{2})\b/,
+  /\b(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*\.?\s+20\d{2}\b/i,
+  /\b20\d{2}[\/\-](0?[1-9]|1[0-2])\b/,
+];
 
 function parseDate(str) {
   if (!str) return null;
   const s = String(str).trim();
-
-  // MM/YYYY
   const m1 = s.match(/^(0?[1-9]|1[0-2])[\/\-](20\d{2})$/);
   if (m1) return { month: parseInt(m1[1]), year: parseInt(m1[2]) };
-
-  // Month YYYY
   const months = ['jan','feb','mar','apr','may','jun','jul','aug','sep','oct','nov','dec'];
   const m2 = s.match(/([a-zA-Z]+)\.?\s+(20\d{2})/);
   if (m2) {
@@ -93,515 +129,627 @@ function parseDate(str) {
   return null;
 }
 
-// ─── RULE SET 1 — MANDATORY DECLARATIONS (RULE 6) ────────────────────────────
-// confidence: "high" — these are presence/pattern checks, not image analysis
+// ─── RULE 3 — APPLICABILITY GATE ─────────────────────────────────────────────
+// blueprint §2 Rule 3 (P1 — Gatekeeper)
+// Returns: NA result if package is clearly out of scope; null otherwise (continue)
+//
+// Cannot be definitively determined from an image alone — key principle.
+// If officer has confirmed applicability, use that; otherwise flag for review.
 
-/**
- * Rule 6(1)(a) — Manufacturer / Packer / Importer Name AND Address
- *
- * Per spec: "Field present, non-empty, contains recognizable address-like text
- *            (has a pincode-pattern or city keyword)"
- *
- * ⚠️  Clause note: In many gazette versions, this is Rule 6(1)(a). Verify
- *     against the final submission gazette copy.
- */
-function checkRule6_1_a_name(fields) {
-  const R = 'Rule 6(1)(a)';
-  const T = 'Manufacturer / Packer / Importer Name';
+function checkApplicability(fields, options) {
+  const R = 'Rule 3';
+  const T = 'Applicability of the Chapter';
 
-  if (!isPresent(fields.manufacturer_name)) {
-    return fail(R, T, 'manufacturer_name', 'high',
-      'Name of the manufacturer, packer, or importer is not declared on the label. This is a mandatory declaration under Rule 6(1)(a).');
+  // Officer explicitly flagged as not applicable (industrial/institutional/exempt)
+  if (options.is_not_applicable === true) {
+    return na(R, T, 'applicability',
+      `Officer confirmed: this package is not subject to Chapter II retail-package provisions. Reason: ${options.not_applicable_reason || 'Not specified'}.`);
   }
-  return pass(R, T, 'manufacturer_name');
+
+  // If officer confirmed applicability, proceed (return null = no issue, continue checks)
+  if (options.applicability_confirmed === true) return null;
+
+  // Image alone cannot prove applicability — return MANUAL REVIEW
+  return review(R, T, 'applicability', 'low',
+    'Applicability of Chapter II retail-package provisions could not be confirmed from image alone. ' +
+    'Verify that this is a retail package (not wholesale, industrial or institutional) before applying mandatory-declaration checks.');
 }
 
-function checkRule6_1_a_address(fields) {
-  const R = 'Rule 6(1)(a)';
-  const T = 'Manufacturer / Packer / Importer Address';
+// ─── RULE 26 — EXEMPTION CHECK ───────────────────────────────────────────────
+// blueprint §2 Rule 26 (P1 — Gatekeeper)
+// Certain small packages and listed categories are exempt.
+//
+// Exemption matrix (Rule 26 as specified in the Rules):
+//   - Fast food (immediate consumption)
+//   - Drug formulations covered under Drugs & Cosmetics Act
+//   - Agricultural produce (not processed)
+//   - Packages under 10g / 10ml in some categories
+//   - Other categories specified in amendments
+//
+// Returns: NA result if exempt; null if not exempt / inconclusive
 
-  if (!isPresent(fields.manufacturer_address)) {
-    return fail(R, T, 'manufacturer_address', 'high',
-      'Complete address of the manufacturer, packer, or importer is absent. A full address is mandatory under Rule 6(1)(a).');
+function checkExemption(fields, options) {
+  const R = 'Rule 26';
+  const T = 'Exemption — Certain Package Categories';
+
+  // Officer explicitly confirmed exemption
+  if (options.is_exempt === true) {
+    return na(R, T, 'exemption',
+      `Officer confirmed exemption under Rule 26. Category: ${options.exempt_category || 'Not specified'}. ` +
+      `Rule version: ${RULE_VERSION.version_id}.`);
   }
 
-  const addr = String(fields.manufacturer_address);
-  const hasPIN = PIN_CODE.test(addr);
+  // Heuristic: check if product category suggests exemption
+  const category = String(fields.category || options.category || '').toLowerCase();
+  const productName = String(fields.product_name || '').toLowerCase();
+
+  // Fast food / street food / immediate consumption heuristic
+  if (/fast\s*food|street\s*food|ready\s*to\s*eat.*counter|take\s*away/.test(productName)) {
+    return review(R, T, 'exemption', 'low',
+      'Product may be exempt under Rule 26 (fast food/immediate consumption). ' +
+      'Officer should confirm exemption status before applying full checklist.');
+  }
+
+  // Drug / pharma — potentially under Drugs & Cosmetics Act not LM(PC)
+  if (/drug|pharma|medicine|tablet|capsule|syrup|injection/.test(category) ||
+      isPresent(fields.drug_license)) {
+    return review(R, T, 'exemption', 'low',
+      'Product may be a drug formulation under the Drugs & Cosmetics Act and may be exempt from some LM(PC) provisions. ' +
+      'Officer should verify applicable law before citing LM(PC) violations.');
+  }
+
+  // Cannot confirm exemption from image — return null (proceed with checks)
+  return null;
+}
+
+// ─── RULE 6 — MANDATORY DECLARATIONS ─────────────────────────────────────────
+// blueprint §2 Rule 6, Check IDs C01–C08 (P1 — Critical)
+// Every package must carry all mandatory declarations.
+
+// C01 — Manufacturer / Packer / Importer Name (Rule 6 / Rule 10)
+function checkManufacturerName(fields) {
+  const R = 'Rule 6 / Rule 10';
+  const T = 'Name of Manufacturer / Packer / Importer';
+  const f = 'manufacturer_name';
+
+  // Prefer manufacturer; fall back to packer or importer
+  const val = fields.manufacturer_name || fields.packer_name || fields.importer_name;
+
+  if (!isPresent(val)) {
+    return pnoc(R, T, f, 'high',
+      'Name of the manufacturer, packer, or importer is not declared on the label. ' +
+      'This is a mandatory declaration under Rule 6 read with Rule 10.');
+  }
+  return pass(R, T, f);
+}
+
+// C01 (address part) — Manufacturer / Packer / Importer Address (Rule 6 / Rule 10)
+function checkManufacturerAddress(fields) {
+  const R = 'Rule 6 / Rule 10';
+  const T = 'Address of Manufacturer / Packer / Importer';
+  const f = 'manufacturer_address';
+
+  const val = fields.manufacturer_address || fields.packer_address || fields.importer_address;
+
+  if (!isPresent(val)) {
+    return pnoc(R, T, f, 'high',
+      'Complete address of the manufacturer, packer, or importer is absent. ' +
+      'A complete address is mandatory under Rule 6 read with Rule 10.');
+  }
+
+  const addr = String(val);
+  const hasPIN  = PIN_CODE.test(addr);
   const hasCity = ADDRESS_KEYWORDS.test(addr);
 
   if (!hasPIN && !hasCity) {
-    return fail(R, T, 'manufacturer_address', 'medium',
-      `Address "${addr.slice(0, 80)}…" does not contain a recognizable PIN code or city/state name. A complete address is required.`);
+    return pnoc(R, T, f, 'medium',
+      `Address "${addr.slice(0, 80)}…" does not contain a recognizable PIN code or city/state name. ` +
+      'A complete address is required under Rule 10. ' +
+      'Note: If a shorter registered address is approved under Rule 28, this may be NOT APPLICABLE — officer should verify.');
   }
-
-  return pass(R, T, 'manufacturer_address');
+  return pass(R, T, f);
 }
 
-/**
- * Rule 6(1)(b) — Common / Generic Name of the Commodity
- *
- * Per spec: "Field present, non-empty"
- */
-function checkRule6_1_b(fields) {
-  const R = 'Rule 6(1)(b)';
-  const T = 'Name / Description of Commodity';
+// C02 — Country of Origin (Rule 6 applicable version, imported products)
+function checkCountryOfOrigin(fields, options) {
+  const R = 'Rule 6';
+  const T = 'Country of Origin (Imported Products)';
+  const f = 'country_of_origin';
+
+  // Only mandatory for imported products
+  const isImported = options.is_imported === true ||
+                     isPresent(fields.importer_name) ||
+                     /import/i.test(String(fields.manufacturer_name || ''));
+
+  if (!isImported) {
+    return na(R, T, f, 'Country of origin declaration applies only to imported products. This package does not appear to be imported.');
+  }
+
+  if (!isPresent(fields.country_of_origin)) {
+    return pnoc(R, T, f, 'high',
+      'Country of origin is not declared on this imported product label. ' +
+      'This is mandatory for imported products under Rule 6.');
+  }
+  return pass(R, T, f);
+}
+
+// C03 — Common / Generic Name (Rule 6)
+function checkGenericName(fields) {
+  const R = 'Rule 6(b)';
+  const T = 'Common / Generic Name of Commodity';
+  const f = 'product_name';
 
   if (!isPresent(fields.product_name)) {
-    return fail(R, T, 'product_name', 'high',
-      'The common or generic name of the commodity is not declared on the label. This is mandatory under Rule 6(1)(b).');
+    return pnoc(R, T, f, 'high',
+      'The common or generic name of the commodity is not declared on the label. ' +
+      'This is mandatory under Rule 6. Note: a brand name alone is not sufficient — a common/generic name is required.');
   }
-  return pass(R, T, 'product_name');
+  return pass(R, T, f);
 }
 
-/**
- * Rule 6(1)(c) — Net Quantity in Standard Unit
- *
- * Per spec: "Field present AND matches a valid unit pattern
- *            (g, kg, ml, l, cm, no. of pieces, etc.)"
- */
-function checkRule6_1_c_presence(fields) {
-  const R = 'Rule 6(1)(c)';
+// C04 — Net Quantity / Number (Rules 6 / 11)
+function checkNetQuantityPresence(fields) {
+  const R = 'Rule 6 / Rule 11';
   const T = 'Net Quantity Declaration';
+  const f = 'net_quantity';
 
   if (!isPresent(fields.net_quantity)) {
-    return fail(R, T, 'net_quantity', 'high',
-      'No net quantity declaration detected on the label. Every packaged commodity must declare its net weight, volume, or count under Rule 6(1)(c).');
+    return pnoc(R, T, f, 'high',
+      'No net quantity declaration detected on the label. ' +
+      'Every packaged commodity must declare its net weight, volume, or count under Rules 6 and 11.');
   }
-  return pass(R, T, 'net_quantity');
+  return pass(R, T, f);
 }
 
-function checkRule6_1_c_unit(fields) {
-  const R = 'Rule 6(1)(c)';
-  const T = 'Net Quantity — Valid Standard Unit';
+// C05 — Unit Convention (Rule 13 + Fourth Schedule exceptions)
+function checkUnitConvention(fields) {
+  const R = 'Rule 13';
+  const T = 'Statement of Units — Standard SI Units Required';
+  const f = 'net_quantity';
 
-  if (!isPresent(fields.net_quantity)) return pass(R, T, 'net_quantity'); // Already caught above
+  if (!isPresent(fields.net_quantity)) return pass(R, T, f); // Caught by presence check
 
   const qty = String(fields.net_quantity);
 
-  // Check non-standard units first (explicit violation)
+  // Explicit non-standard unit
   if (NON_STANDARD_UNITS.test(qty)) {
     const match = qty.match(NON_STANDARD_UNITS);
-    return fail(R, T, 'net_quantity', 'high',
-      `Net quantity uses non-standard unit "${match?.[0]}". Only standard SI units (g, kg, ml, L, m, cm, pieces) are permitted under Rule 6(1)(c) and Rule 7.`);
+    return pnoc(R, T, f, 'high',
+      `Net quantity uses non-standard unit "${match?.[0]}". ` +
+      'Only SI/metric units (g, kg, ml, L, m, cm, pieces, nos.) are permitted under Rule 13. ' +
+      'Note: Rule 13 has commodity-specific exceptions in the Fourth Schedule — officer should check if an exception applies.');
   }
 
-  // Must have a numeric value
+  // No numeric value
   if (!/\d/.test(qty)) {
-    return fail(R, T, 'net_quantity', 'high',
-      `Net quantity "${qty}" does not contain a numeric value. A quantity like "500g" or "1 kg" is required.`);
+    return pnoc(R, T, f, 'high',
+      `Net quantity "${qty}" does not contain a numeric value. A quantity like "500g" or "1 kg" is required under Rule 11.`);
   }
 
-  // Must have a recognized unit
+  // No recognized unit
   if (!STANDARD_UNITS.test(qty)) {
-    return fail(R, T, 'net_quantity', 'medium',
-      `Net quantity "${qty}" does not contain a recognized standard unit. Valid units include: g, kg, ml, L, cm, m, nos., pieces.`);
+    return pnoc(R, T, f, 'medium',
+      `Net quantity "${qty}" does not contain a recognized standard unit. ` +
+      'Valid units include: g, kg, ml, L, cm, m, nos., pieces. ' +
+      'Check the Fourth Schedule for commodity-specific exceptions before citing a violation.');
   }
 
-  // Vague marketing terms in place of quantity
-  if (/\b(family\s*size|jumbo|large|small|medium|regular|super|economy\s*pack)\b/i.test(qty)) {
-    return fail(R, T, 'net_quantity', 'medium',
-      `Net quantity "${qty}" uses vague/non-numeric terms. Only a precise numeric value with a standard unit is acceptable.`);
-  }
-
-  return pass(R, T, 'net_quantity');
+  return pass(R, T, f);
 }
 
-/**
- * Rule 6(1)(f) — Month and Year of Manufacture / Packing / Import
- *
- * Per spec: "Field present AND matches a valid date pattern (MM/YYYY or Month YYYY)"
- *
- * ⚠️  Clause note: This sub-rule designation (f) for mfg date is per the
- *     spec file 02. The 2011 gazette uses (d) for mfg date. Cross-check
- *     before final submission.
- */
-function checkRule6_1_f_mfgdate(fields) {
-  const R = 'Rule 6(1)(f)';
-  const T = 'Month and Year of Manufacture / Packing';
+// C06 — Month and Year of Manufacture / Pre-packing / Import (Rule 6)
+function checkMfgDate(fields) {
+  const R = 'Rule 6';
+  const T = 'Month and Year of Manufacture / Pre-packing / Import';
+  const f = 'mfg_date';
 
   if (!isPresent(fields.mfg_date)) {
-    return fail(R, T, 'mfg_date', 'high',
-      'Month and year of manufacture/packing/import is not declared. This is mandatory under Rule 6(1)(f).');
+    // Low OCR confidence or missing — don't claim it's definitively absent
+    const ocrConf = fields._ocr_confidence ?? fields._ocrConfidence;
+    if (ocrConf !== undefined && ocrConf < 70) {
+      return nv(R, T, f,
+        'Month/year of manufacture was not detected, but OCR confidence is low. ' +
+        'Cannot confirm absence of this declaration from a low-quality image — physical inspection required.');
+    }
+    return pnoc(R, T, f, 'high',
+      'Month and year of manufacture/packing/import is not declared. ' +
+      'This is mandatory under Rule 6. Required format: MM/YYYY (e.g. 03/2025) or Month YYYY (e.g. Mar 2025).');
   }
 
   const str = String(fields.mfg_date).trim();
-  const parsedOk = DATE_PATTERNS.some(p => p.test(str));
+  const validFormat = DATE_PATTERNS.some(p => p.test(str));
 
-  if (!parsedOk) {
-    return fail(R, T, 'mfg_date', 'medium',
-      `Manufacturing date "${str}" does not match a valid format. Required format: MM/YYYY (e.g. 03/2025) or Month YYYY (e.g. Mar 2025).`);
+  if (!validFormat) {
+    return pnoc(R, T, f, 'medium',
+      `Manufacturing date "${str}" does not match a valid format. ` +
+      'Required format: MM/YYYY (e.g. 03/2025) or Month YYYY (e.g. Mar 2025) per Rule 6.');
   }
 
-  // Must not be in the future
   const parsed = parseDate(str);
   if (parsed) {
     const now = new Date();
     if (parsed.year > now.getFullYear() + 1) {
-      return fail(R, T, 'mfg_date', 'medium',
-        `Manufacturing date year "${parsed.year}" is implausibly far in the future — possible OCR misread or mislabeling.`);
+      return pnoc(R, T, f, 'medium',
+        `Manufacturing date year "${parsed.year}" is implausibly far in the future. ` +
+        'Possible OCR misread or mislabeling — verify physically.');
     }
   }
 
-  return pass(R, T, 'mfg_date');
+  return pass(R, T, f);
 }
 
-/**
- * Rule 6(1)(f) — Retail Sale Price (MRP) inclusive of all taxes
- *
- * Per spec: "Field present AND contains '₹' or 'Rs.' AND contains the phrase
- *            'inclusive of all taxes' (or equivalent)"
- *
- * ⚠️  Clause note: This sub-rule designation (f) for MRP is per spec file 02.
- *     The 2011 gazette typically lists MRP as a separate sub-rule. Cross-check.
- */
-function checkRule6_1_f_mrp(fields) {
-  const R = 'Rule 6(1)(f)';
-  const T = 'Maximum Retail Price (MRP) Declaration';
+// C07 — MRP / Retail Sale Price inclusive of all taxes (Rule 6 / Rule 2)
+function checkMRP(fields) {
+  const R = 'Rule 6 / Rule 2';
+  const T = 'Maximum Retail Price (MRP) — Inclusive of All Taxes';
+  const f = 'mrp';
+
+  const rawText = String(fields._rawText || '');
 
   if (!isPresent(fields.mrp)) {
-    return fail(R, T, 'mrp', 'high',
-      'MRP (Maximum Retail Price) is not declared on the label. Every package must display MRP inclusive of all taxes under Rule 6(1)(f).');
+    const ocrConf = fields._ocr_confidence ?? fields._ocrConfidence;
+    if (ocrConf !== undefined && ocrConf < 70) {
+      return nv(R, T, f,
+        'MRP was not detected, but OCR confidence is low. ' +
+        'Cannot confirm absence from a low-quality image — physical inspection required.');
+    }
+    return pnoc(R, T, f, 'high',
+      'MRP (Maximum Retail Price inclusive of all taxes) is not declared on the label. ' +
+      'This is mandatory under Rule 6 read with Rule 2.');
   }
 
   const mrpStr = String(fields.mrp);
-  const rawText = fields._rawText || '';
 
-  if (!MRP_SYMBOL.test(mrpStr) && !MRP_SYMBOL.test(rawText.slice(0, 200))) {
-    return fail(R, T, 'mrp', 'medium',
-      `MRP value "${mrpStr}" does not include the required "₹" or "Rs." symbol. Both are valid per DoCA FAQ.`);
+  // Check ₹ / Rs. symbol
+  if (!MRP_SYMBOL.test(mrpStr) && !MRP_SYMBOL.test(rawText.slice(0, 500))) {
+    return pnoc(R, T, f, 'medium',
+      `MRP value "${mrpStr}" does not include the required "₹" or "Rs." currency symbol.`);
   }
 
-  // Check "inclusive of all taxes" — search in nearby raw text context
-  // This is a best-effort check (OCR may miss small text)
-  const inRawText = INCL_TAX.test(rawText);
-  const inMrpField = INCL_TAX.test(mrpStr);
-
-  if (!inRawText && !inMrpField) {
-    return fail(R, T, 'mrp', 'low',
-      `The phrase "inclusive of all taxes" (or equivalent) was not detected near the MRP declaration. Rule 6(1)(f) requires MRP to be stated as all-tax-inclusive. Note: OCR may have missed small-print text — verify manually.`);
+  // Check "inclusive of all taxes" phrase
+  const inField   = INCL_TAX.test(mrpStr);
+  const inContext = INCL_TAX.test(rawText);
+  if (!inField && !inContext) {
+    return review(R, T, f, 'low',
+      'The phrase "inclusive of all taxes" was not detected near the MRP declaration. ' +
+      'Rule 6 / Rule 2 requires MRP to be stated as all-tax-inclusive. ' +
+      'OCR may have missed small-print text — verify manually before citing this as a violation.');
   }
 
-  return pass(R, T, 'mrp');
+  return pass(R, T, f);
 }
 
-/**
- * Rule 6(1)(g) — Consumer Care Details
- *
- * Per spec: "Field present, non-empty"
- *
- * ⚠️  Clause note: (g) per spec 02; verify gazette sub-rule for consumer care.
- */
-function checkRule6_1_g(fields) {
-  const R = 'Rule 6(1)(g)';
-  const T = 'Consumer Care Details (Helpline / Email)';
+// C08 — Consumer Care Details (Rule 6)
+function checkConsumerCare(fields) {
+  const R = 'Rule 6';
+  const T = 'Consumer Care Contact Details';
+  const f = 'customer_care';
 
   if (!isPresent(fields.customer_care)) {
-    return fail(R, T, 'customer_care', 'medium',
-      'Consumer care contact details (helpline phone number or email address) are not present on the label. Mandatory under Rule 6(1)(g).');
+    return pnoc(R, T, f, 'medium',
+      'Consumer care contact details (helpline phone number or email address) are not declared on the label. ' +
+      'This is mandatory under Rule 6.');
   }
-  return pass(R, T, 'customer_care');
+
+  // Basic format check: phone or email
+  const val = String(fields.customer_care);
+  const hasPhone = /[\d\s\-\+]{7,}/.test(val);
+  const hasEmail = /@/.test(val);
+  if (!hasPhone && !hasEmail) {
+    return pnoc(R, T, f, 'low',
+      `Consumer care value "${val.slice(0, 60)}" does not appear to contain a valid phone number or email address. ` +
+      'A functional contact is required.');
+  }
+
+  return pass(R, T, f);
 }
 
-/**
- * Rule 6(10) — E-Commerce Listing Requirements
- *
- * Per spec: Only apply if source_type == "ecommerce_listing"
- * For e-commerce: all mandatory declarations EXCEPT month/year of manufacture
- * must appear on the digital listing.
- */
-function checkRule6_10_ecommerce(fields, options = {}) {
-  const R = 'Rule 6(10)';
-  const T = 'E-Commerce Listing — Mandatory Declarations';
+// ─── RULE 12 — MISLEADING QUANTITY WORDING ───────────────────────────────────
+// blueprint §2 Rule 12 (P1 — High); Check C12
+// Quantity wording must not create a misleading or exaggerated impression.
 
-  if (options.source_type !== 'ecommerce_listing') {
-    return pass(R, T, 'source_type'); // Not applicable
-  }
+function checkMisleadingQuantityWording(fields) {
+  const R = 'Rule 12';
+  const T = 'Manner of Declaration of Quantity — No Misleading Wording';
+  const f = 'net_quantity';
 
-  const required = ['manufacturer_name', 'manufacturer_address', 'product_name', 'net_quantity', 'mrp', 'customer_care'];
-  const missing = required.filter(f => !isPresent(fields[f]));
-
-  if (missing.length > 0) {
-    return fail(R, T, 'ecommerce_listing', 'high',
-      `E-commerce listing is missing the following mandatory declarations (Rule 6(10)): ${missing.join(', ')}. For digital listings, all mandatory fields except month/year of manufacture must be visible.`);
-  }
-
-  return pass(R, T, 'ecommerce_listing');
-}
-
-// ─── RULE SET 2 — FONT SIZE / LEGIBILITY (RULE 7) ────────────────────────────
-// confidence: "estimated" — image analysis, cannot be precise without scale ref
-
-/**
- * Rule 7(3) — Minimum Letter Height 1mm (2mm if embossed)
- *
- * Per spec: Estimate using (bbox_pixel_height ÷ image_DPI) × 25.4
- * Since phone DPI is unknown, flag as "estimated — low confidence"
- * unless calibration reference is available.
- *
- * Returns "estimated" status rather than hard pass/fail.
- */
-function checkRule7_3_letterHeight(fields) {
-  const R = 'Rule 7(3)';
-  const T = 'Minimum Letter Height (1mm minimum)';
-
-  // If we have pixel-based font size data from OCR bounding boxes
-  if (fields._fontHeightPixels !== undefined && fields._imageDPI !== undefined) {
-    const heightMM = (fields._fontHeightPixels / fields._imageDPI) * 25.4;
-    const minRequired = fields._isEmbossed ? 2.0 : 1.0;
-
-    if (heightMM < minRequired) {
-      return estimated(R, T, 'font_size',
-        'medium',
-        `Estimated letter height ≈ ${heightMM.toFixed(2)}mm (min required: ${minRequired}mm). ` +
-        `Estimated from pixel bounding box (${fields._fontHeightPixels}px) at assumed ${fields._imageDPI} DPI — ` +
-        `true DPI of phone camera is unknown. Treat as indicative finding; physical measurement required.`);
-    }
-    return pass(R, T, 'font_size', 'estimated');
-  }
-
-  // No size data available — report as estimated with no definitive conclusion
-  return estimated(R, T, 'font_size', 'low',
-    'Font height could not be estimated from this image (no bounding box data / DPI reference available). ' +
-    'Physical verification with a ruler against the printed label is required to confirm Rule 7(3) compliance.');
-}
-
-/**
- * Rule 7 — Numeral Height Table (based on net quantity slab)
- *
- * Per spec: lookup table: net quantity range → required minimum numeral height
- *
- * Numeral height requirements:
- *   ≤ 50g/ml     → 1mm
- *   50–200g/ml   → 2mm
- *   200g/ml–1kg/L → 4mm
- *   > 1kg/L      → 6mm
- */
-const NUMERAL_HEIGHT_TABLE = [
-  { maxG: 50,   maxML: 50,   minMM: 1.0 },
-  { maxG: 200,  maxML: 200,  minMM: 2.0 },
-  { maxG: 1000, maxML: 1000, minMM: 4.0 },
-  { maxG: Infinity, maxML: Infinity, minMM: 6.0 },
-];
-
-function getRequiredNumeralHeight(netQtyNormalized) {
-  if (!netQtyNormalized) return null;
-  const { value, unit } = netQtyNormalized;
-  if (!value || !unit) return null;
-
-  // Convert to grams or ml for comparison
-  let grams = null;
-  if (['g','gm','gms','gram','grams'].includes(unit.toLowerCase())) grams = value;
-  else if (['kg','kgs'].includes(unit.toLowerCase())) grams = value * 1000;
-  else if (['mg'].includes(unit.toLowerCase())) grams = value / 1000;
-
-  let ml = null;
-  if (['ml','milliliter','millilitre'].includes(unit.toLowerCase())) ml = value;
-  else if (['l','ltr','litre','litres','liters','liter'].includes(unit.toLowerCase())) ml = value * 1000;
-
-  const ref = grams || ml;
-  if (!ref) return null;
-
-  return NUMERAL_HEIGHT_TABLE.find(row => ref <= row.maxG)?.minMM || 6.0;
-}
-
-function checkRule7_numeralHeight(fields) {
-  const R = 'Rule 7';
-  const T = 'Numeral Height for MRP / Net Quantity Declarations';
-
-  const required = getRequiredNumeralHeight(fields._netQtyNormalized);
-  if (!required) {
-    return estimated(R, T, 'net_quantity', 'low',
-      'Cannot determine required numeral height — net quantity was not extracted in a parseable format.');
-  }
-
-  if (fields._numeralHeightPixels !== undefined && fields._imageDPI !== undefined) {
-    const actualMM = (fields._numeralHeightPixels / fields._imageDPI) * 25.4;
-    if (actualMM < required) {
-      return estimated(R, T, 'font_size', 'medium',
-        `Numeral height for this package slab (${fields._netQtyNormalized?.raw || ''}) must be ≥ ${required}mm. ` +
-        `Estimated actual height ≈ ${actualMM.toFixed(2)}mm (estimated, not definitive — physical check required).`);
-    }
-    return pass(R, T, 'font_size', 'estimated');
-  }
-
-  return estimated(R, T, 'font_size', 'low',
-    `For a package of this size (${fields._netQtyNormalized?.raw || 'unknown'}), minimum numeral height = ${required}mm. ` +
-    `Numeral height could not be measured from this image — physical verification required.`);
-}
-
-/**
- * Rule 7 — Principal Display Panel (PDP) Placement
- *
- * Per spec: This is out of scope for pixel-precision from a photo alone.
- * Implement as a manual toggle — officer confirms during review.
- * Never auto-fail from image alone.
- */
-function checkRule7_pdp(fields) {
-  const R = 'Rule 7 (PDP)';
-  const T = 'Principal Display Panel — Declaration Placement';
-
-  // If officer explicitly confirmed PDP compliance (manual review toggle)
-  if (fields._pdpConfirmed === true) return pass(R, T, 'layout', 'estimated');
-  if (fields._pdpConfirmed === false) {
-    return estimated(R, T, 'layout', 'medium',
-      'Officer review indicates mandatory declarations may NOT be on the principal display panel. ' +
-      'Rectangular packs require declarations on one full side; cylindrical/other shapes require 40% of surface area. ' +
-      'This requires physical inspection — cannot be determined from a single photo.');
-  }
-
-  // No toggle set — return as requiring manual review
-  return estimated(R, T, 'layout', 'low',
-    'Principal Display Panel (PDP) compliance has not been manually confirmed. ' +
-    'Please use the "PDP Verified" toggle on the review screen after physically inspecting the label placement.');
-}
-
-// ─── RULE SET 3 — FORMAT & PLACEMENT SANITY CHECKS ───────────────────────────
-// confidence: "high" — these are pattern/format checks
-
-/**
- * MRP Symbol Validity
- * MRP must use "₹" or "Rs." — both are valid per DoCA FAQ
- */
-function checkMrpSymbol(fields) {
-  const R = 'Rule 6(1)(f) — Format';
-  const T = 'MRP Symbol Validity (₹ or Rs.)';
-
-  if (!isPresent(fields.mrp)) return pass(R, T, 'mrp'); // Caught by presence check
-
-  const mrp = String(fields.mrp);
-  if (!MRP_SYMBOL.test(mrp)) {
-    return fail(R, T, 'mrp', 'medium',
-      `MRP value "${mrp}" is missing the required currency symbol. Must use "₹" or "Rs." — both are valid per Department of Consumer Affairs FAQ.`);
-  }
-  return pass(R, T, 'mrp');
-}
-
-/**
- * Net Quantity Unit Validity
- * Unit must be a recognized standard unit — flag non-standard/ambiguous
- */
-function checkNetQtyUnit(fields) {
-  const R = 'Rule 6(1)(c) — Format';
-  const T = 'Net Quantity Unit Validity';
-
-  if (!isPresent(fields.net_quantity)) return pass(R, T, 'net_quantity');
+  if (!isPresent(fields.net_quantity)) return pass(R, T, f);
 
   const qty = String(fields.net_quantity);
-  if (NON_STANDARD_UNITS.test(qty)) {
-    const match = qty.match(NON_STANDARD_UNITS);
-    return fail(R, T, 'net_quantity', 'high',
-      `Non-standard unit detected: "${match?.[0]}". Only SI/metric units (g, kg, ml, L, m, cm, pieces) are recognized under LM(PC) Rules.`);
+
+  if (MISLEADING_QUALIFIERS.test(qty)) {
+    const match = qty.match(MISLEADING_QUALIFIERS);
+    return pnoc(R, T, f, 'high',
+      `Net quantity "${qty}" contains the qualifier "${match?.[0]}" which is prohibited under Rule 12. ` +
+      'Quantity declarations must not use words like "minimum", "not less than", "average", "about", "approximately" etc. ' +
+      'An exact quantity must be stated.');
   }
-  return pass(R, T, 'net_quantity');
+
+  // Vague marketing terms in place of a numeric quantity
+  if (/\b(family\s*size|jumbo|large|small|medium|regular|super|economy\s*pack)\b/i.test(qty)) {
+    return pnoc(R, T, f, 'high',
+      `Net quantity "${qty}" uses vague/non-numeric terms instead of a precise numeric quantity. ` +
+      'Rule 12 requires an exact quantity with a standard unit.');
+  }
+
+  return pass(R, T, f);
 }
 
-/**
- * Date Format Validity
- * Manufacture/pack date must be real and parseable, not in the future
- */
-function checkDateValidity(fields) {
-  const R = 'Rule 6(1)(f) — Format';
-  const T = 'Date Format and Validity';
+// ─── RULE 7 — PRINCIPAL DISPLAY PANEL & FONT SIZE ────────────────────────────
+// blueprint §2 Rule 7, CV checks C10, C11 (P1 — Critical)
+// CRITICAL: Pixels ≠ mm without calibration source. Return NOT VERIFIED if no scale.
 
-  if (!isPresent(fields.mfg_date)) return pass(R, T, 'mfg_date');
+// Numeral height slab table (Rule 7 — blueprint §2)
+const NUMERAL_HEIGHT_MM = [
+  { maxRef: 50,       minMM: 1.0 },
+  { maxRef: 200,      minMM: 2.0 },
+  { maxRef: 1000,     minMM: 4.0 },
+  { maxRef: Infinity, minMM: 6.0 },
+];
 
-  const str = String(fields.mfg_date).trim();
-  const parsedOk = DATE_PATTERNS.some(p => p.test(str));
-  if (!parsedOk) {
-    return fail(R, T, 'mfg_date', 'medium',
-      `Date "${str}" is not in a recognizable format. Required: MM/YYYY or Mon YYYY (e.g. 03/2025 or Mar 2025).`);
+function getQtyRefValue(netQtyNorm) {
+  if (!netQtyNorm) return null;
+  const { value, unit } = netQtyNorm;
+  if (!value || !unit) return null;
+  const u = unit.toLowerCase();
+  if (['g','gm','gms','gram','grams'].includes(u))     return value;
+  if (['kg','kgs'].includes(u))                         return value * 1000;
+  if (['mg'].includes(u))                               return value / 1000;
+  if (['ml','milliliter','millilitre'].includes(u))     return value;
+  if (['l','ltr','litre','litres','liters'].includes(u)) return value * 1000;
+  return null;
+}
+
+function checkFontSize(fields) {
+  const R = 'Rule 7';
+  const T = 'Minimum Letter / Numeral Height on Principal Display Panel';
+  const f = 'font_size';
+
+  // If no calibration data available — CRITICAL: never invent mm from pixels
+  if (fields._fontHeightPixels === undefined || fields._imageDPI === undefined) {
+    return nv(R, T, f,
+      'Font height cannot be measured in millimetres without a calibration reference or known image DPI. ' +
+      'A photograph does not automatically contain a physical scale. ' +
+      'Physical measurement with a ruler against the printed label is required to confirm Rule 7 compliance.');
   }
 
-  const parsed = parseDate(str);
-  if (parsed) {
-    const now = new Date();
-    const currentYear = now.getFullYear();
-    const currentMonth = now.getMonth() + 1;
+  const heightMM = (fields._fontHeightPixels / fields._imageDPI) * 25.4;
+  const isEmbossed = fields._isEmbossed === true;
+  const minRequired = isEmbossed ? 2.0 : 1.0;
 
-    if (parsed.year > currentYear ||
-        (parsed.year === currentYear && parsed.month > currentMonth)) {
-      return fail(R, T, 'mfg_date', 'high',
-        `Manufacturing date "${str}" is in the future (${parsed.month}/${parsed.year}). A product cannot have a future manufacture date — possible OCR misread or mislabeling.`);
+  if (heightMM < minRequired) {
+    return review(R, T, f, 'medium',
+      `Estimated letter height ≈ ${heightMM.toFixed(2)}mm (minimum required: ${minRequired}mm). ` +
+      `Estimated from pixel bounding box (${fields._fontHeightPixels}px at ${fields._imageDPI} DPI). ` +
+      'This is an approximation — physical measurement required before enforcement action.');
+  }
+
+  // Check numeral height against net quantity slab
+  const ref = getQtyRefValue(fields._netQtyNormalized);
+  if (ref !== null && fields._numeralHeightPixels !== undefined) {
+    const actualMM  = (fields._numeralHeightPixels / fields._imageDPI) * 25.4;
+    const row       = NUMERAL_HEIGHT_MM.find(r => ref <= r.maxRef);
+    const minNumMM  = row?.minMM ?? 6.0;
+    if (actualMM < minNumMM) {
+      return review(R, T, f, 'medium',
+        `Numeral height for this package size (${fields._netQtyNormalized?.raw || ''}) must be ≥ ${minNumMM}mm. ` +
+        `Estimated actual height ≈ ${actualMM.toFixed(2)}mm — physical verification required before enforcement.`);
     }
   }
 
-  return pass(R, T, 'mfg_date');
+  return pass(R, T, f, 'estimated');
 }
 
-/**
- * Contradictory Declarations
- * Two different MRP values or two different net quantities on same label →
- * "Contradictory declaration — manual review required"
- */
+// ─── RULE 8 — DECLARATION PLACEMENT (PDP) ────────────────────────────────────
+// blueprint §2 Rule 8, CV check C11 (P1 — Critical)
+// Cannot be conclusively determined from a single photo — always require manual review.
+
+function checkPDPPlacement(fields, options) {
+  const R = 'Rule 8';
+  const T = 'Declarations — Placement on Principal Display Panel';
+  const f = 'layout';
+
+  if (options.pdp_confirmed === true) {
+    return pass(R, T, f, 'estimated');
+  }
+  if (options.pdp_confirmed === false) {
+    return review(R, T, f, 'medium',
+      'Officer review indicates mandatory declarations may not be on the principal display panel. ' +
+      'Rectangular packages require declarations on one full side; cylindrical/other shapes require 40% of surface area. ' +
+      'Physical inspection is required.');
+  }
+
+  // Not yet reviewed — flag for manual review
+  return review(R, T, f, 'low',
+    'Principal Display Panel (PDP) placement has not been verified. ' +
+    'A single photograph cannot confirm that all declarations appear on the correct panel face. ' +
+    'Officer should physically inspect the label placement.');
+}
+
+// ─── RULE 9 — LEGIBILITY / CONTRAST / READABILITY ────────────────────────────
+// blueprint §2 Rule 9, CV checks C09 (P1 — Critical)
+// Declarations must be legible, prominent, and visible.
+
+function checkLegibility(fields) {
+  const R = 'Rule 9';
+  const T = 'Legibility, Prominence and Readability of Declarations';
+  const f = 'legibility';
+
+  const ocrConf = fields._ocr_confidence ?? fields._ocrConfidence;
+
+  if (ocrConf === undefined) {
+    return nv(R, T, f,
+      'OCR confidence data not available. Cannot assess legibility / contrast without text detection metrics.');
+  }
+
+  if (ocrConf < 50) {
+    return review(R, T, f, 'medium',
+      `OCR average confidence is very low (${ocrConf.toFixed(1)}%). ` +
+      'This may indicate poor print contrast, smudging, or image quality issues. ' +
+      'Rule 9 requires declarations to be legible and prominent. Physical inspection is required — ' +
+      'low OCR confidence alone does not prove the label is illegible.');
+  }
+
+  if (ocrConf < 70) {
+    return review(R, T, f, 'low',
+      `OCR average confidence is below threshold (${ocrConf.toFixed(1)}%). ` +
+      'Some declarations may have readability issues. Verify with physical inspection.');
+  }
+
+  // Check for explicit blur/contrast flags from image processing
+  if (fields._isBlurry === true) {
+    return review(R, T, f, 'medium',
+      'Image analysis flagged the label image as blurry or low contrast. ' +
+      'Rule 9 requires declarations to be visible and legible. Physical verification required.');
+  }
+
+  return pass(R, T, f, 'estimated');
+}
+
+// ─── RULE 31 — ADVERTISEMENT / LISTING MODE ──────────────────────────────────
+// blueprint §2 Rule 31 (P1 — Critical for listing mode)
+// An advertisement mentioning retail sale price must include net quantity/number.
+// Net-quantity font size in advertisement must equal the retail sale price font size.
+
+function checkAdvertisementListing(fields, options) {
+  const R = 'Rule 31';
+  const T = 'Advertisement / Product Listing — Net Quantity Same Size as MRP';
+
+  // Only applies to e-commerce listings or advertisements
+  if (options.source_type !== 'ecommerce_listing' && options.source_type !== 'advertisement') {
+    return na(R, T, 'listing',
+      'Rule 31 applies only to advertisements and product listings that mention retail sale price. ' +
+      'This scan is a physical label — Rule 31 is not applicable.');
+  }
+
+  const results = [];
+
+  // MRP must be present in listing
+  if (!isPresent(fields.mrp)) {
+    results.push(pnoc(R, T + ' — MRP Presence', 'mrp', 'high',
+      'Retail sale price (MRP) is not present in this product listing. ' +
+      'If MRP is mentioned in an advertisement, it must include the net quantity.'));
+  }
+
+  // Net quantity must be present when MRP is mentioned
+  if (isPresent(fields.mrp) && !isPresent(fields.net_quantity)) {
+    results.push(pnoc(R, T + ' — Net Qty Required', 'net_quantity', 'high',
+      'Advertisement/listing mentions MRP but net quantity/number is not present. ' +
+      'Rule 31 requires that any advertisement mentioning retail sale price must also state net quantity.'));
+  }
+
+  // Font size comparison — only possible with CV calibration data
+  if (isPresent(fields.mrp) && isPresent(fields.net_quantity)) {
+    if (fields._mrpFontHeightPx !== undefined && fields._qtyFontHeightPx !== undefined) {
+      const diff = Math.abs(fields._mrpFontHeightPx - fields._qtyFontHeightPx);
+      const tolerance = fields._mrpFontHeightPx * 0.15; // 15% tolerance
+      if (diff > tolerance) {
+        results.push(review(R, T + ' — Font Size Match', 'font_size', 'medium',
+          `Net quantity font height (${fields._qtyFontHeightPx}px) differs from MRP font height (${fields._mrpFontHeightPx}px) by more than 15%. ` +
+          'Rule 31 requires the net quantity to be in the same font size as the retail sale price in advertisements. ' +
+          'Screenshots may be resized — treat as screening check; verify from source image.',
+          'estimated'));
+      } else {
+        results.push(pass(R, T + ' — Font Size Match', 'font_size', 'estimated'));
+      }
+    } else {
+      results.push(nv(R, T + ' — Font Size Match', 'font_size',
+        'Font size comparison (Rule 31) requires CV bounding-box data, which is not available for this image. ' +
+        'A screenshot may have been resized — officer should verify from the original listing source.'));
+    }
+  }
+
+  return results.length > 0 ? results : [pass(R, T, 'listing')];
+}
+
+// ─── CONTRADICTORY DECLARATIONS CHECK ────────────────────────────────────────
+// Two different MRP values or quantities on the same label = legal contradiction
+
 function checkContradictoryDeclarations(fields) {
-  const R = 'Rule 6 — Contradictory Declarations';
-  const T = 'Duplicate or Contradictory Declarations';
+  const R = 'Rule 6';
+  const T = 'Contradictory Declarations';
+  const results = [];
 
-  const violations = [];
-
-  if (fields._mrpValues && Array.isArray(fields._mrpValues) && fields._mrpValues.length > 1) {
+  if (Array.isArray(fields._mrpValues) && fields._mrpValues.length > 1) {
     const unique = [...new Set(fields._mrpValues.map(String))];
     if (unique.length > 1) {
-      violations.push(
-        fail(R, T, 'mrp', 'high',
-          `Multiple different MRP values detected: ${unique.join(', ')}. A package can only declare one MRP. This is a contradictory declaration — manual review required.`)
-      );
+      results.push(pnoc(R, T + ' — Multiple MRP Values', 'mrp', 'high',
+        `Multiple different MRP values detected on the same label: ${unique.join(', ')}. ` +
+        'A package can declare only one MRP. This contradicts Rule 6 and is a definite non-compliance.'));
     }
   }
 
-  if (fields._netQtyValues && Array.isArray(fields._netQtyValues) && fields._netQtyValues.length > 1) {
+  if (Array.isArray(fields._netQtyValues) && fields._netQtyValues.length > 1) {
     const unique = [...new Set(fields._netQtyValues.map(String))];
     if (unique.length > 1) {
-      violations.push(
-        fail(R, T, 'net_quantity', 'high',
-          `Multiple different net quantity values detected: ${unique.join(', ')}. A package can only declare one net quantity. This is a contradictory declaration — manual review required.`)
-      );
+      results.push(pnoc(R, T + ' — Multiple Net Quantity Values', 'net_quantity', 'high',
+        `Multiple different net quantity values detected on the same label: ${unique.join(', ')}. ` +
+        'A package can declare only one net quantity. This contradicts Rule 6.'));
     }
   }
 
-  // Return null if no contradictions (caller handles array)
-  return violations.length > 0 ? violations : null;
+  return results.length > 0 ? results : null;
 }
 
 // ─── MAIN RUNNER ─────────────────────────────────────────────────────────────
 
 /**
- * Run all rules and return results for EVERY rule (pass AND fail).
- * This is the primary export used by routes/scans.js and unit tests.
+ * Run all P1 compliance checks in pipeline order per the blueprint.
  *
- * @param {object} fieldsMap   - { fieldName → fieldValue } from extraction_service
- * @param {string} rawText     - Full raw OCR text (for context-sensitive checks)
- * @param {object} options     - { source_type, _fontHeightPixels, _imageDPI, etc. }
- * @returns {{ results: Array, violations: Array, stats: object }}
+ * @param {object} fieldsMap  - { fieldName → fieldValue } from extraction_service
+ * @param {string} rawText    - Full raw OCR text (for context-sensitive checks)
+ * @param {object} options    - {
+ *   source_type,             // 'physical_label' | 'ecommerce_listing' | 'advertisement'
+ *   is_not_applicable,       // true → Rule 3 gate kicks in
+ *   not_applicable_reason,   // string
+ *   applicability_confirmed, // true → skip Rule 3 review
+ *   is_exempt,               // true → Rule 26 gate kicks in
+ *   exempt_category,         // string
+ *   is_imported,             // true → require country_of_origin
+ *   pdp_confirmed,           // true|false → officer toggle
+ *   category,                // product category string
+ * }
+ * @returns {{ results, violations, stats, ruleVersion }}
  */
 function validateCompliance(fieldsMap, rawText = '', options = {}) {
-  const fields = { ...fieldsMap, _rawText: rawText, ...options };
-
-  // All single-result check functions
-  const singleChecks = [
-    // Rule Set 1
-    checkRule6_1_a_name,
-    checkRule6_1_a_address,
-    checkRule6_1_b,
-    checkRule6_1_c_presence,
-    checkRule6_1_c_unit,
-    checkRule6_1_f_mfgdate,
-    checkRule6_1_f_mrp,
-    checkRule6_1_g,
-    (f, o) => checkRule6_10_ecommerce(f, o),
-    // Rule Set 2 (estimated)
-    checkRule7_3_letterHeight,
-    checkRule7_numeralHeight,
-    checkRule7_pdp,
-    // Rule Set 3
-    checkMrpSymbol,
-    checkNetQtyUnit,
-    checkDateValidity,
-  ];
+  const fields = { ...fieldsMap, _rawText: rawText };
 
   const results = [];
 
-  for (const fn of singleChecks) {
+  // ── STEP 1: Applicability Gate (Rule 3) ───────────────────────────────────
+  const applicabilityResult = checkApplicability(fields, options);
+  if (applicabilityResult) {
+    results.push(applicabilityResult);
+    // If definitively NOT APPLICABLE, skip all other checks
+    if (applicabilityResult.status === S.NA) {
+      return buildOutput(results);
+    }
+  }
+
+  // ── STEP 2: Exemption Check (Rule 26) ────────────────────────────────────
+  const exemptionResult = checkExemption(fields, options);
+  if (exemptionResult) {
+    results.push(exemptionResult);
+    if (exemptionResult.status === S.NA) {
+      return buildOutput(results);
+    }
+  }
+
+  // ── STEP 3: Mandatory Declaration Checks (Rules 6, 10, 11, 12, 13) ──────
+  const declarationChecks = [
+    checkManufacturerName,
+    checkManufacturerAddress,
+    (f, o) => checkCountryOfOrigin(f, o),
+    checkGenericName,
+    checkNetQuantityPresence,
+    checkUnitConvention,
+    checkMfgDate,
+    checkMRP,
+    checkConsumerCare,
+    checkMisleadingQuantityWording,
+  ];
+
+  for (const fn of declarationChecks) {
     try {
       const r = fn(fields, options);
       if (r) results.push(r);
@@ -610,76 +758,105 @@ function validateCompliance(fieldsMap, rawText = '', options = {}) {
     }
   }
 
-  // Contradictory declarations — returns array or null
+  // ── STEP 4: Presentation / CV Checks (Rules 7, 8, 9) ─────────────────────
+  try { results.push(checkFontSize(fields)); } catch (e) { console.error('[RE]', e.message); }
+  try { results.push(checkPDPPlacement(fields, options)); } catch (e) { console.error('[RE]', e.message); }
+  try { results.push(checkLegibility(fields)); } catch (e) { console.error('[RE]', e.message); }
+
+  // ── STEP 5: Advertisement / Listing (Rule 31) ────────────────────────────
+  try {
+    const adResults = checkAdvertisementListing(fields, options);
+    if (Array.isArray(adResults)) results.push(...adResults);
+    else if (adResults) results.push(adResults);
+  } catch (e) {
+    console.error('[RE] checkAdvertisementListing:', e.message);
+  }
+
+  // ── STEP 6: Contradictory Declarations ───────────────────────────────────
   try {
     const contradictions = checkContradictoryDeclarations(fields);
     if (contradictions) results.push(...contradictions);
-  } catch (err) {
-    console.error('[RulesEngine] Error in checkContradictoryDeclarations:', err.message);
+  } catch (e) {
+    console.error('[RE] checkContradictoryDeclarations:', e.message);
   }
 
-  // Separate violations (fail/estimated) from passes
-  const violations = results.filter(r => r.status === 'fail' || r.status === 'estimated');
-  const hardFails = results.filter(r => r.status === 'fail');
-  const passes = results.filter(r => r.status === 'pass');
+  return buildOutput(results);
+}
 
-  // Stats
-  const totalRulesChecked = results.length;
-  const totalViolations = violations.length;
-  const highViolations = hardFails.filter(v => v.severity === 'high').length;
+// ─── BUILD OUTPUT ─────────────────────────────────────────────────────────────
+function buildOutput(results) {
+  const violations = results.filter(r =>
+    r.status === S.PNOC || r.status === S.REVIEW || r.status === S.NV
+  );
+  const hardFails  = results.filter(r => r.status === S.PNOC);
+  const passes     = results.filter(r => r.status === S.PASS);
+  const naResults  = results.filter(r => r.status === S.NA);
+  const nvResults  = results.filter(r => r.status === S.NV);
+  const reviewItems = results.filter(r => r.status === S.REVIEW);
+
+  const highViolations   = hardFails.filter(v => v.severity === 'high').length;
   const mediumViolations = hardFails.filter(v => v.severity === 'medium').length;
-  const lowViolations = hardFails.filter(v => v.severity === 'low').length;
-  const estimatedCount = violations.filter(v => v.confidence === 'estimated').length;
-  // Score: count passes + estimated-only issues as partial credit
-  const passAndEstimated = results.filter(r => r.status === 'pass' || r.status === 'estimated').length;
-  const complianceScore = Math.round((passes.length / totalRulesChecked) * 100);
+  const lowViolations    = hardFails.filter(v => v.severity === 'low').length;
+  const totalRulesChecked = results.length;
+  const complianceScore = totalRulesChecked > 0
+    ? Math.round((passes.length / totalRulesChecked) * 100)
+    : 0;
 
-  // overallCompliance is determined ONLY by hard 'fail' violations (not 'estimated')
-  // Per spec 03: 'compliant' | 'needs_review' | 'non_compliant'
+  // Overall status determination per blueprint §8 5-status system
   let overallCompliance;
-  if (highViolations > 0) overallCompliance = 'non_compliant';
-  else if (hardFails.length > 0) overallCompliance = 'non_compliant'; // medium/low hard fails
-  else if (estimatedCount > 0) overallCompliance = 'needs_review';   // only estimated issues
-  else overallCompliance = 'compliant';
+  if (naResults.length === results.length) {
+    overallCompliance = S.NA;
+  } else if (highViolations > 0 || mediumViolations > 0 || lowViolations > 0) {
+    overallCompliance = S.PNOC;
+  } else if (reviewItems.length > 0 || nvResults.length > 0) {
+    overallCompliance = S.REVIEW;
+  } else {
+    overallCompliance = S.PASS;
+  }
 
   return {
-    results,          // All results including passes (for audit trail)
-    violations,       // Only failures + estimated issues
+    results,
+    violations,
+    ruleVersion: RULE_VERSION,
     stats: {
       totalRulesChecked,
-      totalViolations,
-      criticalViolations: highViolations,  // DB field named criticalViolations
+      totalViolations:   violations.length,
+      hardViolations:    hardFails.length,
+      reviewCount:       reviewItems.length,
+      notVerifiedCount:  nvResults.length,
+      notApplicableCount: naResults.length,
+      criticalViolations: highViolations,  // DB compat alias
       highViolations,
       mediumViolations,
       lowViolations,
-      estimatedCount,
-      rulesPassed: passes.length,
+      rulesPassed:       passes.length,
       complianceScore,
-      overallCompliance,   // spec 03 field name
-      overallStatus: overallCompliance, // backward-compat alias
+      overallCompliance,
+      overallStatus:     overallCompliance, // backward-compat alias
     },
   };
 }
 
 module.exports = {
   validateCompliance,
+  RULE_VERSION,
+  STATUS: S,
   // Export individual checkers for unit testing
-  checkRule6_1_a_name,
-  checkRule6_1_a_address,
-  checkRule6_1_b,
-  checkRule6_1_c_presence,
-  checkRule6_1_c_unit,
-  checkRule6_1_f_mfgdate,
-  checkRule6_1_f_mrp,
-  checkRule6_1_g,
-  checkRule6_10_ecommerce,
-  checkRule7_3_letterHeight,
-  checkRule7_numeralHeight,
-  checkRule7_pdp,
-  checkMrpSymbol,
-  checkNetQtyUnit,
-  checkDateValidity,
+  checkApplicability,
+  checkExemption,
+  checkManufacturerName,
+  checkManufacturerAddress,
+  checkCountryOfOrigin,
+  checkGenericName,
+  checkNetQuantityPresence,
+  checkUnitConvention,
+  checkMfgDate,
+  checkMRP,
+  checkConsumerCare,
+  checkMisleadingQuantityWording,
+  checkFontSize,
+  checkPDPPlacement,
+  checkLegibility,
+  checkAdvertisementListing,
   checkContradictoryDeclarations,
-  getRequiredNumeralHeight,
-  NUMERAL_HEIGHT_TABLE,
 };

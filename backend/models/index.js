@@ -155,27 +155,42 @@ const Scan = sequelize.define('Scan', {
     field: 'ocr_raw_text',
   },
 
-  // ── JSONB extracted fields (spec 03 §extracted_fields) ─────────────────────
+  // ── JSONB extracted fields (blueprint §6 Structured Declaration Data Model) ──
   // Stores all OCR-extracted declarations as flexible key-value JSON.
   // No rigid column-per-field — accommodates whatever OCR returns.
-  // Schema: { manufacturer_name, manufacturer_address, product_name, brand_name,
-  //           net_quantity, mrp, mfg_date, best_before, customer_care,
-  //           batch_lot_number, fssai_license, ingredients, country_of_origin, ... }
+  // Fields per blueprint: manufacturer_name, manufacturer_address,
+  //   packer_name, packer_address, importer_name, importer_address,
+  //   country_of_origin, product_name (generic/common name), brand_name,
+  //   net_quantity_value, net_quantity_unit, piece_count,
+  //   mfg_date (Month/Year of manufacture/pre-packing/import),
+  //   best_before, mrp, customer_care,
+  //   dimensions (L×W rules 14–17), sheet_count (rule 16),
+  //   batch_lot_number, fssai_license, ingredients, ...
   extractedFields: {
     type: DataTypes.JSONB,
     allowNull: true,
     field: 'extracted_fields',
   },
 
-  // ── Compliance result (spec 03 §overall_compliance) ───────────────────────
-  // 'compliant'     = zero fail violations
-  // 'needs_review'  = only estimated_fail violations (no hard fails)
-  // 'non_compliant' = any hard fail violation found
+  // ── Compliance result — 5-status system per blueprint §8 ──────────────────
+  // PASS                    = evidence sufficient, all requirements met
+  // POTENTIAL NON-COMPLIANCE = automated evidence indicates requirement not met
+  // MANUAL REVIEW           = evidence insufficient for automatic conclusion
+  // NOT APPLICABLE          = applicability/exemption engine says rule does not apply
+  // NOT VERIFIED            = required input, image quality or scale is missing
   overallCompliance: {
     type: DataTypes.TEXT,
     allowNull: true,
     field: 'overall_compliance',
-    validate: { isIn: [['compliant', 'non_compliant', 'needs_review']] },
+    validate: { isIn: [[
+      'PASS',
+      'POTENTIAL NON-COMPLIANCE',
+      'MANUAL REVIEW',
+      'NOT APPLICABLE',
+      'NOT VERIFIED',
+      // Legacy aliases kept for backward compat during migration:
+      'compliant', 'non_compliant', 'needs_review',
+    ]] },
   },
 
   // ── Dashboard metrics (not in spec 03 but needed for aggregation) ─────────
@@ -258,14 +273,24 @@ const Violation = sequelize.define('Violation', {
     field: 'rule_title',
   },
 
-  // ── Check outcome ─────────────────────────────────────────────────────────
-  // 'fail'           = definite, hard violation
-  // 'estimated_fail' = image-based approximation (font size, PDP)
-  // 'pass'           = rule satisfied (stored for audit trail)
+  // ── Check outcome — 5-status system per blueprint §8 ────────────────────
+  // PASS                    = evidence sufficient, requirement met
+  // POTENTIAL NON-COMPLIANCE = automated evidence indicates requirement not met
+  // MANUAL REVIEW           = evidence or legal context insufficient for auto-conclusion
+  // NOT APPLICABLE          = applicability/exemption engine says rule does not apply
+  // NOT VERIFIED            = required input, image quality or scale is missing
   status: {
     type: DataTypes.TEXT,
     allowNull: false,
-    validate: { isIn: [['fail', 'estimated_fail', 'pass']] },
+    validate: { isIn: [[
+      'PASS',
+      'POTENTIAL NON-COMPLIANCE',
+      'MANUAL REVIEW',
+      'NOT APPLICABLE',
+      'NOT VERIFIED',
+      // Legacy aliases kept for backward compat during migration:
+      'fail', 'estimated_fail', 'pass',
+    ]] },
   },
 
   // ── Finding detail ────────────────────────────────────────────────────────
@@ -279,14 +304,22 @@ const Violation = sequelize.define('Violation', {
     type: DataTypes.TEXT,
     allowNull: true,
     validate: { isIn: [['high', 'medium', 'low', null]] },
-    comment: 'null for pass results',
+    comment: 'null for PASS / NOT APPLICABLE results',
   },
   detail: {
     type: DataTypes.TEXT,
     allowNull: true,
   },
 
-  // ── Confidence (spec 02 key differentiator) ───────────────────────────────
+  // ── Rule version (blueprint §1 — store rule version with every result) ────
+  ruleVersion: {
+    type: DataTypes.TEXT,
+    allowNull: true,
+    field: 'rule_version',
+    defaultValue: 'LM-PC-2011-v1.0',
+  },
+
+  // ── Confidence (blueprint §5 CV requirements) ─────────────────────────────
   // 'high'      = presence/pattern check — reliable
   // 'estimated' = image analysis (font/PDP) — approximate
   confidence: {

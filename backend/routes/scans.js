@@ -34,9 +34,11 @@ const ok = (res, data, status = 200) => res.status(status).json({ data });
 const fail = (res, status, code, message) =>
   res.status(status).json({ error: { code, message } });
 
-// Rules engine 'estimated' → DB 'estimated_fail'
+// Rules engine status → DB status
+// Blueprint 5-status: PASS, POTENTIAL NON-COMPLIANCE, MANUAL REVIEW, NOT APPLICABLE, NOT VERIFIED
+// These are stored as-is in the DB. No translation needed.
 function toDbStatus(engineStatus) {
-  return engineStatus === 'estimated' ? 'estimated_fail' : engineStatus;
+  return engineStatus; // Store blueprint statuses directly
 }
 
 // Infer product category from extracted fields
@@ -95,8 +97,8 @@ async function runScanPipeline(scan, imagePath, sourceType) {
       status:           'complete',
     });
 
-    // Step 6: Save violations (fail + estimated_fail only)
-    const violationsToSave = violations.filter(v => v.status !== 'pass');
+    // Step 6: Save all non-PASS violations (POTENTIAL NON-COMPLIANCE, MANUAL REVIEW, NOT VERIFIED)
+    const violationsToSave = violations.filter(v => v.status !== 'PASS' && v.status !== 'pass');
     if (violationsToSave.length > 0) {
       await Violation.bulkCreate(
         violationsToSave.map(v => ({
@@ -108,6 +110,7 @@ async function runScanPipeline(scan, imagePath, sourceType) {
           severity:     v.severity,
           detail:       v.detail,
           confidence:   v.confidence,
+          ruleVersion:  v.rule_version || 'LM-PC-2011-v1.0',
         }))
       );
     }
@@ -356,19 +359,20 @@ function formatScanFull(scan) {
       brand_name:   scan.product.brandName,
       category:     scan.product.category,
     } : null,
-    // Violations — spec 05 shape exactly
+    // Violations — spec 05 shape with blueprint 5-status
     violations: (scan.violations || []).map(v => ({
-      id:         v.id,
-      rule_id:    v.ruleId,
-      ruleId:     v.ruleId,    // camelCase alias
-      rule_title: v.ruleTitle,
-      ruleTitle:  v.ruleTitle,
-      status:     v.status,    // 'fail' | 'estimated_fail' | 'pass'
-      field:      v.affectedField,
+      id:          v.id,
+      rule_id:     v.ruleId,
+      ruleId:      v.ruleId,       // camelCase alias
+      rule_title:  v.ruleTitle,
+      ruleTitle:   v.ruleTitle,
+      status:      v.status,       // Blueprint 5-status string
+      field:       v.affectedField,
       affectedField: v.affectedField,
-      severity:   v.severity,
-      detail:     v.detail,
-      confidence: v.confidence,
+      severity:    v.severity,
+      detail:      v.detail,
+      confidence:  v.confidence,
+      rule_version: v.ruleVersion || 'LM-PC-2011-v1.0',
     })),
     // Latest report (if generated)
     report: scan.reports?.[0] ? {
