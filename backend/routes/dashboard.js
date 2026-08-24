@@ -109,6 +109,9 @@ router.get('/stats', optionalAuth, async (req, res) => {
       })),
       top_non_compliant:    topNonCompliant,
     });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
 // ─── GET /api/dashboard/products ─────────────────────────────────────────────
