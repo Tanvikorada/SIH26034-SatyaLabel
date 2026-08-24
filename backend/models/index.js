@@ -7,13 +7,28 @@
 const { Sequelize, DataTypes } = require('sequelize');
 const config = require('../config');
 
-const sequelize = new Sequelize(config.db.name, config.db.user, config.db.password, {
-  host: config.db.host,
-  port: config.db.port,
-  dialect: 'postgres',
+const sequelizeOptions = {
   logging: config.server.nodeEnv === 'development' ? false : false,
   pool: { max: 5, min: 0, acquire: 30000, idle: 10000 },
-});
+};
+
+const sequelize = config.db.url
+  ? new Sequelize(config.db.url, {
+      ...sequelizeOptions,
+      dialect: 'postgres',
+      dialectOptions: {
+        ssl: {
+          require: true,
+          rejectUnauthorized: false
+        }
+      }
+    })
+  : new Sequelize(config.db.name, config.db.user, config.db.password, {
+      ...sequelizeOptions,
+      host: config.db.host,
+      port: config.db.port,
+      dialect: 'postgres',
+    });
 
 // ─── TABLE: users ─────────────────────────────────────────────────────────────
 // Enforcement officers and admins

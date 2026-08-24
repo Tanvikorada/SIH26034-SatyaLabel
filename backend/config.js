@@ -8,6 +8,7 @@ const config = {
     nodeEnv: process.env.NODE_ENV || 'development',
   },
   db: {
+    url: process.env.DATABASE_URL,
     host: process.env.DB_HOST || 'localhost',
     port: parseInt(process.env.DB_PORT) || 5432,
     name: process.env.DB_NAME || 'satyalabel',
