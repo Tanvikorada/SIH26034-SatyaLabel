@@ -7,10 +7,9 @@ databases:
 services:
   - type: web
     name: satyalabel-backend
-    env: node
+    env: docker
     plan: free
-    buildCommand: "apt-get update && apt-get install -y tesseract-ocr && npm install"
-    startCommand: "npm start"
+    rootDir: backend
     envVars:
       - key: NODE_ENV
         value: production
