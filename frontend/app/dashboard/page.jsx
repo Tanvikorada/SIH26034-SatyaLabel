@@ -49,19 +49,19 @@ export default function Dashboard() {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-10">
           <div className="mello-card-flat p-6">
             <div className="text-[13px] text-fog mb-2">Total Scans</div>
-            <div className="text-[32px] font-medium tracking-tight text-white">{stats.total_scans}</div>
+            <div className="text-[32px] font-medium tracking-tight text-white">{stats.total_scans || 0}</div>
           </div>
           <div className="mello-card-flat p-6">
             <div className="text-[13px] text-fog mb-2">Compliant</div>
-            <div className="text-[32px] font-medium tracking-tight text-white">{stats.compliant}</div>
+            <div className="text-[32px] font-medium tracking-tight text-white">{stats.compliant_count ?? stats.compliant ?? 0}</div>
           </div>
           <div className="mello-card-flat p-6 border-t-2 border-t-[#f87171]">
             <div className="text-[13px] text-fog mb-2">Violations</div>
-            <div className="text-[32px] font-medium tracking-tight text-[#f87171]">{stats.violations}</div>
+            <div className="text-[32px] font-medium tracking-tight text-[#f87171]">{stats.non_compliant_count ?? stats.violations ?? 0}</div>
           </div>
           <div className="mello-card-flat p-6 border-t-2 border-t-[#fbbf24]">
             <div className="text-[13px] text-fog mb-2">Manual Review</div>
-            <div className="text-[32px] font-medium tracking-tight text-[#fbbf24]">{stats.manual_review}</div>
+            <div className="text-[32px] font-medium tracking-tight text-[#fbbf24]">{stats.needs_review_count ?? stats.manual_review ?? 0}</div>
           </div>
         </div>
 
@@ -78,7 +78,7 @@ export default function Dashboard() {
                     <div className="text-[14px] font-medium text-white">{scan.product_name || 'Unknown Product'}</div>
                     <div className="text-[12px] text-fog">{new Date(scan.created_at).toLocaleString()}</div>
                   </div>
-                  <div className={getBadgeClass(scan.status)}>{scan.status}</div>
+                  <div className={getBadgeClass(scan.overall_compliance || scan.overallStatus || scan.status)}>{scan.overall_compliance || scan.overallStatus || scan.status}</div>
                 </div>
               ))}
             </div>
@@ -88,7 +88,7 @@ export default function Dashboard() {
             <h3 className="text-[16px] font-medium tracking-tight mb-6">Top Violated Rules</h3>
             <div className="h-[300px]">
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={stats.top_violated_rules || []} margin={{ top: 0, right: 0, left: -20, bottom: 0 }}>
+                <BarChart data={(stats.top_violated_rules || []).map(r => ({ rule_id: r.ruleId || r.rule_id, count: Number(r.count) }))} margin={{ top: 0, right: 0, left: -20, bottom: 0 }}>
                   <XAxis dataKey="rule_id" axisLine={false} tickLine={false} tick={{fill: '#888b91', fontSize: 12}} />
                   <YAxis axisLine={false} tickLine={false} tick={{fill: '#888b91', fontSize: 12}} />
                   <Tooltip cursor={{fill: '#1c1d1f'}} contentStyle={{backgroundColor: '#0f0f10', border: '1px solid #333', borderRadius: '9px', color: '#fff'}} />

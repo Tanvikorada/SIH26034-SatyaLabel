@@ -15,7 +15,8 @@ export default function RulesPage() {
         const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'https://satyalabel-backend.onrender.com/api/v1'}/rules`);
         if (!res.ok) throw new Error("API Error");
         const json = await res.json();
-        setRules(json.data || json || []);
+        const d = json.data || json;
+        setRules(Array.isArray(d) ? d : (d.rules || []));
       } catch {
         setRules([{ rule_id: 'C01', name: 'Product Name', description: 'Must have product name', severity: 'high', active: true }]);
       } finally { setLoading(false); }

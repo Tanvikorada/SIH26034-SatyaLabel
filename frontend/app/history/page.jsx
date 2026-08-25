@@ -15,7 +15,8 @@ export default function HistoryPage() {
         const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'https://satyalabel-backend.onrender.com/api/v1'}/scans`);
         if (!res.ok) throw new Error("API Error");
         const json = await res.json();
-        setScans(json.data || json || []);
+        const d = json.data || json;
+        setScans(Array.isArray(d) ? d : (d.scans || []));
       } catch {
         setScans([{ id: 'mock1', product: { product_name: 'Mock Product' }, status: 'PASS', overall_compliance: 'PASS', createdAt: new Date().toISOString() }]);
       } finally { setLoading(false); }
