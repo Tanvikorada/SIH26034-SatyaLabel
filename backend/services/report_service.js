@@ -21,10 +21,24 @@ const COLORS = {
 };
 
 /**
+ * Sanitize text for WinAnsi encoding (StandardFonts.Helvetica)
+ */
+function sanitize(str) {
+  if (typeof str !== 'string') return '';
+  return str
+    .replace(/\u2248/g, '~')       // approx
+    .replace(/\u20B9/g, 'Rs.')     // rupee
+    .replace(/[\u201C\u201D]/g, '"') // smart quotes
+    .replace(/[\u2018\u2019]/g, "'") // smart quotes
+    .replace(/\u2014/g, '-')       // em dash
+    .replace(/[^\x20-\x7E\xA0-\xFF]/g, ''); // Keep standard printable ASCII & Latin-1
+}
+
+/**
  * Truncate text to max length with ellipsis
  */
 function truncate(str, max = 80) {
-  const s = String(str || '');
+  const s = sanitize(String(str || ''));
   return s.length > max ? s.slice(0, max - 3) + '...' : s;
 }
 
@@ -52,13 +66,22 @@ async function generateReport(scan, outputDir = './reports') {
   const helvetica = await pdfDoc.embedFont(StandardFonts.Helvetica);
   const helveticaBold = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
 
+  // Override drawText to automatically sanitize all strings for WinAnsi
+  const overrideDrawText = (page) => {
+    const originalDrawText = page.drawText.bind(page);
+    page.drawText = (text, options) => {
+      originalDrawText(sanitize(String(text)), options);
+    };
+    return page;
+  };
+
   const pageW = 595; // A4 width in points
   const pageH = 842; // A4 height in points
   const margin = 50;
   const contentW = pageW - margin * 2;
 
   // ── PAGE 1: Header + Overview ──────────────────────────────────────────────
-  const page1 = pdfDoc.addPage([pageW, pageH]);
+  const page1 = overrideDrawText(pdfDoc.addPage([pageW, pageH]));
 
   // Header bar
   drawRect(page1, 0, pageH - 80, pageW, 80, COLORS.darkBlue);
@@ -254,7 +277,7 @@ async function generateReport(scan, outputDir = './reports') {
   const violations = scan.violations || [];
 
   const addViolationsPage = async () => {
-    const page = pdfDoc.addPage([pageW, pageH]);
+    const page = overrideDrawText(pdfDoc.addPage([pageW, pageH]));
     let vy = pageH - 60;
 
     // Page header
