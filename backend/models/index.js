@@ -312,12 +312,12 @@ const Violation = sequelize.define('Violation', {
   },
 
   // ── Rule version (blueprint §1 — store rule version with every result) ────
-  ruleVersion: {
-    type: DataTypes.TEXT,
-    allowNull: true,
-    field: 'rule_version',
-    defaultValue: 'LM-PC-2011-v1.0',
-  },
+  // ruleVersion: {
+  //   type: DataTypes.TEXT,
+  //   allowNull: true,
+  //   field: 'rule_version',
+  //   defaultValue: 'LM-PC-2011-v1.0',
+  // },
 
   // ── Confidence (blueprint §5 CV requirements) ─────────────────────────────
   // 'high'      = presence/pattern check — reliable
