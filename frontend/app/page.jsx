@@ -350,6 +350,142 @@ function PixelsToPenalty() {
   );
 }
 
+function InteractivePipelineCard({ title, icon: Icon, children }) {
+  return (
+    <div className="mello-card p-6 flex flex-col gap-4 h-full relative">
+      <div className="flex items-center gap-3 mb-2">
+        <div className="w-8 h-8 rounded-full bg-[var(--color-background)] border border-[var(--color-border)] flex items-center justify-center text-[var(--color-primary)]">
+          <Icon size={16} />
+        </div>
+        <h3 className="font-medium text-[var(--color-text-primary)]">{title}</h3>
+      </div>
+      <div className="flex-1">
+        {children}
+      </div>
+    </div>
+  );
+}
+
+function UploadMicroApp() {
+  const [state, setState] = useState('empty'); // empty -> uploaded
+  return (
+    <div className="flex flex-col gap-4 h-full">
+      <div className="flex-1 border-2 border-dashed border-[var(--color-border)] rounded-lg bg-[var(--color-background)] flex items-center justify-center p-4 overflow-hidden relative transition-all duration-300">
+        {state === 'empty' ? (
+          <div className="flex flex-col items-center gap-2 opacity-50">
+            <ImageIcon size={24} />
+            <span className="text-xs">No image selected</span>
+          </div>
+        ) : (
+          <motion.img 
+            initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} 
+            src="https://images.unsplash.com/photo-1584916201218-f4242ceb4809?auto=format&fit=crop&q=80&w=400&h=300" 
+            className="absolute inset-0 w-full h-full object-cover" alt="Uploaded" 
+          />
+        )}
+      </div>
+      <button 
+        onClick={() => setState(s => s === 'empty' ? 'uploaded' : 'empty')}
+        className="mello-btn-secondary w-full active:scale-[0.98]"
+      >
+        {state === 'empty' ? 'Choose Photo' : 'Reset'}
+      </button>
+    </div>
+  );
+}
+
+function OCRMicroApp() {
+  const [state, setState] = useState('idle'); // idle -> scanning -> done
+  return (
+    <div className="flex flex-col gap-4 h-full">
+      <div className="flex-1 border border-[var(--color-border)] rounded-lg bg-[var(--color-surface)] p-3 relative overflow-hidden font-mono text-[10px] text-[var(--color-text-secondary)] leading-relaxed flex flex-col justify-end transition-all">
+        {state === 'idle' && <div className="opacity-50 m-auto text-center text-xs">Ready to extract</div>}
+        {state === 'scanning' && (
+          <>
+            <motion.div className="absolute top-0 left-0 right-0 h-1 bg-[var(--color-accent)] z-10 shadow-[0_0_8px_var(--color-accent)]"
+              animate={{ top: ['0%', '100%'] }} transition={{ duration: 1.5, repeat: Infinity, ease: "linear" }}
+            />
+            <div className="opacity-30 blur-[1px]">Processing pixel data...<br/>Extracting text regions...</div>
+          </>
+        )}
+        {state === 'done' && (
+          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="flex flex-col gap-1">
+            <div><span className="text-[var(--color-text-muted)]">mrp:</span> "Rs. 50"</div>
+            <div><span className="text-[var(--color-text-muted)]">net_wt:</span> "100g"</div>
+            <div><span className="text-[var(--color-text-muted)]">date:</span> "01/24"</div>
+          </motion.div>
+        )}
+      </div>
+      <button 
+        onClick={() => {
+          if (state === 'idle') {
+            setState('scanning');
+            setTimeout(() => setState('done'), 1500);
+          } else {
+            setState('idle');
+          }
+        }}
+        disabled={state === 'scanning'}
+        className="mello-btn-primary w-full active:scale-[0.98] disabled:opacity-50"
+      >
+        {state === 'idle' ? 'Run Extraction' : state === 'scanning' ? 'Extracting...' : 'Reset'}
+      </button>
+    </div>
+  );
+}
+
+function RuleMicroApp() {
+  const rules = [
+    { id: 'Rule 6(1)(f)', stat: 'POTENTIAL NON-COMPLIANCE', cls: 'mello-badge-fail' },
+    { id: 'Rule 6(1)(a)', stat: 'PASS', cls: 'mello-badge-pass' },
+    { id: 'Rule 31', stat: 'NOT APPLICABLE', cls: 'mello-badge-na' }
+  ];
+  const [idx, setIdx] = useState(0);
+
+  return (
+    <div className="flex flex-col gap-4 h-full">
+      <div className="flex-1 border border-[var(--color-border)] rounded-lg bg-[var(--color-background)] p-4 flex flex-col items-center justify-center gap-3 overflow-hidden">
+        <div className="font-mono text-xs px-2 py-1 bg-[var(--color-surface)] border border-[var(--color-border)] rounded">
+          {rules[idx].id}
+        </div>
+        <AnimatePresence mode="wait">
+          <motion.div 
+            key={idx}
+            initial={{ scale: 0.8, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.8, opacity: 0 }}
+            className={`text-[9px] font-bold text-center ${rules[idx].cls}`}
+          >
+            {rules[idx].stat}
+          </motion.div>
+        </AnimatePresence>
+      </div>
+      <button 
+        onClick={() => setIdx(i => (i + 1) % rules.length)}
+        className="mello-btn-secondary w-full active:scale-[0.98]"
+      >
+        Next Rule →
+      </button>
+    </div>
+  );
+}
+
+function PipelineSection() {
+  return (
+    <section className="py-24 px-6 md:px-12 max-w-[1200px] mx-auto relative z-10">
+      <div className="mb-12 text-center">
+        <h2 className="text-3xl font-medium tracking-tight mb-3">Interactive Pipeline</h2>
+        <p className="text-[var(--color-text-secondary)]">Experience each automated stage. Click the buttons below.</p>
+      </div>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 auto-rows-[280px]">
+        <InteractivePipelineCard title="1. Upload" icon={Upload}><UploadMicroApp /></InteractivePipelineCard>
+        <InteractivePipelineCard title="2. OCR Engine" icon={ScanLine}><OCRMicroApp /></InteractivePipelineCard>
+        <InteractivePipelineCard title="3. Rule Engine" icon={Scale}><RuleMicroApp /></InteractivePipelineCard>
+      </div>
+    </section>
+  );
+}
+
+// ─── PHASE 4: The Case File (Transformation) ──────────────────────────────
+
 function TheCaseFile() {
   const [sliderVal, setSliderVal] = useState(5);
   const [isResolved, setIsResolved] = useState(false);
@@ -583,7 +719,92 @@ function TechStack() {
       <div className="flex flex-col md:flex-row justify-center items-stretch gap-6 md:gap-12 w-full max-w-[1000px] mx-auto">
         
         {/* Zone 1: Frontend */}
+        <div className="flex-1 border border-[var(--color-border)] rounded-xl p-5 bg-[var(--color-surface)] shadow-[0_1px_2px_rgba(11,31,58,0.04),0_4px_12px_rgba(11,31,58,0.06)] relative group">
+          <div className="absolute -top-3 left-4 bg-[var(--color-background)] px-2 text-[10px] font-mono text-[var(--color-text-muted)] uppercase tracking-wider">Frontend</div>
+          <div className="flex flex-wrap gap-4 mt-2 justify-center">
+            <div className="flex flex-col items-center gap-1 group/node cursor-help" title="Next.js Framework">
+              <div className="w-10 h-10 rounded border border-[var(--color-border)] bg-[var(--color-background)] flex items-center justify-center hover:border-[var(--color-accent)] transition-colors"><SiNextdotjs size={18} className="text-text-primary" /></div>
+              <span className="text-[10px] text-[var(--color-text-muted)] group-hover/node:text-[var(--color-primary)]">Next.js</span>
+            </div>
+            <div className="flex flex-col items-center gap-1 group/node cursor-help" title="React">
+              <div className="w-10 h-10 rounded border border-[var(--color-border)] bg-[var(--color-background)] flex items-center justify-center hover:border-[var(--color-accent)] transition-colors"><SiReact size={18} className="text-[#61DAFB]" /></div>
+              <span className="text-[10px] text-[var(--color-text-muted)] group-hover/node:text-[var(--color-primary)]">React</span>
+            </div>
+            <div className="flex flex-col items-center gap-1 group/node cursor-help" title="Tailwind CSS">
+              <div className="w-10 h-10 rounded border border-[var(--color-border)] bg-[var(--color-background)] flex items-center justify-center hover:border-[var(--color-accent)] transition-colors"><SiTailwindcss size={18} className="text-[#06B6D4]" /></div>
+              <span className="text-[10px] text-[var(--color-text-muted)] group-hover/node:text-[var(--color-primary)]">Tailwind</span>
+            </div>
+          </div>
+          
+          {/* Connector Beam Right */}
+          <div className="hidden md:block absolute top-1/2 -right-12 w-12 h-px bg-[var(--color-border)]">
+             <motion.div className="h-full bg-[var(--color-accent)] shadow-[0_0_8px_var(--color-accent)]" initial={{ width: 0 }} animate={{ width: '100%', x: '100%' }} transition={{ duration: 1.5, repeat: Infinity, ease: 'linear' }} />
+          </div>
+        </div>
 
+        {/* Zone 2: Backend & DB */}
+        <div className="flex-1 border border-[var(--color-border)] rounded-xl p-5 bg-[var(--color-surface)] shadow-[0_1px_2px_rgba(11,31,58,0.04),0_4px_12px_rgba(11,31,58,0.06)] relative group">
+          <div className="absolute -top-3 left-4 bg-[var(--color-background)] px-2 text-[10px] font-mono text-[var(--color-text-muted)] uppercase tracking-wider">Backend & DB</div>
+          <div className="flex flex-wrap gap-4 mt-2 justify-center">
+            <div className="flex flex-col items-center gap-1 group/node cursor-help" title="Express.js Server">
+              <div className="w-10 h-10 rounded border border-[var(--color-border)] bg-[var(--color-background)] flex items-center justify-center hover:border-[var(--color-accent)] transition-colors"><Server size={18} className="text-text-primary" /></div>
+              <span className="text-[10px] text-[var(--color-text-muted)] group-hover/node:text-[var(--color-primary)]">Express</span>
+            </div>
+            <div className="flex flex-col items-center gap-1 group/node cursor-help" title="PostgreSQL Database">
+              <div className="w-10 h-10 rounded border border-[var(--color-border)] bg-[var(--color-background)] flex items-center justify-center hover:border-[var(--color-accent)] transition-colors"><SiPostgresql size={18} className="text-[#4169E1]" /></div>
+              <span className="text-[10px] text-[var(--color-text-muted)] group-hover/node:text-[var(--color-primary)]">Postgres</span>
+            </div>
+          </div>
+          
+          {/* Connector Beam Right */}
+          <div className="hidden md:block absolute top-1/2 -right-12 w-12 h-px bg-[var(--color-border)]">
+             <motion.div className="h-full bg-[var(--color-accent)] shadow-[0_0_8px_var(--color-accent)]" initial={{ width: 0 }} animate={{ width: '100%', x: '100%' }} transition={{ duration: 1.5, repeat: Infinity, ease: 'linear', delay: 0.5 }} />
+          </div>
+        </div>
+
+        {/* Zone 3: AI & Extraction */}
+        <div className="flex-1 border border-[var(--color-border)] rounded-xl p-5 bg-[var(--color-surface)] shadow-[0_1px_2px_rgba(11,31,58,0.04),0_4px_12px_rgba(11,31,58,0.06)] relative group">
+          <div className="absolute -top-3 left-4 bg-[var(--color-background)] px-2 text-[10px] font-mono text-[var(--color-text-muted)] uppercase tracking-wider">AI & Extraction</div>
+          <div className="flex flex-wrap gap-4 mt-2 justify-center">
+            <div className="flex flex-col items-center gap-1 group/node cursor-help" title="Tesseract OCR">
+              <div className="w-10 h-10 rounded border border-[var(--color-border)] bg-[var(--color-background)] flex items-center justify-center hover:border-[var(--color-accent)] transition-colors"><FileSearch size={18} className="text-text-primary" /></div>
+              <span className="text-[10px] text-[var(--color-text-muted)] group-hover/node:text-[var(--color-primary)]">Tesseract</span>
+            </div>
+            <div className="flex flex-col items-center gap-1 group/node cursor-help" title="Gemini 1.5 Vision">
+              <div className="w-10 h-10 rounded border border-[var(--color-border)] bg-[var(--color-background)] flex items-center justify-center hover:border-[var(--color-accent)] transition-colors"><SiGoogle size={18} className="text-[#4285F4]" /></div>
+              <span className="text-[10px] text-[var(--color-text-muted)] group-hover/node:text-[var(--color-primary)]">Gemini</span>
+            </div>
+          </div>
+          
+          {/* Connector Beam Right */}
+          <div className="hidden md:block absolute top-1/2 -right-12 w-12 h-px bg-[var(--color-border)]">
+             <motion.div className="h-full bg-[var(--color-accent)] shadow-[0_0_8px_var(--color-accent)]" initial={{ width: 0 }} animate={{ width: '100%', x: '100%' }} transition={{ duration: 1.5, repeat: Infinity, ease: 'linear', delay: 1.0 }} />
+          </div>
+        </div>
+        
+        {/* Zone 4: Deployment */}
+        <div className="flex-1 border border-[var(--color-border)] rounded-xl p-5 bg-[var(--color-surface)] shadow-[0_1px_2px_rgba(11,31,58,0.04),0_4px_12px_rgba(11,31,58,0.06)] relative group">
+          <div className="absolute -top-3 left-4 bg-[var(--color-background)] px-2 text-[10px] font-mono text-[var(--color-text-muted)] uppercase tracking-wider">Deployment</div>
+          <div className="flex flex-wrap gap-4 mt-2 justify-center">
+            <div className="flex flex-col items-center gap-1 group/node cursor-help" title="Vercel Hosting">
+              <div className="w-10 h-10 rounded border border-[var(--color-border)] bg-[var(--color-background)] flex items-center justify-center hover:border-[var(--color-accent)] transition-colors"><SiVercel size={18} className="text-text-primary" /></div>
+              <span className="text-[10px] text-[var(--color-text-muted)] group-hover/node:text-[var(--color-primary)]">Vercel</span>
+            </div>
+            <div className="flex flex-col items-center gap-1 group/node cursor-help" title="GitHub Repo">
+              <div className="w-10 h-10 rounded border border-[var(--color-border)] bg-[var(--color-background)] flex items-center justify-center hover:border-[var(--color-accent)] transition-colors"><SiGithub size={18} className="text-text-primary" /></div>
+              <span className="text-[10px] text-[var(--color-text-muted)] group-hover/node:text-[var(--color-primary)]">GitHub</span>
+            </div>
+            <div className="flex flex-col items-center gap-1 group/node cursor-help" title="Render API">
+              <div className="w-10 h-10 rounded border border-[var(--color-border)] bg-[var(--color-background)] flex items-center justify-center hover:border-[var(--color-accent)] transition-colors"><SiRender size={18} className="text-text-primary" /></div>
+              <span className="text-[10px] text-[var(--color-text-muted)] group-hover/node:text-[var(--color-primary)]">Render</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+  );
+}
 export default function LandingPage() {
   return (
     <div className="min-h-screen flex flex-col relative overflow-hidden"
