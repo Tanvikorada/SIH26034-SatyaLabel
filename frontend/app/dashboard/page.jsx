@@ -8,6 +8,7 @@ export default function Dashboard() {
   const router = useRouter();
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [greeting, setGreeting] = useState('Welcome');
 
   const API = process.env.NEXT_PUBLIC_API_URL || 'https://satyalabel-backend.onrender.com/api/v1';
 
@@ -16,6 +17,12 @@ export default function Dashboard() {
       router.push('/login');
       return;
     }
+
+    const hour = new Date().getHours();
+    if (hour < 12) setGreeting('Good Morning');
+    else if (hour < 18) setGreeting('Good Afternoon');
+    else setGreeting('Good Evening');
+
     const fetchStats = async () => {
       try {
         const res = await fetch(`${API}/dashboard/stats`, {
@@ -46,7 +53,7 @@ export default function Dashboard() {
     <div className={`gov-card p-5 border-l-4 ${colorClass}`}>
       <div className="flex items-start justify-between">
         <div>
-          <p className="text-sm font-medium text-gray-500 uppercase tracking-wider">{title}</p>
+          <p className="text-sm font-semibold text-gray-500 uppercase tracking-wider">{title}</p>
           <p className="text-3xl font-bold text-[#0f172a] mt-2">{value}</p>
         </div>
         <div className="p-2 bg-gray-50 rounded">
@@ -56,13 +63,28 @@ export default function Dashboard() {
     </div>
   );
 
+  const ProgressBar = ({ label, count, total, color }) => {
+    const pct = Math.round((count / total) * 100) || 0;
+    return (
+      <div className="mb-4">
+        <div className="flex justify-between text-sm font-semibold mb-1">
+          <span className="text-[#0f172a]">{label}</span>
+          <span className="text-gray-600">{count} ({pct}%)</span>
+        </div>
+        <div className="w-full bg-gray-200 rounded-full h-2.5">
+          <div className="h-2.5 rounded-full" style={{ width: `${pct}%`, backgroundColor: color }}></div>
+        </div>
+      </div>
+    );
+  };
+
   if (loading) return <div className="p-8 text-center">Loading Data...</div>;
 
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-2xl font-bold text-[#0f172a]">Officer Dashboard</h1>
-        <p className="text-gray-500">Live inspection metrics and recent scans</p>
+        <h1 className="text-2xl font-bold text-[#0f172a]">{greeting}, {localStorage.getItem('email')?.split('@')[0] || 'Officer'}</h1>
+        <p className="text-gray-500">{new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -106,17 +128,11 @@ export default function Dashboard() {
         </div>
 
         <div className="space-y-4">
-          <h2 className="text-lg font-bold text-[#0f172a]">Quick Actions</h2>
-          <div className="gov-card p-4 space-y-3">
-            <button onClick={() => router.push('/upload')} className="w-full gov-btn-accent">
-              New Scan
-            </button>
-            <button onClick={() => router.push('/history')} className="w-full gov-btn-outline">
-              View All History
-            </button>
-            <button onClick={() => router.push('/rules')} className="w-full gov-btn-outline">
-              Rule Configuration
-            </button>
+          <h2 className="text-lg font-bold text-[#0f172a]">Compliance Overview</h2>
+          <div className="gov-card p-6">
+            <ProgressBar label="Pass" count={stats.compliant} total={stats.total_scans} color="#059669" />
+            <ProgressBar label="Potential Non-Compliance" count={stats.violations} total={stats.total_scans} color="#dc2626" />
+            <ProgressBar label="Manual Review" count={stats.pending} total={stats.total_scans} color="#d97706" />
           </div>
         </div>
       </div>
