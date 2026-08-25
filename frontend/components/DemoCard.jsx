@@ -2,11 +2,11 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
-export default function DemoCard({ steps, autoPlay = true, loop = true }) {
+export default function DemoCard({ steps, autoPlay = true, loop = true, showCursor = false }) {
   const [currentStep, setCurrentStep] = useState(0);
+  const [isTapping, setIsTapping] = useState(false);
 
   useEffect(() => {
-    // Respect prefers-reduced-motion
     const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     if (prefersReduced) {
       setCurrentStep(steps.length - 1);
@@ -16,11 +16,19 @@ export default function DemoCard({ steps, autoPlay = true, loop = true }) {
     if (!autoPlay || steps.length === 0) return;
     
     let timeoutId;
+    let tapTimeoutId;
+
     const playNext = () => {
       const step = steps[currentStep];
       const duration = step.durationMs || 2500;
       
+      // Trigger tap animation 300ms before state change if cursor is enabled
+      if (showCursor && currentStep === 0) {
+        tapTimeoutId = setTimeout(() => setIsTapping(true), duration - 300);
+      }
+      
       timeoutId = setTimeout(() => {
+        setIsTapping(false);
         if (currentStep < steps.length - 1) {
           setCurrentStep(c => c + 1);
         } else if (loop) {
@@ -30,8 +38,11 @@ export default function DemoCard({ steps, autoPlay = true, loop = true }) {
     };
     
     playNext();
-    return () => clearTimeout(timeoutId);
-  }, [currentStep, autoPlay, steps, loop]);
+    return () => {
+      clearTimeout(timeoutId);
+      clearTimeout(tapTimeoutId);
+    };
+  }, [currentStep, autoPlay, steps, loop, showCursor]);
 
   const handleTap = () => {
     const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -52,10 +63,10 @@ export default function DemoCard({ steps, autoPlay = true, loop = true }) {
 
   return (
     <div 
-      className={`mello-card-flat flex flex-col overflow-hidden w-full h-[320px] ${!autoPlay ? 'cursor-pointer hover:border-mist transition-colors group' : ''}`}
+      className={`mello-card-flat shadow-[inset_0_1px_0_rgba(255,255,255,0.05)] flex flex-col overflow-hidden w-full h-[320px] relative ${!autoPlay ? 'cursor-pointer hover:border-mist transition-colors group' : ''}`}
       onClick={handleTap}
     >
-      <div className="flex justify-between items-center px-4 py-3 border-b border-graphite bg-charcoal/50">
+      <div className="flex justify-between items-center px-4 py-3 border-b border-graphite bg-charcoal/50 z-10">
         <span className="text-[12px] font-medium text-mist uppercase tracking-widest">{step.label}</span>
         {!autoPlay && (
           <span className="text-[11px] text-fog opacity-0 group-hover:opacity-100 transition-opacity">Tap to advance &rarr;</span>
@@ -75,10 +86,27 @@ export default function DemoCard({ steps, autoPlay = true, loop = true }) {
             {step.content}
           </motion.div>
         </AnimatePresence>
+
+        {showCursor && currentStep === 0 && (
+          <motion.div 
+            className="absolute z-50 w-6 h-6 rounded-full bg-white/20 backdrop-blur-md border border-white/40 shadow-lg pointer-events-none"
+            initial={{ opacity: 0, x: 20, y: 30 }}
+            animate={{ 
+              opacity: 1, 
+              x: 0, 
+              y: 0,
+              scale: isTapping ? 0.7 : 1,
+              backgroundColor: isTapping ? 'rgba(255,255,255,0.4)' : 'rgba(255,255,255,0.2)'
+            }}
+            exit={{ opacity: 0 }}
+            transition={{ type: "spring", stiffness: 200, damping: 20 }}
+            style={{ right: '40%', bottom: '30%' }}
+          />
+        )}
       </div>
       
       {/* Progress Indicator */}
-      <div className="h-1 w-full bg-charcoal flex">
+      <div className="h-1 w-full bg-charcoal flex z-10">
          {steps.map((_, i) => (
            <div 
              key={i} 

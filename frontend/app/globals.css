@@ -59,3 +59,12 @@
     @apply border-b border-graphite transition-colors hover:bg-charcoal/50;
   }
 }
+
+@theme {
+  --animate-scan: scan 2.5s linear infinite;
+  @keyframes scan {
+    0% { transform: translateY(-100%); }
+    100% { transform: translateY(180px); }
+  }
+}
+
