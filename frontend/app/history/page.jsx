@@ -13,6 +13,7 @@ export default function HistoryPage() {
     const fetchScans = async () => {
       try {
         const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'https://satyalabel-backend.onrender.com/api/v1'}/scans`);
+        if (!res.ok) throw new Error("API Error");
         const json = await res.json();
         setScans(json.data || json || []);
       } catch {

@@ -19,7 +19,8 @@ export default function Dashboard() {
   const fetchStats = async () => {
     try {
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'https://satyalabel-backend.onrender.com/api/v1'}/dashboard/stats`);
-      const json = await res.json();
+      if (!res.ok) throw new Error("API Error");
+        const json = await res.json();
       const d = json.data || json;
       setStats(d);
     } catch {
