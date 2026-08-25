@@ -1,153 +1,260 @@
 "use client";
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { toast } from 'sonner';
-import { openDB } from 'idb';
-import NavBar from '@/components/NavBar';
+import AppLayout from '@/components/AppLayout';
 
-const API = process.env.NEXT_PUBLIC_API_URL || 'https://satyalabel-backend.onrender.com/api/v1';
-
-export default function UploadPage() {
-  const router = useRouter();
+export default function NewScan() {
   const [file, setFile] = useState(null);
-  const [preview, setPreview] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [productName, setProductName] = useState('');
-  const [category, setCategory] = useState('food');
-  const [sourceType, setSourceType] = useState('physical_label');
-  const [logs, setLogs] = useState([]);
+  const router = useRouter();
 
   useEffect(() => {
     if (!localStorage.getItem('token')) router.push('/login');
   }, [router]);
 
-  const saveToSyncQueue = async (fileBlob, metadata) => {
-    try {
-      const db = await openDB('SatyaLabelDB', 1, {
-        upgrade(db) {
-          if (!db.objectStoreNames.contains('sync-queue')) {
-            db.createObjectStore('sync-queue', { keyPath: 'id', autoIncrement: true });
-          }
-        },
-      });
-      await db.add('sync-queue', { file: fileBlob, metadata, status: 'pending', timestamp: Date.now() });
-    } catch (e) {
-      console.error('IDB Error', e);
-    }
-  };
-
-  const handleFile = (e) => {
-    const selected = e.target.files?.[0];
-    if (selected) {
-      setFile(selected);
-      setPreview(URL.createObjectURL(selected));
-    }
-  };
-
-  const handleUpload = async (e) => {
-    e.preventDefault();
-    if (!file) return toast.error('No image selected');
-    
-    setLoading(true);
-    const toastId = toast.loading('Initializing compliance scan...');
-    const metadata = { productName: productName || 'Unknown', category, sourceType, timestamp: new Date().toISOString() };
-    
-    try {
-      const formData = new FormData();
-      formData.append('image', file);
-      formData.append('metadata', JSON.stringify(metadata));
-
-      const res = await fetch(`${API}/scans`, {
-        method: 'POST',
-        headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` },
-        body: formData
-      });
-      if (!res.ok) throw new Error("API Error");
-      const json = await res.json();
-      const responseData = json.data || json;
-      
-      toast.success('Scan complete', { id: toastId });
-      setTimeout(() => router.push(`/results/${responseData.scan_id || responseData.id || 'mock'}`), 1000);
-    } catch (err) {
-      await saveToSyncQueue(file, metadata);
-      toast.warning('Network Offline', { id: toastId, description: 'Scan queued locally.' });
-      setTimeout(() => router.push('/dashboard'), 3000); 
-    }
-  };
-
-  useEffect(() => {
-    if (loading) {
-      const msgs = ['Initializing Vision Engine...', 'Detecting bounding boxes...', 'Extracting textual tokens...', 'Applying Legal Metrology Act...', 'Computing compliance vectors...'];
-      let i = 0;
-      const interval = setInterval(() => {
-        if (i < msgs.length) {
-          setLogs(prev => [...prev, `> ${msgs[i]}`]);
-          i++;
-        }
-      }, 800);
-      return () => clearInterval(interval);
-    }
-  }, [loading]);
-
   return (
-    <div className="min-h-screen bg-background text-text-primary">
-      <NavBar />
-      <div className="max-w-[1000px] mx-auto px-6 py-12">
-        <h1 className="text-[32px] font-medium tracking-tight leading-[1.1] mb-2">Upload Scan</h1>
-        <p className="text-[15px] text-text-secondary mb-10">Submit physical or ecommerce labels for AI compliance checking.</p>
+    <AppLayout>
+      {/*  TopNavBar (Shared Component) - Suppressed for task-focused 'New Scan' flow, but kept for context as requested in strict adherence to hybrid layout  */}
 
-        <div className="grid grid-cols-1 md:grid-cols-5 gap-6">
-          <form onSubmit={handleUpload} className="mello-card p-8 col-span-3 flex flex-col gap-6">
-            <div className="flex flex-col gap-2">
-              <label className="text-[13px] font-medium text-text-primary">Product Image</label>
-              <div className="relative w-full h-[240px] border border-dashed border-border rounded-xl flex flex-col items-center justify-center bg-surface overflow-hidden group hover:border-mist transition-colors">
-                {preview ? (
-                  <img src={preview} alt="Preview" className="w-full h-full object-cover opacity-90 group-hover:opacity-100 transition-opacity" />
-                ) : (
-                  <>
-                     <div className="w-10 h-10 rounded-full bg-border flex items-center justify-center mb-3">
-                       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-                     </div>
-                     <span className="text-[14px] text-text-secondary font-medium">Click or drag image to upload</span>
-                  </>
-                )}
-                <input type="file" accept="image/jpeg,image/png" onChange={handleFile} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" />
-              </div>
-            </div>
 
-            <div className="grid grid-cols-2 gap-4">
-              <div className="flex flex-col gap-2">
-                <label className="text-[13px] font-medium text-text-primary">Product Name (Optional)</label>
-                <input type="text" className="mello-input" placeholder="e.g. Organic Honey" value={productName} onChange={e => setProductName(e.target.value)} />
-              </div>
-              <div className="flex flex-col gap-2">
-                <label className="text-[13px] font-medium text-text-primary">Source Type</label>
-                <select className="mello-input appearance-none" value={sourceType} onChange={e => setSourceType(e.target.value)}>
-                  <option value="physical_label">Physical Label (Package)</option>
-                  <option value="ecommerce_listing">E-Commerce Listing</option>
-                </select>
-              </div>
-            </div>
 
-            <button type="submit" className="mello-btn-primary w-full mt-2" disabled={loading}>
-              {loading ? 'Processing scan...' : 'Run Compliance Check'}
-            </button>
-          </form>
+{/*  Canvas  */}
 
-          <div className="mello-card-flat p-6 col-span-2 flex flex-col h-[480px]">
-            <h3 className="text-[14px] font-medium tracking-tight mb-4 flex items-center gap-2">
-              <div className={`w-2 h-2 rounded-full ${loading ? 'bg-[#4ade80] animate-pulse' : 'bg-border'}`}></div>
-              System Output
-            </h3>
-            <div className="flex-1 font-mono text-[12px] leading-relaxed text-text-muted flex flex-col gap-2 overflow-y-auto bg-background rounded-lg p-4 border border-border">
-              {!loading && logs.length === 0 && <span>Awaiting input payload...</span>}
-              {logs.map((log, i) => (
-                <span key={i} className="text-text-primary animate-in fade-in slide-in-from-bottom-2 duration-300">{log}</span>
-              ))}
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
+<div className="flex-1 overflow-y-auto p-margin-mobile md:p-gutter xl:p-margin-desktop">
+
+<div className="max-w-7xl mx-auto">
+
+{/*  Page Header  */}
+
+<div className="mb-8 border-b border-slate-silver/20 pb-4">
+
+<div className="flex items-center gap-2 mb-2">
+
+<a className="text-slate-silver hover:text-midnight-navy flex items-center gap-1 font-body-md text-body-md" href="#">
+
+<span className="material-symbols-outlined text-sm">arrow_back</span>
+
+                            Back to Overview
+
+                        </a>
+
+</div>
+
+<h2 className="font-headline-md text-headline-md text-midnight-navy">New Regulatory Scan</h2>
+
+<p className="font-body-md text-body-md text-slate-silver mt-1">Configure parameters and initiate an automated compliance assessment.</p>
+
+</div>
+
+{/*  Bento Grid Layout  */}
+
+<div className="grid grid-cols-1 lg:grid-cols-12 gap-gutter">
+
+{/*  Left Column: Inputs & Upload  */}
+
+<div className="lg:col-span-8 flex flex-col gap-6">
+
+{/*  Label Input Parameters Card  */}
+
+<section className="bg-studio-white rounded border border-slate-silver/20">
+
+<div className="px-6 py-4 bg-cloud rounded-t border-b border-slate-silver/20 flex items-center gap-2">
+
+<span className="material-symbols-outlined text-midnight-navy" data-icon="tune">tune</span>
+
+<h3 className="font-headline-sm text-headline-sm text-midnight-navy m-0">Label Input Parameters</h3>
+
+</div>
+
+<div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+
+{/*  Product Name  */}
+
+<div className="col-span-1 md:col-span-2">
+
+<label className="block font-label-caps text-label-caps text-slate-silver uppercase mb-2">Product Name (As listed on packaging)</label>
+
+<input className="w-full bg-studio-white border border-slate-silver/30 rounded px-4 py-2 font-body-md text-body-md text-midnight-navy focus:border-midnight-navy focus:ring-2 focus:ring-midnight-navy/20 outline-none transition-all duration-150" placeholder="e.g., Satya Organic Blend" type="text"/>
+
+</div>
+
+{/*  Manufacturer  */}
+
+<div>
+
+<label className="block font-label-caps text-label-caps text-slate-silver uppercase mb-2">Manufacturer ID / Name</label>
+
+<input className="w-full bg-studio-white border border-slate-silver/30 rounded px-4 py-2 font-body-md text-body-md text-midnight-navy focus:border-midnight-navy focus:ring-2 focus:ring-midnight-navy/20 outline-none transition-all duration-150" placeholder="e.g., MFG-9942" type="text"/>
+
+</div>
+
+{/*  Category Dropdown  */}
+
+<div>
+
+<label className="block font-label-caps text-label-caps text-slate-silver uppercase mb-2">Regulatory Category</label>
+
+<div className="relative">
+
+<select className="w-full bg-studio-white border border-slate-silver/30 rounded px-4 py-2 font-body-md text-body-md text-midnight-navy focus:border-midnight-navy focus:ring-2 focus:ring-midnight-navy/20 outline-none appearance-none transition-all duration-150">
+
+<option disabled="" selected="" value="">Select category...</option>
+
+<option value="food">Food &amp; Beverage (FDA)</option>
+
+<option value="pharma">Pharmaceutical (FDA)</option>
+
+<option value="cosmetics">Cosmetics</option>
+
+<option value="industrial">Industrial Chemicals</option>
+
+</select>
+
+<span className="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-slate-silver pointer-events-none">expand_more</span>
+
+</div>
+
+</div>
+
+</div>
+
+</section>
+
+{/*  Image Acquisition Card  */}
+
+<section className="bg-studio-white rounded border border-slate-silver/20">
+
+<div className="px-6 py-4 bg-cloud rounded-t border-b border-slate-silver/20 flex items-center gap-2">
+
+<span className="material-symbols-outlined text-midnight-navy" data-icon="image_search">image_search</span>
+
+<h3 className="font-headline-sm text-headline-sm text-midnight-navy m-0">Image Acquisition</h3>
+
+</div>
+
+<div className="p-6">
+
+<div className="border-2 border-dashed border-slate-silver/30 rounded-lg bg-surface-container-low hover:bg-surface-container-high transition-colors duration-150 p-12 flex flex-col items-center justify-center cursor-pointer group">
+
+<div className="w-16 h-16 rounded-full bg-studio-white border border-slate-silver/20 flex items-center justify-center mb-4 group-hover:scale-105 transition-transform duration-150 shadow-[0_4px_20px_rgba(15,23,42,0.04)]">
+
+<span className="material-symbols-outlined text-3xl text-midnight-navy" data-icon="cloud_upload">cloud_upload</span>
+
+</div>
+
+<p className="font-headline-sm text-headline-sm text-midnight-navy mb-1">Drag and drop label artwork</p>
+
+<p className="font-body-md text-body-md text-slate-silver text-center">or click to browse local files. <br/>Supported formats: PDF, TIFF, high-res JPG.</p>
+
+</div>
+
+</div>
+
+</section>
+
+</div>
+
+{/*  Right Column: Regulatory Framework  */}
+
+<div className="lg:col-span-4 flex flex-col gap-6">
+
+<section className="bg-studio-white rounded border border-midnight-navy relative h-full min-h-[400px]">
+
+{/*  The "Official" double border technique applied implicitly via ring or inner div  */}
+
+<div className="absolute inset-[1px] border border-studio-white rounded-[3px] pointer-events-none"></div>
+
+<div className="px-6 py-4 border-b border-slate-silver/20 flex items-center justify-between bg-cloud rounded-t relative z-10">
+
+<h3 className="font-headline-sm text-headline-sm text-midnight-navy m-0 flex items-center gap-2">
+
+<span className="material-symbols-outlined text-midnight-navy" data-icon="policy">policy</span>
+
+                                    Active Frameworks
+
+                                </h3>
+
+<span className="bg-midnight-navy/10 text-midnight-navy px-2 py-1 rounded font-label-caps text-label-caps border border-midnight-navy/20">Auto-Detect</span>
+
+</div>
+
+<div className="p-0 relative z-10 flex flex-col h-[calc(100%-60px)]">
+
+<div className="flex-1 overflow-y-auto">
+
+{/*  List Item 1  */}
+
+<div className="px-6 py-4 border-b border-slate-silver/10 hover:bg-cloud transition-colors duration-150 flex items-start gap-3">
+
+<span className="material-symbols-outlined text-slate-silver mt-0.5 text-[20px]" data-icon="check_circle">check_circle</span>
+
+<div>
+
+<p className="font-body-md text-body-md font-semibold text-midnight-navy mb-1">FDA Title 21 CFR Part 101</p>
+
+<p className="font-data-mono text-data-mono text-slate-silver text-xs">Food Labeling Requirements</p>
+
+</div>
+
+</div>
+
+{/*  List Item 2  */}
+
+<div className="px-6 py-4 border-b border-slate-silver/10 hover:bg-cloud transition-colors duration-150 flex items-start gap-3">
+
+<span className="material-symbols-outlined text-slate-silver mt-0.5 text-[20px]" data-icon="check_circle">check_circle</span>
+
+<div>
+
+<p className="font-body-md text-body-md font-semibold text-midnight-navy mb-1">FALCPA of 2004</p>
+
+<p className="font-data-mono text-data-mono text-slate-silver text-xs">Allergen Labeling</p>
+
+</div>
+
+</div>
+
+{/*  List Item 3  */}
+
+<div className="px-6 py-4 border-b border-slate-silver/10 hover:bg-cloud transition-colors duration-150 flex items-start gap-3 opacity-60">
+
+<span className="material-symbols-outlined text-slate-silver mt-0.5 text-[20px]" data-icon="pending">pending</span>
+
+<div>
+
+<p className="font-body-md text-body-md font-semibold text-midnight-navy mb-1">Prop 65 Warning</p>
+
+<p className="font-data-mono text-data-mono text-slate-silver text-xs">Awaiting Category Confirmation</p>
+
+</div>
+
+</div>
+
+</div>
+
+<div className="p-6 bg-cloud/50 border-t border-slate-silver/20 mt-auto">
+
+<button className="w-full bg-midnight-navy text-studio-white font-body-lg text-body-lg py-4 rounded font-semibold hover:bg-on-secondary-fixed active:translate-y-px transition-all duration-150 flex items-center justify-center gap-2">
+
+<span className="material-symbols-outlined" data-icon="fact_check">fact_check</span>
+
+                                        Start Automated Check
+
+                                    </button>
+
+</div>
+
+</div>
+
+</section>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+    </AppLayout>
   );
 }
