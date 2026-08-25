@@ -116,7 +116,6 @@ async function runScanPipeline(scan, imagePath, sourceType) {
           severity:     v.severity,
           detail:       v.detail,
           confidence:   v.confidence,
-          ruleVersion:  v.rule_version || 'LM-PC-2011-v1.0',
         }))
       );
     }
@@ -302,7 +301,7 @@ router.get('/:id', optionalAuth, async (req, res) => {
     const scan = await Scan.findByPk(req.params.id, {
       include: [
         { model: Product,   as: 'product' },
-        { model: Violation, as: 'violations' },
+        { model: Violation, as: 'violations', attributes: ['id','scan_id','rule_id','rule_title','status','affected_field','severity','detail','confidence','created_at'] },
         { model: Report,    as: 'reports' },
       ],
     });
@@ -391,16 +390,16 @@ function formatScanFull(scan) {
     violations: (scan.violations || []).map(v => ({
       id:          v.id,
       rule_id:     v.ruleId,
-      ruleId:      v.ruleId,       // camelCase alias
+      ruleId:      v.ruleId,
       rule_title:  v.ruleTitle,
       ruleTitle:   v.ruleTitle,
-      status:      v.status,       // Blueprint 5-status string
+      status:      v.status,
       field:       v.affectedField,
       affectedField: v.affectedField,
       severity:    v.severity,
       detail:      v.detail,
       confidence:  v.confidence,
-      rule_version: v.ruleVersion || 'LM-PC-2011-v1.0',
+      rule_version: 'LM-PC-2011-v1.0',
     })),
     // Latest report (if generated)
     report: scan.reports?.[0] ? {
@@ -420,7 +419,7 @@ router.post('/:id/report', optionalAuth, async (req, res) => {
     const scan = await Scan.findByPk(req.params.id, {
       include: [
         { model: Product,   as: 'product' },
-        { model: Violation, as: 'violations' },
+        { model: Violation, as: 'violations', attributes: ['id','scan_id','rule_id','rule_title','status','affected_field','severity','detail','confidence','created_at'] },
         { model: Report,    as: 'reports' },
       ],
     });
