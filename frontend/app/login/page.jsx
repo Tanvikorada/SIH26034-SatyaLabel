@@ -1,198 +1,137 @@
-'use client';
-import { useState } from 'react';
+"use client";
+
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { auth } from '@/lib/api';
 
-const DEPT_ACCOUNTS = [
-  { role: 'Field Officer', email: 'officer@satyalabel.gov.in', password: 'demo1234', desc: 'Scan products & view compliance' },
-  { role: 'Administrator', email: 'admin@satyalabel.gov.in',   password: 'admin1234', desc: 'Full system & repository access' },
-];
-
-export default function LoginPage() {
+export default function Login() {
   const router = useRouter();
-  const [mode, setMode] = useState('login');
-  const [form, setForm] = useState({ name: '', email: '', password: '' });
+  const [tab, setTab] = useState('login'); // 'login' or 'register'
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
+  const [error, setError] = useState('');
 
-  const submit = async (e) => {
+  const API = process.env.NEXT_PUBLIC_API_URL || 'https://satyalabel-backend.onrender.com/api/v1';
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    setLoading(true); setError(null);
+    setLoading(true);
+    setError('');
+
     try {
-      const result = mode === 'login'
-        ? await auth.login(form.email, form.password)
-        : await auth.register(form.name, form.email, form.password);
-      localStorage.setItem('satyalabel_token', result.token);
-      localStorage.setItem('satyalabel_user', JSON.stringify(result.user));
-      router.push('/dashboard');
+      const res = await fetch(`${API}/auth/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password })
+      });
+      const data = await res.json();
+      if (res.ok) {
+        localStorage.setItem('token', data.token);
+        localStorage.setItem('email', email);
+        router.push('/dashboard');
+      } else {
+        setError(data.message || 'Login failed');
+      }
     } catch (err) {
-      setError(err.message || 'Invalid credentials.');
+      setError('An error occurred. Please try again.');
     } finally {
       setLoading(false);
     }
   };
 
-  const quickLogin = async (email, password) => {
-    setLoading(true); setError(null);
-    try {
-      const result = await auth.login(email, password);
-      localStorage.setItem('satyalabel_token', result.token);
-      localStorage.setItem('satyalabel_user', JSON.stringify(result.user));
-      router.push('/dashboard');
-    } catch (_) {
-      router.push('/dashboard');
-    } finally { setLoading(false); }
+  const handleSSO = (role) => {
+    // Mock SSO
+    localStorage.setItem('token', 'mock-sso-token');
+    localStorage.setItem('email', `${role.toLowerCase().replace(' ', '')}@satyalabel.gov.in`);
+    router.push('/dashboard');
   };
 
   return (
-    <div
-      className="min-h-screen flex items-center justify-center px-4 py-12 relative"
-      style={{ background: 'var(--bg-void)' }}
-    >
-      {/* Ambient glow */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div
-          className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full blur-3xl"
-          style={{ width: 600, height: 600, background: 'radial-gradient(circle, hsla(27,95%,58%,0.07) 0%, transparent 70%)' }}
-        />
-      </div>
+    <div className="relative min-h-screen flex items-center justify-center bg-[#090d16] text-white p-4 overflow-hidden">
+      <div className="orb-saffron top-1/4 left-1/4 w-96 h-96"></div>
+      <div className="orb-blue bottom-1/4 right-1/4 w-96 h-96"></div>
 
-      <div className="w-full max-w-sm relative animate-fade-in-up">
-
-        {/* Logo */}
-        <div className="text-center mb-8">
-          <div
-            className="inline-flex items-center justify-center w-14 h-14 rounded-2xl mb-4"
-            style={{
-              background: 'linear-gradient(135deg, hsl(27,95%,58%), hsl(20,92%,50%))',
-              boxShadow: '0 8px 32px hsla(27,95%,58%,0.3)',
-            }}
-          >
-            <svg width="24" height="24" viewBox="0 0 20 20" fill="hsl(226,28%,8%)">
-              <path fillRule="evenodd" d="M2.166 4.999A11.954 11.954 0 0010 1.944 11.954 11.954 0 0017.834 5c.11.65.166 1.32.166 2.001 0 5.225-3.34 9.67-8 11.317C5.34 16.67 2 12.225 2 7c0-.682.057-1.35.166-2.001zm11.541 3.708a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-            </svg>
+      <div className="glass rounded-2xl p-10 max-w-md w-full relative z-10 animate-fade-in shadow-2xl">
+        <div className="flex flex-col items-center mb-8">
+          <div className="w-12 h-12 rounded-full gradient-accent-bg flex items-center justify-center mb-4 shadow-[0_0_20px_rgba(249,115,22,0.4)]">
+            <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" /></svg>
           </div>
-          <h1
-            className="text-2xl font-black"
-            style={{ fontFamily: 'var(--font-display)', color: 'var(--text-primary)' }}
-          >
-            SatyaLabel
-          </h1>
-          <p className="text-sm mt-1" style={{ color: 'var(--text-muted)' }}>
-            Legal Metrology Compliance Checker
-          </p>
-          <p className="text-xs mt-0.5" style={{ color: 'var(--text-faint)', fontFamily: 'var(--font-mono)' }}>
-            SIH26034 · Department of Consumer Affairs
-          </p>
+          <h1 className="text-3xl font-display font-bold text-center">Sign In to SatyaLabel</h1>
+          <p className="text-[var(--text-secondary)] mt-2">Compliance & Verification Portal</p>
         </div>
 
-        {/* Card */}
-        <div className="card p-7 space-y-5">
-
-          {/* Mode toggle */}
-          <div
-            className="flex rounded-lg p-1 gap-1"
-            style={{ background: 'var(--bg-surface)', border: '1px solid var(--border-muted)' }}
+        <div className="flex gap-4 mb-6">
+          <button 
+            className={`flex-1 btn ${tab === 'login' ? 'btn-secondary border-[var(--accent)]' : 'btn-ghost'}`}
+            onClick={() => setTab('login')}
           >
-            {[['login', 'Sign In'], ['register', 'Register']].map(([m, label]) => (
-              <button
-                key={m}
-                onClick={() => { setMode(m); setError(null); }}
-                className="flex-1 py-2 rounded-md text-sm font-semibold transition-all duration-150"
-                style={mode === m
-                  ? { background: 'var(--accent)', color: 'hsl(226,28%,6%)' }
-                  : { background: 'transparent', color: 'var(--text-muted)' }
-                }
-              >
-                {label}
-              </button>
-            ))}
+            Officer Login
+          </button>
+          <button 
+            className={`flex-1 btn ${tab === 'register' ? 'btn-secondary border-[var(--accent)]' : 'btn-ghost'}`}
+            onClick={() => setTab('register')}
+          >
+            Register
+          </button>
+        </div>
+
+        <form onSubmit={handleSubmit} className="space-y-5">
+          {error && <div className="text-[var(--fail)] text-sm text-center">{error}</div>}
+          <div className="input-group">
+            <div className="input-group-icon">
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
+            </div>
+            <input 
+              type="email" 
+              placeholder="Email address" 
+              className="input w-full"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+            />
           </div>
-
-          {/* Form */}
-          <form onSubmit={submit} className="space-y-4">
-            {mode === 'register' && (
-              <div>
-                <label className="block text-xs font-semibold uppercase tracking-wider mb-1.5" style={{ color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>Full Name</label>
-                <input className="input" type="text" required placeholder="Enforcement Officer Name"
-                  value={form.name} onChange={e => setForm(p => ({ ...p, name: e.target.value }))} />
-              </div>
-            )}
-            <div>
-              <label className="block text-xs font-semibold uppercase tracking-wider mb-1.5" style={{ color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>Email</label>
-              <input className="input" type="email" required placeholder="officer@consumer.gov.in"
-                value={form.email} onChange={e => setForm(p => ({ ...p, email: e.target.value }))} />
+          <div className="input-group">
+            <div className="input-group-icon">
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
             </div>
-            <div>
-              <label className="block text-xs font-semibold uppercase tracking-wider mb-1.5" style={{ color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>Password</label>
-              <input className="input" type="password" required placeholder="••••••••"
-                value={form.password} onChange={e => setForm(p => ({ ...p, password: e.target.value }))} />
-            </div>
-
-            {error && (
-              <div
-                className="flex gap-2 px-4 py-3 rounded-lg text-sm"
-                style={{ background: 'var(--fail-bg)', border: '1px solid var(--fail-border)', color: 'var(--fail)' }}
-              >
-                <span>⚠️</span><span>{error}</span>
-              </div>
-            )}
-
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full py-3 rounded-lg text-sm font-bold transition-all duration-150"
-              style={{
-                background: 'var(--accent)',
-                color: 'hsl(226,28%,6%)',
-                opacity: loading ? 0.7 : 1,
-                boxShadow: '0 4px 16px var(--accent-glow)',
-              }}
-            >
-              {loading
-                ? <span className="flex items-center justify-center gap-2">
-                    <span className="w-3.5 h-3.5 rounded-full animate-spin" style={{ border: '2px solid rgba(0,0,0,0.3)', borderTop: '2px solid rgba(0,0,0,0.8)' }} />
-                    Signing in…
-                  </span>
-                : mode === 'login' ? 'Sign In →' : 'Create Account →'
-              }
-            </button>
-          </form>
-
-          {/* Divider */}
-          <div className="divider" />
-
-          {/* SSO quick-login */}
-          <div className="space-y-3">
-            <p className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: 'var(--text-faint)', fontFamily: 'var(--font-mono)' }}>
-              Department SSO Access
-            </p>
-            <div className="grid grid-cols-2 gap-2">
-              {DEPT_ACCOUNTS.map(acc => (
-                <button
-                  key={acc.role}
-                  onClick={() => quickLogin(acc.email, acc.password)}
-                  disabled={loading}
-                  className="text-left p-3 rounded-lg transition-all duration-150 space-y-1"
-                  style={{
-                    background: 'var(--bg-surface)',
-                    border: '1px solid var(--border)',
-                  }}
-                  onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--border-bright)'; e.currentTarget.style.background = 'var(--bg-raised)'; }}
-                  onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.background = 'var(--bg-surface)'; }}
-                >
-                  <p className="text-xs font-bold" style={{ color: 'var(--text-secondary)' }}>{acc.role}</p>
-                  <p className="text-[10px] leading-tight" style={{ color: 'var(--text-faint)' }}>{acc.desc}</p>
-                </button>
-              ))}
-            </div>
-            <div
-              className="flex gap-2 px-3 py-2.5 rounded-lg text-[10px] leading-tight"
-              style={{ background: 'hsla(215,60%,40%,0.07)', border: '1px solid hsla(215,60%,40%,0.15)', color: 'hsla(215,70%,60%,0.7)' }}
-            >
-              ⓘ Authorized use only. All login attempts are logged and monitored.
-            </div>
+            <input 
+              type="password" 
+              placeholder="Password" 
+              className="input w-full"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+            />
           </div>
+          <div className="text-right">
+            <a href="#" className="text-sm text-[var(--accent)] hover:text-[var(--accent-hover)] transition-colors">Forgot password?</a>
+          </div>
+          <button type="submit" className="btn btn-primary w-full" disabled={loading}>
+            {loading ? 'Authenticating...' : 'Sign In'}
+          </button>
+        </form>
+
+        <div className="my-8">
+          <div className="divider-label">or quick access</div>
+        </div>
+
+        <div className="grid grid-cols-2 gap-3 mb-8">
+          <button className="sso-btn" onClick={() => handleSSO('Field Officer')}>
+            <span className="text-xl">👮</span> Field Officer
+          </button>
+          <button className="sso-btn" onClick={() => handleSSO('Inspector')}>
+            <span className="text-xl">🔍</span> Inspector
+          </button>
+          <button className="sso-btn" onClick={() => handleSSO('Analyst')}>
+            <span className="text-xl">📊</span> Analyst
+          </button>
+          <button className="sso-btn" onClick={() => handleSSO('Admin')}>
+            <span className="text-xl">⚙️</span> Admin
+          </button>
+        </div>
+
+        <div className="text-center text-xs text-[var(--text-faint)] mt-4">
+          Ministry of Consumer Affairs &middot; SIH26034
         </div>
       </div>
     </div>

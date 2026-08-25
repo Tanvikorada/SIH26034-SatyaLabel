@@ -2,8 +2,9 @@
 @import "tailwindcss";
 
 /* ============================================================
-   SatyaLabel — Design System v2
-   Legal Metrology Compliance Checker — SIH26034
+   SatyaLabel — Design System v3
+   Sourced from CodeFronts dark-mode + glassmorphism patterns
+   Adapted to SIH26034 saffron identity
    ============================================================ */
 
 :root {
@@ -12,57 +13,95 @@
   --font-body:    'Inter',  ui-sans-serif, system-ui, sans-serif;
   --font-mono:    'JetBrains Mono', ui-monospace, monospace;
 
-  /* ── Base palette (HSL-tuned dark) ──────────────────────── */
-  --hue: 226;
-  --bg-void:    hsl(var(--hue), 28%, 5%);
-  --bg-base:    hsl(var(--hue), 25%, 7%);
-  --bg-surface: hsl(var(--hue), 22%, 10%);
-  --bg-card:    hsl(var(--hue), 20%, 13%);
-  --bg-raised:  hsl(var(--hue), 18%, 16%);
-  --bg-hover:   hsl(var(--hue), 16%, 19%);
+  /* ── Base palette (CodeFronts cdm-01 adapted) ───────────── */
+  --bg-void:    #090d16;
+  --bg-base:    #0d1117;
+  --bg-surface: #111827;
+  --bg-card:    #1a2035;
+  --bg-raised:  #1e293b;
+  --bg-hover:   #273549;
+  --bg-glass:   rgba(15, 23, 42, 0.80);
 
-  /* ── Border ─────────────────────────────────────────────── */
-  --border:       hsl(var(--hue), 18%, 22%);
-  --border-muted: hsl(var(--hue), 16%, 17%);
-  --border-bright:hsl(var(--hue), 18%, 28%);
+  /* ── Border (CodeFronts cdm-01) ─────────────────────────── */
+  --border:        #1e293b;
+  --border-muted:  #141c2e;
+  --border-bright: #334155;
+  --border-active: #f97316;
 
-  /* ── Text ───────────────────────────────────────────────── */
-  --text-primary:   hsl(210, 40%, 96%);
-  --text-secondary: hsl(215, 16%, 65%);
-  --text-muted:     hsl(215, 14%, 40%);
-  --text-faint:     hsl(215, 12%, 28%);
+  /* ── Text (CodeFronts cdm-01) ───────────────────────────── */
+  --text-primary:   #f8fafc;
+  --text-secondary: #94a3b8;
+  --text-muted:     #64748b;
+  --text-faint:     #475569;
+  --text-inverse:   #090d16;
 
-  /* ── Accent (Saffron — India identity) ──────────────────── */
+  /* ── Accent: Saffron (India identity) ───────────────────── */
   --accent-h:         27;
-  --accent:           hsl(var(--accent-h), 95%, 58%);
-  --accent-hover:     hsl(var(--accent-h), 97%, 64%);
-  --accent-dim:       hsl(var(--accent-h), 80%, 52%);
-  --accent-glow:      hsla(var(--accent-h), 95%, 58%, 0.18);
-  --accent-subtle:    hsla(var(--accent-h), 95%, 58%, 0.08);
-  --accent-border:    hsla(var(--accent-h), 95%, 58%, 0.35);
+  --accent:           #f97316;
+  --accent-hover:     #fb923c;
+  --accent-dim:       #ea6c0a;
+  --accent-glow:      rgba(249, 115, 22, 0.20);
+  --accent-subtle:    rgba(249, 115, 22, 0.08);
+  --accent-border:    rgba(249, 115, 22, 0.35);
+  --accent-shadow:    0 4px 14px 0 rgba(249, 115, 22, 0.35);
 
-  /* ── Semantic — Status ──────────────────────────────────── */
-  --pass:           hsl(142, 72%, 42%);
-  --pass-bg:        hsla(142, 72%, 42%, 0.08);
-  --pass-border:    hsla(142, 72%, 42%, 0.25);
+  /* ── Glass (CodeFronts cgm-01) ──────────────────────────── */
+  --glass-bg:           rgba(255, 255, 255, 0.05);
+  --glass-bg-hover:     rgba(255, 255, 255, 0.09);
+  --glass-border:       rgba(255, 255, 255, 0.10);
+  --glass-border-hover: rgba(255, 255, 255, 0.22);
+  --glass-highlight:    linear-gradient(135deg, rgba(255,255,255,0.18) 0%, rgba(255,255,255,0) 60%);
+  --glass-blur:         blur(16px) saturate(180%);
+  --glass-shadow:       0 8px 32px 0 rgba(0, 0, 0, 0.45);
+  --glass-shadow-hover: 0 20px 48px 0 rgba(0, 0, 0, 0.60), 0 0 24px 0 rgba(249, 115, 22, 0.18);
 
-  --fail:           hsl(0, 75%, 58%);
-  --fail-bg:        hsla(0, 75%, 58%, 0.08);
-  --fail-border:    hsla(0, 75%, 58%, 0.25);
+  /* ── Elevation shadows (CodeFronts cdm-01) ──────────────── */
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.5), 0 1px 2px rgba(0,0,0,0.4);
+  --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.6), 0 2px 4px -2px rgba(0,0,0,0.5);
+  --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.7), 0 4px 6px -4px rgba(0,0,0,0.6);
+  --shadow-xl: 0 20px 25px -5px rgba(0,0,0,0.7), 0 8px 10px -6px rgba(0,0,0,0.6);
 
-  --review:         hsl(40, 90%, 56%);
-  --review-bg:      hsla(40, 90%, 56%, 0.08);
-  --review-border:  hsla(40, 90%, 56%, 0.25);
+  /* ── Transitions (CodeFronts cdm-01) ────────────────────── */
+  --t-fast:   150ms cubic-bezier(0.4, 0, 0.2, 1);
+  --t-normal: 250ms cubic-bezier(0.4, 0, 0.2, 1);
+  --t-spring: 300ms cubic-bezier(0.16, 1, 0.3, 1);
 
-  --na:             hsl(215, 16%, 45%);
-  --na-bg:          hsla(215, 16%, 45%, 0.08);
+  /* ── Radius (CodeFronts cdm-01) ─────────────────────────── */
+  --r-sm:   6px;
+  --r-md:   10px;
+  --r-lg:   16px;
+  --r-xl:   20px;
+  --r-full: 9999px;
 
-  --nv:             hsl(22, 85%, 55%);
-  --nv-bg:          hsla(22, 85%, 55%, 0.08);
-  --nv-border:      hsla(22, 85%, 55%, 0.25);
+  /* ── Compliance status (CodeFronts sbg-01 adapted) ──────── */
+  --pass:         #10b981;
+  --pass-bg:      rgba(16, 185, 129, 0.10);
+  --pass-border:  rgba(16, 185, 129, 0.25);
+  --pass-glow:    rgba(16, 185, 129, 0.20);
+
+  --fail:         #ef4444;
+  --fail-bg:      rgba(239, 68, 68, 0.10);
+  --fail-border:  rgba(239, 68, 68, 0.25);
+  --fail-glow:    rgba(239, 68, 68, 0.20);
+
+  --review:       #f59e0b;
+  --review-bg:    rgba(245, 158, 11, 0.10);
+  --review-border:rgba(245, 158, 11, 0.25);
+  --review-glow:  rgba(245, 158, 11, 0.20);
+
+  --na:           #64748b;
+  --na-bg:        rgba(100, 116, 139, 0.10);
+  --na-border:    rgba(100, 116, 139, 0.20);
+
+  --nv:           #f97316;
+  --nv-bg:        rgba(249, 115, 22, 0.10);
+  --nv-border:    rgba(249, 115, 22, 0.25);
+
+  /* ── Navbar height ──────────────────────────────────────── */
+  --nav-h: 60px;
 }
 
-/* ── Reset ────────────────────────────────────────────────── */
+/* ── Reset ──────────────────────────────────────────────────── */
 *, *::before, *::after { box-sizing: border-box; }
 html { scroll-behavior: smooth; }
 
@@ -76,298 +115,578 @@ body {
   font-size: 15px;
 }
 
-/* ── Typography ─────────────────────────────────────────────── */
 h1, h2, h3, h4, h5, h6 {
   font-family: var(--font-display);
+  letter-spacing: -0.025em;
   font-weight: 700;
-  letter-spacing: -0.02em;
   line-height: 1.2;
 }
 
-code, pre, .font-mono, kbd {
-  font-family: var(--font-mono);
-}
+code, pre, .font-mono, kbd { font-family: var(--font-mono); }
 
 /* ── Scrollbar ──────────────────────────────────────────────── */
-::-webkit-scrollbar       { width: 5px; height: 5px; }
+::-webkit-scrollbar { width: 5px; height: 5px; }
 ::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: var(--border); border-radius: 10px; }
-::-webkit-scrollbar-thumb:hover { background: var(--border-bright); }
+::-webkit-scrollbar-thumb { background: var(--border-bright); border-radius: 10px; }
+::-webkit-scrollbar-thumb:hover { background: #475569; }
 
-/* ── Focus ring ─────────────────────────────────────────────── */
-:focus-visible {
-  outline: 2px solid var(--accent);
-  outline-offset: 2px;
-}
+/* ── Focus ──────────────────────────────────────────────────── */
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 input:focus, select:focus, textarea:focus {
+  box-shadow: 0 0 0 3px var(--accent-border);
   outline: none;
-  box-shadow: 0 0 0 2.5px var(--accent-border);
 }
+::selection { background: var(--accent-subtle); color: var(--text-primary); }
 
-/* ── Selection ──────────────────────────────────────────────── */
-::selection {
-  background: var(--accent-subtle);
-  color: var(--text-primary);
-}
+/* ============================================================
+   CARD COMPONENTS (CodeFronts ccd-01 adapted)
+   ============================================================ */
 
-/* ─────────────────────────────────────────────────────────────
-   CARD SYSTEM
-   ───────────────────────────────────────────────────────────── */
+/* Base card */
 .card {
   background: var(--bg-card);
   border: 1px solid var(--border);
-  border-radius: 12px;
+  border-radius: var(--r-lg);
+  box-shadow: var(--shadow-sm);
 }
+
+/* Interactive card with lift + glow on hover */
+.card-interactive {
+  position: relative;
+  background: linear-gradient(180deg, var(--bg-card) 0%, var(--bg-surface) 100%);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  box-shadow: var(--shadow-md);
+  overflow: hidden;
+  transition: transform var(--t-spring), box-shadow var(--t-spring), border-color var(--t-normal);
+}
+
+.card-interactive::after {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--accent), transparent);
+  opacity: 0;
+  transition: opacity var(--t-normal);
+}
+
+.card-interactive:hover {
+  transform: translateY(-6px);
+  border-color: var(--accent-border);
+  box-shadow: var(--shadow-xl), 0 0 20px -4px var(--accent-glow);
+}
+
+.card-interactive:hover::after { opacity: 1; }
+
+/* Small card */
 .card-sm {
   background: var(--bg-card);
   border: 1px solid var(--border);
-  border-radius: 8px;
+  border-radius: var(--r-md);
 }
+
+/* Raised card */
 .card-raised {
   background: var(--bg-raised);
   border: 1px solid var(--border-bright);
-  border-radius: 12px;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.3), 0 8px 24px rgba(0,0,0,0.15);
+  border-radius: var(--r-lg);
+  box-shadow: var(--shadow-lg);
 }
-.card-interactive {
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  transition: border-color 0.15s, box-shadow 0.15s, transform 0.15s;
+
+/* ============================================================
+   GLASS (CodeFronts cgm-01)
+   ============================================================ */
+
+.glass {
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-shadow);
+  position: relative;
+  overflow: hidden;
 }
-.card-interactive:hover {
-  border-color: var(--border-bright);
-  box-shadow: 0 0 0 1px var(--border-bright), 0 8px 32px rgba(0,0,0,0.25);
+
+.glass::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 1px;
+  background: var(--glass-highlight);
+  opacity: 0.7;
+}
+
+.glass:hover {
+  background: var(--glass-bg-hover);
+  border-color: var(--glass-border-hover);
+  box-shadow: var(--glass-shadow-hover);
+}
+
+/* ============================================================
+   NAVBAR (CodeFronts cnb-01 adapted)
+   ============================================================ */
+
+.navbar {
+  position: sticky;
+  top: 0;
+  width: 100%;
+  height: var(--nav-h);
+  background: rgba(13, 17, 23, 0.85);
+  backdrop-filter: blur(14px) saturate(160%);
+  -webkit-backdrop-filter: blur(14px) saturate(160%);
+  border-bottom: 1px solid var(--glass-border);
+  z-index: 1000;
+}
+
+.navbar-link {
+  position: relative;
+  color: var(--text-secondary);
+  font-size: 14px;
+  font-weight: 500;
+  text-decoration: none;
+  padding: 6px 0;
+  transition: color var(--t-fast);
+}
+
+.navbar-link:hover { color: var(--text-primary); }
+
+.navbar-link::after {
+  content: '';
+  position: absolute;
+  bottom: 0; left: 0;
+  width: 100%;
+  height: 2px;
+  background: var(--accent);
+  border-radius: 2px;
+  transform: scaleX(0);
+  transform-origin: right;
+  transition: transform var(--t-normal);
+}
+
+.navbar-link:hover::after,
+.navbar-link.active::after {
+  transform: scaleX(1);
+  transform-origin: left;
+}
+
+/* ============================================================
+   BUTTONS (CodeFronts cb-01 adapted to saffron)
+   ============================================================ */
+
+.btn {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 9px 20px;
+  font-family: var(--font-body);
+  font-size: 13.5px;
+  font-weight: 600;
+  line-height: 1.5;
+  border-radius: var(--r-sm);
+  border: 1px solid transparent;
+  cursor: pointer;
+  user-select: none;
+  white-space: nowrap;
+  text-decoration: none;
+  transition: all var(--t-fast);
+  overflow: hidden;
+}
+
+.btn:active { transform: scale(0.97); }
+.btn:disabled { opacity: 0.45; cursor: not-allowed; pointer-events: none; }
+
+/* Primary — saffron gradient */
+.btn-primary {
+  background: linear-gradient(135deg, var(--accent) 0%, var(--accent-dim) 100%);
+  border-color: rgba(255,255,255,0.10);
+  color: #0b0d14;
+  box-shadow: var(--accent-shadow);
+}
+
+.btn-primary:hover {
+  background: linear-gradient(135deg, var(--accent-hover) 0%, var(--accent) 100%);
+  box-shadow: 0 6px 20px rgba(249, 115, 22, 0.45);
   transform: translateY(-1px);
 }
 
-/* ── Glass panel ────────────────────────────────────────────── */
-.glass {
-  background: hsla(226, 20%, 13%, 0.75);
-  backdrop-filter: blur(16px) saturate(1.4);
-  -webkit-backdrop-filter: blur(16px) saturate(1.4);
-  border: 1px solid rgba(255,255,255,0.06);
+/* Shimmer effect on primary button */
+.btn-primary::after {
+  content: '';
+  position: absolute;
+  top: -50%; left: -50%;
+  width: 200%; height: 200%;
+  background: linear-gradient(60deg, transparent 30%, rgba(255,255,255,0.18) 50%, transparent 70%);
+  transform: rotate(25deg) translateY(-100%);
+  animation: btn-shimmer 4s ease-in-out infinite;
 }
 
-/* ─────────────────────────────────────────────────────────────
-   STATUS UTILITIES
-   ───────────────────────────────────────────────────────────── */
-.status-dot {
+@keyframes btn-shimmer {
+  0%      { transform: rotate(25deg) translateY(-100%); }
+  20%, 100% { transform: rotate(25deg) translateY(150%); }
+}
+
+/* Secondary */
+.btn-secondary {
+  background: var(--bg-raised);
+  border-color: var(--border-bright);
+  color: var(--text-primary);
+}
+
+.btn-secondary:hover {
+  background: var(--bg-hover);
+  border-color: #475569;
+  transform: translateY(-1px);
+}
+
+/* Ghost */
+.btn-ghost {
+  background: transparent;
+  border-color: transparent;
+  color: var(--text-secondary);
+}
+
+.btn-ghost:hover {
+  background: var(--glass-bg);
+  color: var(--text-primary);
+}
+
+/* ============================================================
+   INPUT (CodeFronts clf-01 adapted)
+   ============================================================ */
+
+.input {
+  width: 100%;
+  height: 44px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-bright);
+  border-radius: var(--r-sm);
+  color: var(--text-primary);
+  font-size: 14px;
+  font-family: var(--font-body);
+  padding: 0 14px;
+  transition: border-color var(--t-fast), box-shadow var(--t-fast), background var(--t-fast);
+}
+
+.input::placeholder { color: var(--text-faint); }
+
+.input:hover { border-color: #475569; }
+
+.input:focus {
+  border-color: var(--accent);
+  background: var(--bg-card);
+  box-shadow: 0 0 0 3px var(--accent-subtle);
+  outline: none;
+}
+
+.input:invalid:not(:placeholder-shown) { border-color: var(--fail); }
+
+textarea.input { height: auto; padding: 12px 14px; resize: vertical; }
+
+/* ============================================================
+   BADGES (CodeFronts sbg-01 adapted to 5-status system)
+   ============================================================ */
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 10px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  border-radius: var(--r-full);
+  border: 1px solid transparent;
+  user-select: none;
+  white-space: nowrap;
+}
+
+/* Animated pulse dot (CodeFronts sbg-01) */
+.badge-dot {
+  position: relative;
   display: inline-block;
-  width: 7px; height: 7px;
+  width: 7px;
+  height: 7px;
   border-radius: 50%;
   flex-shrink: 0;
 }
-.status-dot-compliant { background: var(--pass);   box-shadow: 0 0 6px var(--pass); }
-.status-dot-fail      { background: var(--fail);   box-shadow: 0 0 6px var(--fail); }
-.status-dot-review    { background: var(--review); box-shadow: 0 0 6px var(--review); }
-.status-dot-nv        { background: var(--nv);     box-shadow: 0 0 6px var(--nv); }
 
-/* ── India tricolor stripe ──────────────────────────────────── */
+.badge-dot::before {
+  content: '';
+  position: absolute;
+  top: -2px; left: -2px; right: -2px; bottom: -2px;
+  border-radius: 50%;
+  border: 1.5px solid currentColor;
+  opacity: 0.8;
+  animation: badge-pulse 2s cubic-bezier(0.24, 0, 0.38, 1) infinite;
+}
+
+@keyframes badge-pulse {
+  0%        { transform: scale(0.85); opacity: 0.9; }
+  70%       { transform: scale(2.2);  opacity: 0; }
+  100%      { transform: scale(2.4);  opacity: 0; }
+}
+
+/* 5-status badge variants */
+.badge-pass     { background: var(--pass-bg);   color: var(--pass);   border-color: var(--pass-border); }
+.badge-fail     { background: var(--fail-bg);   color: var(--fail);   border-color: var(--fail-border); }
+.badge-review   { background: var(--review-bg); color: var(--review); border-color: var(--review-border); }
+.badge-na       { background: var(--na-bg);     color: var(--na);     border-color: var(--na-border); }
+.badge-nv       { background: var(--nv-bg);     color: var(--nv);     border-color: var(--nv-border); }
+.badge-neutral  { background: var(--bg-raised); color: var(--text-secondary); border-color: var(--border); }
+.badge-accent   { background: var(--accent-subtle); color: var(--accent); border-color: var(--accent-border); }
+
+/* ============================================================
+   PROGRESS / GAUGE (CodeFronts cpb-01 adapted)
+   ============================================================ */
+
+.progress-track {
+  position: relative;
+  width: 100%;
+  height: 8px;
+  background: var(--bg-raised);
+  border-radius: var(--r-full);
+  overflow: hidden;
+  box-shadow: inset 0 1px 2px rgba(0,0,0,0.5);
+}
+
+.progress-fill {
+  height: 100%;
+  border-radius: var(--r-full);
+  transition: width 600ms cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 0 10px rgba(249,115,22,0.4);
+}
+
+.progress-fill-pass   { background: linear-gradient(90deg, var(--pass), #06b6d4); }
+.progress-fill-accent { background: linear-gradient(90deg, var(--accent), #f97316cc); }
+.progress-fill-fail   { background: linear-gradient(90deg, var(--fail), #dc2626); }
+
+/* Circular gauge (conic-gradient) */
+.gauge {
+  position: relative;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: var(--shadow-lg);
+}
+
+.gauge-inner {
+  border-radius: 50%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-card);
+}
+
+/* ============================================================
+   TABLE ROWS
+   ============================================================ */
+
+.table-row {
+  border-bottom: 1px solid var(--border-muted);
+  transition: background var(--t-fast);
+}
+
+.table-row:hover { background: var(--bg-raised); }
+.table-row:last-child { border-bottom: none; }
+
+/* ============================================================
+   DIVIDER / INDIA STRIPE
+   ============================================================ */
+
+.divider { background: var(--border-muted); height: 1px; }
+
 .india-stripe {
-  height: 2px;
   background: linear-gradient(90deg, #FF9933 33.3%, #ffffff 33.3% 66.6%, #138808 66.6%);
+  height: 2px;
 }
 
-/* ─────────────────────────────────────────────────────────────
-   SKELETON / LOADING
-   ───────────────────────────────────────────────────────────── */
-@keyframes shimmer {
-  0%   { background-position: -600px 0; }
-  100% { background-position: 600px 0; }
-}
-.skeleton {
-  background: linear-gradient(
-    90deg,
-    var(--bg-card) 25%,
-    var(--bg-raised) 50%,
-    var(--bg-card) 75%
-  );
-  background-size: 600px 100%;
-  animation: shimmer 1.6s ease-in-out infinite;
-  border-radius: 8px;
+/* ============================================================
+   STATUS DOTS
+   ============================================================ */
+
+.status-dot {
+  border-radius: 50%;
+  width: 7px; height: 7px;
+  display: inline-block;
+  flex-shrink: 0;
 }
 
-/* ─────────────────────────────────────────────────────────────
+.status-dot-pass    { background: var(--pass);   box-shadow: 0 0 6px var(--pass-glow); }
+.status-dot-fail    { background: var(--fail);   box-shadow: 0 0 6px var(--fail-glow); }
+.status-dot-review  { background: var(--review); box-shadow: 0 0 6px var(--review-glow); }
+.status-dot-na      { background: var(--na); }
+.status-dot-nv      { background: var(--nv); }
+
+/* ============================================================
+   AMBIENT ORB BACKGROUNDS (CodeFronts cgm-01)
+   ============================================================ */
+
+.orb-saffron {
+  position: absolute;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(249,115,22,0.45) 0%, transparent 70%);
+  filter: blur(60px);
+  pointer-events: none;
+  animation: orb-float 10s ease-in-out infinite alternate;
+}
+
+.orb-blue {
+  position: absolute;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(59,130,246,0.30) 0%, transparent 70%);
+  filter: blur(70px);
+  pointer-events: none;
+  animation: orb-float 12s ease-in-out infinite alternate-reverse;
+}
+
+@keyframes orb-float {
+  0%   { transform: translate(0, 0) scale(1); }
+  100% { transform: translate(30px, -20px) scale(1.15); }
+}
+
+/* ============================================================
    ANIMATIONS
-   ───────────────────────────────────────────────────────────── */
+   ============================================================ */
+
 @keyframes fadeInUp {
-  from { opacity: 0; transform: translateY(16px); }
+  from { opacity: 0; transform: translateY(14px); }
   to   { opacity: 1; transform: translateY(0); }
 }
+
 @keyframes fadeIn {
   from { opacity: 0; }
   to   { opacity: 1; }
 }
+
 @keyframes scaleIn {
   from { opacity: 0; transform: scale(0.96); }
   to   { opacity: 1; transform: scale(1); }
 }
+
 @keyframes slideInRight {
   from { opacity: 0; transform: translateX(16px); }
   to   { opacity: 1; transform: translateX(0); }
 }
+
 @keyframes scanLine {
-  0%   { top: -2px; }
-  100% { top: 100%; }
-}
-@keyframes pulse-glow {
-  0%, 100% { box-shadow: 0 0 0 0 var(--accent-glow); }
-  50%       { box-shadow: 0 0 0 8px transparent; }
-}
-@keyframes spin-slow {
-  from { transform: rotate(0deg); }
-  to   { transform: rotate(360deg); }
+  from { top: -2px; }
+  to   { top: 100%; }
 }
 
-.animate-fade-in-up    { animation: fadeInUp 0.3s cubic-bezier(0.16,1,0.3,1) forwards; }
-.animate-fade-in       { animation: fadeIn 0.25s ease forwards; }
-.animate-scale-in      { animation: scaleIn 0.25s cubic-bezier(0.16,1,0.3,1) forwards; }
-.animate-slide-in-right{ animation: slideInRight 0.3s cubic-bezier(0.16,1,0.3,1) forwards; }
-.animate-pulse-glow    { animation: pulse-glow 2s ease infinite; }
-.animate-spin-slow     { animation: spin-slow 3s linear infinite; }
+@keyframes shimmer {
+  0%   { background-position: -600px 0; }
+  100% { background-position:  600px 0; }
+}
 
-/* Stagger helpers */
+.animate-fade-in-up    { animation: .3s cubic-bezier(0.16,1,.3,1) forwards fadeInUp; }
+.animate-fade-in       { animation: .25s forwards fadeIn; }
+.animate-scale-in      { animation: .25s cubic-bezier(0.16,1,.3,1) forwards scaleIn; }
+.animate-slide-in-right{ animation: .3s cubic-bezier(0.16,1,.3,1) forwards slideInRight; }
+
 .stagger-1 { animation-delay: 60ms; }
 .stagger-2 { animation-delay: 120ms; }
 .stagger-3 { animation-delay: 180ms; }
 .stagger-4 { animation-delay: 240ms; }
 
-/* ── Scan line (image processing animation) ─────────────────── */
+/* Skeleton loader */
+.skeleton {
+  background: linear-gradient(90deg, var(--bg-card) 25%, var(--bg-raised) 50%, var(--bg-card) 75%);
+  background-size: 600px 100%;
+  border-radius: var(--r-sm);
+  animation: 1.6s ease-in-out infinite shimmer;
+}
+
+/* Scan line */
 .scan-line-container { position: relative; overflow: hidden; }
 .scan-line-container::after {
   content: '';
+  background: linear-gradient(90deg, transparent, var(--accent), transparent);
+  height: 2px;
+  animation: 1.8s linear infinite scanLine;
   position: absolute;
   left: 0; right: 0;
-  height: 2px;
-  background: linear-gradient(90deg, transparent, var(--accent), transparent);
-  animation: scanLine 1.8s linear infinite;
 }
 
-/* ─────────────────────────────────────────────────────────────
-   BUTTON SYSTEM
-   ───────────────────────────────────────────────────────────── */
-.btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  font-family: var(--font-body);
-  font-weight: 600;
-  font-size: 13.5px;
-  border-radius: 8px;
-  padding: 7px 16px;
-  cursor: pointer;
-  transition: all 0.15s ease;
-  border: 1px solid transparent;
-  white-space: nowrap;
-  user-select: none;
-}
-.btn-primary {
-  background: var(--accent);
-  color: hsl(226, 28%, 6%);
-  box-shadow: 0 1px 2px rgba(0,0,0,0.25), 0 4px 12px var(--accent-glow);
-}
-.btn-primary:hover {
-  background: var(--accent-hover);
-  box-shadow: 0 2px 4px rgba(0,0,0,0.3), 0 6px 18px var(--accent-glow);
-  transform: translateY(-1px);
-}
-.btn-primary:active { transform: translateY(0); }
-.btn-ghost {
-  background: transparent;
-  color: var(--text-secondary);
-  border-color: var(--border);
-}
-.btn-ghost:hover {
-  background: var(--bg-raised);
-  color: var(--text-primary);
-  border-color: var(--border-bright);
-}
+/* ============================================================
+   SURFACE UTILITIES
+   ============================================================ */
 
-/* ─────────────────────────────────────────────────────────────
-   INPUT SYSTEM
-   ───────────────────────────────────────────────────────────── */
-.input {
-  background: var(--bg-surface);
-  border: 1px solid var(--border);
-  color: var(--text-primary);
-  border-radius: 8px;
-  padding: 8px 12px;
-  font-size: 14px;
-  font-family: var(--font-body);
-  width: 100%;
-  transition: border-color 0.15s, box-shadow 0.15s;
-}
-.input::placeholder { color: var(--text-faint); }
-.input:hover { border-color: var(--border-bright); }
-.input:focus {
-  border-color: var(--accent);
-  box-shadow: 0 0 0 3px var(--accent-subtle);
-  outline: none;
-}
-
-/* ─────────────────────────────────────────────────────────────
-   BADGE SYSTEM
-   ───────────────────────────────────────────────────────────── */
-.badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  padding: 2px 8px;
-  border-radius: 100px;
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 0.01em;
-  border: 1px solid transparent;
-}
-.badge-pass    { background: var(--pass-bg);    color: var(--pass);    border-color: var(--pass-border); }
-.badge-fail    { background: var(--fail-bg);    color: var(--fail);    border-color: var(--fail-border); }
-.badge-review  { background: var(--review-bg);  color: var(--review);  border-color: var(--review-border); }
-.badge-na      { background: var(--na-bg);      color: var(--na); }
-.badge-nv      { background: var(--nv-bg);      color: var(--nv);      border-color: var(--nv-border); }
-.badge-neutral { background: var(--bg-raised);  color: var(--text-secondary); border-color: var(--border); }
-.badge-accent  { background: var(--accent-subtle); color: var(--accent); border-color: var(--accent-border); }
-
-/* ─────────────────────────────────────────────────────────────
-   TABLE SYSTEM
-   ───────────────────────────────────────────────────────────── */
-.table-row {
-  border-bottom: 1px solid var(--border-muted);
-  transition: background 0.1s;
-}
-.table-row:hover { background: var(--bg-raised); }
-.table-row:last-child { border-bottom: none; }
-
-/* ─────────────────────────────────────────────────────────────
-   DIVIDER
-   ───────────────────────────────────────────────────────────── */
-.divider {
-  height: 1px;
-  background: var(--border-muted);
-}
-
-/* ─────────────────────────────────────────────────────────────
-   MISC UTILITIES
-   ───────────────────────────────────────────────────────────── */
-.text-display { font-family: var(--font-display); }
-.text-mono    { font-family: var(--font-mono); }
-
-.gradient-accent {
-  background: linear-gradient(135deg, var(--accent), hsl(20, 95%, 55%));
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
-}
-.gradient-accent-bg {
-  background: linear-gradient(135deg, var(--accent), hsl(20, 95%, 55%));
-}
-
-.glow-accent {
-  box-shadow: 0 0 24px var(--accent-glow), 0 0 48px hsla(27, 95%, 58%, 0.08);
-}
-
-/* Surface elevation levels */
 .surface-0 { background: var(--bg-base); }
 .surface-1 { background: var(--bg-surface); }
 .surface-2 { background: var(--bg-card); }
 .surface-3 { background: var(--bg-raised); }
+
+.gradient-accent {
+  background: linear-gradient(135deg, var(--accent), #f97316cc);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.gradient-accent-bg {
+  background: linear-gradient(135deg, var(--accent), #ea6c0a);
+}
+
+.glow-accent {
+  box-shadow: 0 0 24px var(--accent-glow), 0 0 48px rgba(249,115,22,0.08);
+}
+
+/* Input group with icon */
+.input-group { position: relative; display: flex; align-items: center; }
+.input-group .input { padding-left: 40px; }
+.input-group-icon {
+  position: absolute;
+  left: 13px;
+  color: var(--text-faint);
+  pointer-events: none;
+  display: flex;
+  align-items: center;
+}
+
+/* Social / SSO button row */
+.sso-btn {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 10px;
+  padding: 10px 14px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-bright);
+  border-radius: var(--r-md);
+  color: var(--text-primary);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background var(--t-fast), border-color var(--t-fast), transform var(--t-fast);
+  text-align: left;
+}
+
+.sso-btn:hover {
+  background: var(--bg-hover);
+  border-color: #475569;
+  transform: translateY(-1px);
+}
+
+/* Divider with label */
+.divider-label {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: var(--text-faint);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.divider-label::before,
+.divider-label::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
