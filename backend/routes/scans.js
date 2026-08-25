@@ -301,7 +301,7 @@ router.get('/:id', optionalAuth, async (req, res) => {
     const scan = await Scan.findByPk(req.params.id, {
       include: [
         { model: Product,   as: 'product' },
-        { model: Violation, as: 'violations', attributes: ['id','scanId','ruleId','ruleTitle','status','affectedField','severity','detail','confidence','createdAt'] },
+        { model: Violation, as: 'violations' },
         { model: Report,    as: 'reports' },
       ],
     });
@@ -419,7 +419,7 @@ router.post('/:id/report', optionalAuth, async (req, res) => {
     const scan = await Scan.findByPk(req.params.id, {
       include: [
         { model: Product,   as: 'product' },
-        { model: Violation, as: 'violations', attributes: ['id','scanId','ruleId','ruleTitle','status','affectedField','severity','detail','confidence','createdAt'] },
+        { model: Violation, as: 'violations' },
         { model: Report,    as: 'reports' },
       ],
     });
