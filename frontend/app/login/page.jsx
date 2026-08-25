@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { ShieldCheck } from 'lucide-react';
+import { ShieldCheck, User, Search, Microscope, Briefcase } from 'lucide-react';
 
 export default function Login() {
   const router = useRouter();
@@ -37,6 +37,11 @@ export default function Login() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const setQuickLogin = (roleEmail) => {
+    setEmail(roleEmail);
+    setPassword('demo123');
   };
 
   return (
@@ -78,6 +83,28 @@ export default function Login() {
             {loading ? 'Authenticating...' : 'Secure Login'}
           </button>
         </form>
+
+        <div className="mt-8 pt-6 border-t border-gray-200">
+          <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider text-center mb-4">Quick Access Demo</p>
+          <div className="grid grid-cols-2 gap-3">
+            <button onClick={() => setQuickLogin('field.officer@gov.in')} className="gov-btn-outline flex flex-col items-center justify-center py-3">
+              <Search className="w-5 h-5 mb-1 text-[#0f172a]" />
+              <span className="text-xs">Field Officer</span>
+            </button>
+            <button onClick={() => setQuickLogin('inspector@gov.in')} className="gov-btn-outline flex flex-col items-center justify-center py-3">
+              <ShieldCheck className="w-5 h-5 mb-1 text-[#059669]" />
+              <span className="text-xs">Inspector</span>
+            </button>
+            <button onClick={() => setQuickLogin('analyst@gov.in')} className="gov-btn-outline flex flex-col items-center justify-center py-3">
+              <Microscope className="w-5 h-5 mb-1 text-[#d97706]" />
+              <span className="text-xs">Analyst</span>
+            </button>
+            <button onClick={() => setQuickLogin('admin@gov.in')} className="gov-btn-outline flex flex-col items-center justify-center py-3">
+              <Briefcase className="w-5 h-5 mb-1 text-[#dc2626]" />
+              <span className="text-xs">Admin</span>
+            </button>
+          </div>
+        </div>
 
         <div className="mt-8 pt-6 border-t border-gray-200 text-center">
           <p className="text-xs text-gray-400 font-mono">
