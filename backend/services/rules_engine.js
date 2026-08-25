@@ -378,6 +378,75 @@ function checkMfgDate(fields) {
   return pass(R, T, f);
 }
 
+// C14 — Best Before / Use By / Expiry Date (Rule 6 / Rule 2)
+// Blueprint C14: perishable and limited-shelf-life packages must declare
+// a best-before or use-by date. Not mandatory for all packages — engine
+// returns NOT APPLICABLE if the product category is clearly non-perishable.
+function checkBestBefore(fields, options) {
+  const R  = 'Rule 6 / Rule 2';
+  const T  = 'Best Before / Use By Date';
+  const f  = 'best_before';
+
+  const category    = String(fields.category    || options.category    || '').toLowerCase();
+  const productName = String(fields.product_name || '').toLowerCase();
+
+  // Clearly non-perishable categories — rule is NOT APPLICABLE
+  const nonPerishable = /electronics?|apparel|clothing|textile|hardware|stationery|tool|toy|cosmetic(?!.*food)/i;
+  if (nonPerishable.test(category) || nonPerishable.test(productName)) {
+    return na(R, T, f, 'Best before / use by date is not required for non-perishable goods in this category.');
+  }
+
+  // Food / beverage / pharma / FMCG — best before IS required
+  const perishable = /food|beverage|drink|snack|biscuit|chip|juice|milk|dairy|bread|bakery|meat|fish|egg|medicine|drug|pharma|cream|lotion|shampoo|soap|toothpaste|ayurvedic|herbal/i;
+  const isLikelyPerishable = perishable.test(category) || perishable.test(productName);
+
+  if (!isPresent(fields.best_before)) {
+    // Low OCR confidence → NOT VERIFIED, not PNOC
+    const ocrConf = fields._ocr_confidence ?? fields._ocrConfidence;
+    if (ocrConf !== undefined && ocrConf < 70) {
+      return nv(R, T, f,
+        'Best before / use by date was not detected, but OCR confidence is low. ' +
+        'Cannot confirm absence of this declaration from a low-quality image — physical inspection required.');
+    }
+    if (isLikelyPerishable) {
+      return pnoc(R, T, f, 'high',
+        'Best before / use by date is not declared. ' +
+        'This is mandatory for perishable goods under Rule 6 read with Rule 2. ' +
+        'Required format: Best Before MM/YYYY or Use By Month YYYY.');
+    }
+    // Unknown category — cannot auto-conclude, flag for review
+    return review(R, T, f, 'low',
+      'Best before / use by date was not detected. ' +
+      'If this product is perishable or has a shelf life, this declaration is mandatory under Rule 6. ' +
+      'Officer should verify whether best-before is required for this product category.');
+  }
+
+  // Validate format if present
+  const str = String(fields.best_before).trim();
+  const validFormat = DATE_PATTERNS.some(p => p.test(str)) ||
+    /best\s*before|use\s*by|exp(?:iry)?|bb\s*date/i.test(str);
+
+  if (!validFormat) {
+    return review(R, T, f, 'low',
+      `Best before / use by value "${str}" was detected but could not be validated against a standard format. ` +
+      'Expected format: MM/YYYY or Month YYYY. Officer should verify this field physically.');
+  }
+
+  // Check that best_before is not in the past by more than 5 years (OCR misread)
+  const parsed = parseDate(str);
+  if (parsed) {
+    const now  = new Date();
+    const diffYears = now.getFullYear() - parsed.year;
+    if (diffYears > 5) {
+      return pnoc(R, T, f, 'medium',
+        `Best before date year "${parsed.year}" is more than 5 years in the past. ` +
+        'Possible expired product or OCR misread — verify physically.');
+    }
+  }
+
+  return pass(R, T, f);
+}
+
 // C07 — MRP / Retail Sale Price inclusive of all taxes (Rule 6 / Rule 2)
 function checkMRP(fields) {
   const R = 'Rule 6 / Rule 2';
@@ -744,6 +813,7 @@ function validateCompliance(fieldsMap, rawText = '', options = {}) {
     checkNetQuantityPresence,
     checkUnitConvention,
     checkMfgDate,
+    checkBestBefore,
     checkMRP,
     checkConsumerCare,
     checkMisleadingQuantityWording,

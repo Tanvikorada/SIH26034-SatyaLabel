@@ -132,7 +132,7 @@ router.get('/products', optionalAuth, async (req, res) => {
         COUNT(s.id)       AS "totalScans",
         MAX(s.created_at) AS "lastScanned",
         ROUND(AVG(s.compliance_score)::NUMERIC, 1) AS "avgScore",
-        COUNT(s.id) FILTER (WHERE s.overall_compliance = 'non_compliant') AS "failScans"
+        COUNT(s.id) FILTER (WHERE s.overall_compliance IN ('non_compliant', 'POTENTIAL NON-COMPLIANCE')) AS "failScans"
       FROM products p
       LEFT JOIN scans s ON s.product_id = p.id AND s.status = 'complete'
       GROUP BY p.id, p.product_name, p.brand_name, p.category
