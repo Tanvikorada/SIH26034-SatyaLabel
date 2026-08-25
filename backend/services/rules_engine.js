@@ -65,7 +65,7 @@ function makeResult(rule_id, rule_title, field, status, severity = null, detail 
     severity,     // 'high' | 'medium' | 'low' | null
     detail,
     confidence,   // 'high' (presence/pattern) | 'estimated' (image-based)
-    rule_version: RULE_VERSION.version_id,
+    
   };
 }
 

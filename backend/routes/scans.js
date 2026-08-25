@@ -399,7 +399,7 @@ function formatScanFull(scan) {
       severity:    v.severity,
       detail:      v.detail,
       confidence:  v.confidence,
-      rule_version: 'LM-PC-2011-v1.0',
+      
     })),
     // Latest report (if generated)
     report: scan.reports?.[0] ? {
