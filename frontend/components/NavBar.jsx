@@ -41,7 +41,7 @@ export default function NavBar() {
 
       <div className="hidden md:flex gap-6">
         {links.map(l => (
-          <Link key={l.name} href={l.path} className={	ext-[14px] transition-colors }>
+          <Link key={l.name} href={l.path} className={`text-[14px] transition-colors ${pathname.includes(l.path) ? 'text-white font-medium' : 'text-mist hover:text-white'}`}>
             {l.name}
           </Link>
         ))}
