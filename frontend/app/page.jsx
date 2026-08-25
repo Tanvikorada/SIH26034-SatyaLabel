@@ -678,7 +678,7 @@ function RulingLedger() {
             </div>
 
             <div className="mt-10 pt-4 border-t border-dashed border-[var(--color-border)] flex gap-6 text-[10px] font-mono text-[var(--color-text-muted)] flex-wrap">
-              <span>EVIDENCE ID: {Math.random().toString(36).substring(7).toUpperCase()}</span>
+              <span>EVIDENCE ID: 8XJ1A</span>
               <span>OCR_CONF: {activeId === 'nv' ? '0.00' : '0.94'}</span>
               <span>BOUNDING_BOX: [x,y,w,h]</span>
             </div>
