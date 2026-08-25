@@ -2,7 +2,8 @@
 
 import { useEffect, useState, use } from 'react';
 import { useRouter } from 'next/navigation';
-import { ShieldCheck, ShieldAlert, AlertTriangle, MinusCircle, EyeOff, ChevronDown, ChevronUp } from 'lucide-react';
+import { ShieldCheck, ShieldAlert, AlertTriangle, MinusCircle, EyeOff, ChevronDown, ChevronUp, Check, X, FileText, ArrowLeft } from 'lucide-react';
+import SplitText from '@/components/SplitText';
 
 export default function Results({ params }) {
   const resolvedParams = use(params);
@@ -10,6 +11,7 @@ export default function Results({ params }) {
   const [report, setReport] = useState(null);
   const [loading, setLoading] = useState(true);
   const [expandedRule, setExpandedRule] = useState(null);
+  const [score, setScore] = useState(0);
 
   const API = process.env.NEXT_PUBLIC_API_URL || 'https://satyalabel-backend.onrender.com/api/v1';
 
@@ -31,21 +33,23 @@ export default function Results({ params }) {
       } catch (err) {
         setReport({
           id: resolvedParams.id,
-          product_name: 'Britannia Good Day',
+          product_name: 'Britannia Good Day 250g',
           overall_status: 'POTENTIAL NON-COMPLIANCE',
           extracted_fields: {
             manufacturer_name: 'Britannia Industries Ltd.',
             manufacturer_address: null,
             net_quantity: '250g',
             mrp: '35.00',
-            country_of_origin: null
+            country_of_origin: null,
+            customer_care: '1800-425-4449'
           },
           rule_checks: [
             { rule_id: 'Rule 26', name: 'Country of Origin Missing', status: 'POTENTIAL NON-COMPLIANCE', detail: 'Missing country of origin declaration on imported or domestic product.', severity: 'High' },
+            { rule_id: 'Rule 6(1)(e)', name: 'Customer Care Details', status: 'PASS', detail: 'Valid customer care number and address found.', severity: 'Medium' },
             { rule_id: 'Rule 3', name: 'Manufacturer Address', status: 'MANUAL REVIEW', detail: 'Address found is incomplete. Manual verification required.', severity: 'High' },
-            { rule_id: 'Rule 31', name: 'E-commerce Declarations', status: 'PASS', detail: 'Product is compliant with e-commerce listing requirements.', severity: 'High' }
+            { rule_id: 'Rule 31', name: 'E-commerce Declarations', status: 'NOT APPLICABLE', detail: 'Product marked as physical label, e-commerce rules do not apply.', severity: 'Low' }
           ],
-          raw_ocr_text: "BRITANNIA GOOD DAY CASHEW... MRP 35.00 Net Wt. 250g..."
+          raw_ocr_text: "BRITANNIA GOOD DAY CASHEW... MRP 35.00 Net Wt. 250g... CUSTOMER CARE 1800-425-4449"
         });
       } finally {
         setLoading(false);
@@ -54,146 +58,191 @@ export default function Results({ params }) {
     fetchScan();
   }, [resolvedParams.id]);
 
-  if (loading) return <div className="p-8 text-center text-text-muted font-mono uppercase tracking-wide">Loading Report...</div>;
+  useEffect(() => {
+    if (report && !loading) {
+      // Calculate a fake score based on rules
+      const passed = report.rule_checks.filter(r => r.status === 'PASS').length;
+      const applicable = report.rule_checks.filter(r => r.status !== 'NOT APPLICABLE').length;
+      const targetScore = applicable === 0 ? 100 : Math.round((passed / applicable) * 100);
+      
+      // Animate score
+      let curr = 0;
+      const i = setInterval(() => {
+        curr += 2;
+        if (curr >= targetScore) {
+          setScore(targetScore);
+          clearInterval(i);
+        } else {
+          setScore(curr);
+        }
+      }, 20);
+      return () => clearInterval(i);
+    }
+  }, [report, loading]);
 
-  const getStatusInfo = (status) => {
+  if (loading) {
+    return (
+      <div className="min-h-[60vh] flex flex-col items-center justify-center">
+        <div className="w-16 h-16 border-4 border-gray-100 border-t-accent rounded-full animate-spin mb-4"></div>
+        <p className="font-mono text-sm uppercase tracking-widest text-gray-500 animate-pulse">Compiling Report...</p>
+      </div>
+    );
+  }
+
+  const getStatusColor = (status) => {
     switch(status) {
-      case 'PASS': return { color: 'var(--color-pass)', bg: 'var(--color-pass-bg)', icon: ShieldCheck };
-      case 'POTENTIAL NON-COMPLIANCE': return { color: 'var(--color-noncompliant)', bg: 'var(--color-noncompliant-bg)', icon: ShieldAlert };
-      case 'MANUAL REVIEW': return { color: 'var(--color-review)', bg: 'var(--color-review-bg)', icon: AlertTriangle };
-      case 'NOT APPLICABLE': return { color: 'var(--color-not-applicable)', bg: 'var(--color-not-applicable-bg)', icon: MinusCircle };
-      default: return { color: 'var(--color-not-verified)', bg: 'var(--color-not-verified-bg)', icon: EyeOff };
+      case 'PASS': return 'text-emerald-500 bg-emerald-50 border-emerald-200 shadow-emerald-500/20';
+      case 'POTENTIAL NON-COMPLIANCE': return 'text-red-600 bg-red-50 border-red-200 shadow-red-600/20';
+      case 'MANUAL REVIEW': return 'text-amber-500 bg-amber-50 border-amber-200 shadow-amber-500/20';
+      default: return 'text-slate-500 bg-slate-50 border-slate-200 shadow-slate-500/10';
     }
   };
 
-  const StampBadge = ({ status, ruleId, size = 'sm' }) => {
-    const { color, bg, icon: Icon } = getStatusInfo(status);
-    const isLarge = size === 'lg';
-    
-    return (
-      <div 
-        className={`stamp-badge animate-stamp ${isLarge ? 'border-[3px] p-4' : 'border-2 p-2'}`} 
-        style={{ borderColor: color, backgroundColor: bg }}
-      >
-        <div className="flex items-center gap-2">
-          <Icon className={isLarge ? 'w-6 h-6' : 'w-4 h-4'} style={{ color }} strokeWidth={2} />
-          <span className={`font-mono font-bold uppercase tracking-wide`} style={{ color, fontSize: isLarge ? '1rem' : '0.7rem' }}>
-            {status}
-          </span>
-        </div>
-        {ruleId && (
-          <span className="font-mono text-xs opacity-80 mt-1" style={{ color }}>{ruleId}</span>
-        )}
-      </div>
-    );
+  const getStatusIcon = (status) => {
+    switch(status) {
+      case 'PASS': return <ShieldCheck className="w-6 h-6" />;
+      case 'POTENTIAL NON-COMPLIANCE': return <ShieldAlert className="w-6 h-6" />;
+      case 'MANUAL REVIEW': return <AlertTriangle className="w-6 h-6" />;
+      default: return <MinusCircle className="w-6 h-6" />;
+    }
   };
 
+  const circumference = 2 * Math.PI * 40;
+  const strokeDashoffset = circumference - (score / 100) * circumference;
+
   return (
-    <div className="space-y-6 pb-24 md:pb-0">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end border-b border-border pb-4 gap-4">
-        <div>
-          <h1 className="text-2xl md:text-3xl font-semibold text-text-primary">{report.product_name || 'Verification Report'}</h1>
-          <div className="flex items-center gap-4 mt-2 text-sm font-mono text-text-secondary">
-            <span>ID: {report.id}</span>
-            <span>DATE: {new Date().toLocaleDateString('en-GB')}</span>
+    <div className="max-w-6xl mx-auto space-y-8 pb-24 md:pb-8">
+      
+      {/* Header Panel */}
+      <div className="bg-white rounded-3xl p-6 md:p-8 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100 relative overflow-hidden flex flex-col md:flex-row items-center justify-between gap-6">
+        <div className="absolute top-0 right-0 w-64 h-64 bg-accent/5 rounded-full blur-[80px] pointer-events-none"></div>
+        
+        <div className="flex-1 w-full relative z-10">
+          <button onClick={() => router.push('/dashboard')} className="flex items-center gap-1 text-sm font-bold text-gray-400 hover:text-navy-900 transition-colors mb-4">
+            <ArrowLeft className="w-4 h-4" /> Back to Dashboard
+          </button>
+          <SplitText
+            text={report.product_name || 'Verification Report'}
+            className="text-3xl md:text-4xl font-black text-navy-900 tracking-tight"
+            delay={20}
+            duration={0.6}
+            tag="h1"
+          />
+          <div className="flex flex-wrap items-center gap-4 mt-4 font-mono text-xs uppercase tracking-widest text-gray-500">
+            <span className="bg-gray-100 px-3 py-1 rounded-full text-gray-700">ID: {report.id}</span>
+            <span>Date: {new Date().toLocaleDateString('en-GB')}</span>
           </div>
         </div>
-        <button onClick={() => window.print()} className="gov-btn-outline hidden md:block">
-          Download PDF
-        </button>
+
+        {/* Score Ring */}
+        <div className="shrink-0 flex items-center gap-6 bg-gray-50/50 p-4 rounded-2xl border border-gray-100 relative z-10 w-full md:w-auto justify-center">
+          <div className="relative w-24 h-24">
+            <svg className="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
+              <circle cx="50" cy="50" r="40" stroke="#f1f5f9" strokeWidth="8" fill="none" />
+              <circle cx="50" cy="50" r="40" stroke={score < 50 ? '#dc2626' : score < 100 ? '#d97706' : '#10b981'} strokeWidth="8" fill="none" strokeLinecap="round" 
+                style={{ strokeDasharray: circumference, strokeDashoffset, transition: 'stroke-dashoffset 1s ease-in-out' }} 
+              />
+            </svg>
+            <div className="absolute inset-0 flex flex-col items-center justify-center">
+              <span className="text-2xl font-black text-navy-900">{score}%</span>
+            </div>
+          </div>
+          <div>
+            <div className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-1">Final Verdict</div>
+            <div className={`flex items-center gap-2 px-3 py-1.5 rounded-full border shadow-lg ${getStatusColor(report.overall_status)}`}>
+              {getStatusIcon(report.overall_status)}
+              <span className="font-bold text-sm tracking-wide">{report.overall_status}</span>
+            </div>
+          </div>
+        </div>
       </div>
 
-      <div className="flex flex-col lg:flex-row gap-8 pt-4 items-start">
-        {/* Left Column */}
-        <div className="w-full lg:w-[40%] space-y-6">
-          <div className="gov-card p-2 bg-surface">
-            {/* Placeholder for bounded image overlay */}
-            <div className="aspect-[3/4] bg-navy-100 flex items-center justify-center border border-border">
-              <span className="text-text-muted font-mono text-sm uppercase">Original Scan Evidence</span>
-            </div>
+      <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
+        
+        {/* Left Col: Extracted Data */}
+        <div className="xl:col-span-1 space-y-6">
+          <h2 className="text-xl font-bold text-navy-900 flex items-center gap-2">
+            <FileText className="w-5 h-5 text-accent" /> Extracted Entities
+          </h2>
+          <div className="bg-white rounded-3xl p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100 space-y-4">
+            {Object.entries(report.extracted_fields || {}).map(([k, v]) => (
+              <div key={k} className="group">
+                <p className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-1">{k.replace(/_/g, ' ')}</p>
+                <div className={`font-mono text-sm p-3 rounded-xl border transition-colors ${v ? 'bg-gray-50 border-gray-100 text-gray-800 group-hover:border-gray-300' : 'bg-red-50/50 border-red-100 text-red-500'}`}>
+                  {v ? (
+                    <div className="flex items-start gap-2">
+                      <Check className="w-4 h-4 text-emerald-500 shrink-0 mt-0.5" />
+                      <span className="break-words">{v}</span>
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-2">
+                      <X className="w-4 h-4 shrink-0" />
+                      <span className="italic">Not Found</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+            ))}
           </div>
         </div>
 
-        {/* Right Column */}
-        <div className="w-full lg:w-[60%] space-y-8">
-          
-          <div className="flex justify-between items-start">
-            <div>
-              <p className="text-xs uppercase tracking-wide text-text-muted mb-2">Final Verification Status</p>
-              <StampBadge status={report.overall_status} size="lg" />
-            </div>
-          </div>
-
+        {/* Right Col: Rule Checks */}
+        <div className="xl:col-span-2 space-y-6">
+          <h2 className="text-xl font-bold text-navy-900 flex items-center gap-2">
+            <ShieldCheck className="w-5 h-5 text-accent" /> Rule Adherence Audit
+          </h2>
           <div className="space-y-4">
-            <h3 className="text-lg font-semibold text-text-primary border-b border-border pb-2">Extracted Data Log</h3>
-            <div className="gov-card">
-              <table className="gov-table w-full">
-                <tbody>
-                  {Object.entries(report.extracted_fields || {}).map(([k, v]) => (
-                    <tr key={k}>
-                      <td className="w-1/2 py-2 px-4 text-xs font-semibold uppercase tracking-wide text-text-secondary border-b border-border">
-                        {k.replace(/_/g, ' ')}
-                      </td>
-                      <td className="w-1/2 py-2 px-4 font-mono text-sm text-text-primary border-b border-border">
-                        {v ? (
-                          <div className="flex items-center gap-2">
-                            <span className="w-2 h-2 rounded-full bg-pass shrink-0"></span>
-                            {v}
-                          </div>
-                        ) : (
-                          <div className="flex items-center gap-2">
-                            <span className="w-2 h-2 rounded-full bg-noncompliant shrink-0"></span>
-                            <span className="text-noncompliant">Missing</span>
-                          </div>
-                        )}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-
-          <div className="space-y-4">
-            <h3 className="text-lg font-semibold text-text-primary border-b border-border pb-2">Rule Compliance Details</h3>
-            <div className="space-y-3">
-              {report.rule_checks?.map((check, i) => (
-                <div key={i} className="gov-card p-4 flex flex-col sm:flex-row gap-4 items-start bg-surface-alt">
-                  <div className="shrink-0 mt-1">
-                    <StampBadge status={check.status} />
-                  </div>
-                  <div className="flex-1 w-full">
-                    <div className="flex items-center gap-2 mb-1">
-                      <span className="font-mono text-xs font-bold text-text-muted">{check.rule_id}</span>
-                      <span className="font-semibold text-text-primary text-sm">{check.name}</span>
-                    </div>
-                    <p className="text-sm text-text-secondary mb-2">{check.detail}</p>
+            {report.rule_checks?.map((check, i) => {
+              const isExpanded = expandedRule === i;
+              const colorClasses = getStatusColor(check.status);
+              
+              return (
+                <div key={i} className={`bg-white rounded-2xl overflow-hidden shadow-[0_4px_20px_rgb(0,0,0,0.03)] border transition-all duration-300 ${isExpanded ? 'ring-2 ring-navy-900/10' : 'border-gray-100 hover:border-gray-300'}`}>
+                  <div className="p-5 flex flex-col sm:flex-row gap-5 sm:items-center justify-between cursor-pointer" onClick={() => setExpandedRule(isExpanded ? null : i)}>
                     
-                    <button 
-                      onClick={() => setExpandedRule(expandedRule === i ? null : i)}
-                      className="flex items-center gap-1 text-xs font-semibold text-navy-900 uppercase tracking-wide hover:underline mt-2"
-                    >
-                      {expandedRule === i ? <ChevronUp className="w-4 h-4"/> : <ChevronDown className="w-4 h-4"/>}
-                      {expandedRule === i ? 'Hide Evidence' : 'Show Evidence'}
-                    </button>
-                    
-                    {expandedRule === i && (
-                      <div className="mt-3 p-3 bg-navy-900 text-surface rounded-sm border border-navy-700">
-                        <p className="font-mono text-xs whitespace-pre-wrap">{report.raw_ocr_text.substring(0, 100)}...</p>
+                    <div className="flex items-start sm:items-center gap-4">
+                      <div className={`shrink-0 p-3 rounded-xl border ${colorClasses}`}>
+                        {getStatusIcon(check.status)}
                       </div>
-                    )}
+                      <div>
+                        <div className="flex items-center gap-2 mb-1">
+                          <span className="font-mono text-xs font-bold text-gray-400 bg-gray-100 px-2 py-0.5 rounded">{check.rule_id}</span>
+                          <span className={`text-xs font-bold uppercase tracking-wider ${check.status === 'PASS' ? 'text-emerald-600' : check.status === 'POTENTIAL NON-COMPLIANCE' ? 'text-red-600' : 'text-amber-600'}`}>
+                            {check.status}
+                          </span>
+                        </div>
+                        <h3 className="font-bold text-gray-900">{check.name}</h3>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-4 text-sm text-gray-500 font-medium">
+                      <span className="hidden sm:inline">View Evidence</span>
+                      {isExpanded ? <ChevronUp className="w-5 h-5 text-navy-900" /> : <ChevronDown className="w-5 h-5 text-gray-400" />}
+                    </div>
+                  </div>
+
+                  {/* Expanded Evidence Drawer */}
+                  <div className={`transition-all duration-300 ease-in-out bg-gray-50 border-t border-gray-100 ${isExpanded ? 'max-h-[500px] opacity-100' : 'max-h-0 opacity-0 overflow-hidden'}`}>
+                    <div className="p-6 space-y-4">
+                      <div>
+                        <p className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-2">Finding</p>
+                        <p className="text-sm text-gray-700 leading-relaxed">{check.detail}</p>
+                      </div>
+                      
+                      <div>
+                        <p className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-2">Raw OCR Trace</p>
+                        <div className="bg-[#0A1628] rounded-xl p-4 font-mono text-xs text-green-400 shadow-inner">
+                          {report.raw_ocr_text.substring(0, 150)}...
+                          <div className="mt-2 text-gray-500">EOF</div>
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 </div>
-              ))}
-            </div>
+              );
+            })}
           </div>
         </div>
-      </div>
-
-      <div className="md:hidden fixed bottom-0 left-0 w-full bg-surface-alt border-t border-border p-4 z-40">
-        <button onClick={() => window.print()} className="w-full gov-btn">
-          Download PDF Report
-        </button>
       </div>
     </div>
   );
