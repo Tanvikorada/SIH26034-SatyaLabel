@@ -33,6 +33,9 @@ export default function Results({ params }) {
 
   useEffect(() => {
     if (!localStorage.getItem('token')) return router.push('/login');
+    let isMounted = true;
+    let pollTimeout = null;
+
     const fetchScan = async () => {
       try {
         const res = await fetch(`${API}/scans/${resolvedParams.id}`, {
@@ -40,8 +43,19 @@ export default function Results({ params }) {
         });
         if (!res.ok) throw new Error("API Error");
         const json = await res.json();
-        setReport(json.data || json);
+        const data = json.data || json;
+        
+        if (!isMounted) return;
+
+        if (data.status === 'processing') {
+          // Poll every 2.5 seconds if still processing
+          pollTimeout = setTimeout(fetchScan, 2500);
+        } else {
+          setReport(data);
+          setLoading(false);
+        }
       } catch {
+        if (!isMounted) return;
         setReport({
           id: resolvedParams.id, status: 'completed', overallStatus: 'POTENTIAL NON-COMPLIANCE',
           compliance_score: 42, product: { product_name: 'Mock Product', brand_name: 'Mock Brand' },
@@ -51,13 +65,50 @@ export default function Results({ params }) {
             { rule_id: 'C05', detail_text: 'Veg logo missing.', severity: 'low', status: 'MANUAL REVIEW' }
           ]
         });
-      } finally { setLoading(false); }
+        setLoading(false);
+      }
     };
     fetchScan();
+
+    return () => {
+      isMounted = false;
+      if (pollTimeout) clearTimeout(pollTimeout);
+    };
   }, [resolvedParams.id, router, API]);
 
-  if (loading) return <div className="min-h-screen bg-background text-text-primary"><NavBar/><div className="p-10 text-text-secondary text-[14px]">Loading report...</div></div>;
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background text-text-primary flex flex-col">
+        <NavBar />
+        <div className="flex-1 flex flex-col items-center justify-center gap-6 pb-32">
+          <div className="w-12 h-12 rounded-full border-4 border-border border-t-[var(--color-primary)] animate-spin"></div>
+          <div className="flex flex-col items-center gap-2">
+            <h2 className="text-[20px] font-medium tracking-tight">Analyzing Label...</h2>
+            <p className="text-[14px] text-text-secondary font-mono">Running OCR and Legal Metrology Rules Engine</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
   if (!report) return <div className="min-h-screen bg-background text-text-primary"><NavBar/><div className="p-10 text-red-500">Not found</div></div>;
+
+  if (report.status === 'failed') {
+    return (
+      <div className="min-h-screen bg-background text-text-primary flex flex-col">
+        <NavBar />
+        <div className="flex-1 flex items-center justify-center p-6 pb-32">
+          <div className="mello-card p-8 max-w-md w-full flex flex-col items-center text-center gap-4 border-red-900/50">
+            <div className="w-16 h-16 rounded-full bg-red-500/10 flex items-center justify-center mb-2">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#ef4444" strokeWidth="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+            </div>
+            <h2 className="text-[22px] font-medium text-red-500">Scan Failed</h2>
+            <p className="text-[14px] text-text-secondary mb-4">{report.errorMessage || report.error_message || "The AI engine could not extract text from this image."}</p>
+            <button onClick={() => router.push('/upload')} className="mello-btn-secondary w-full">Try Another Image</button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   const getBadge = (s) => {
     if (s === 'PASS') return 'mello-badge-pass';
