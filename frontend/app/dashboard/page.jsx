@@ -23,7 +23,22 @@ export default function Dashboard() {
         const res = await fetch(`${API}/dashboard/stats`, {
           headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
         });
-        if (res.ok) setStats(await res.json());
+        if (res.ok) {
+          const json = await res.json();
+          const d = json.data || json;
+          setStats({
+            total_scans: d.total_scans || 0,
+            compliant: d.compliant_count || 0,
+            violations: d.non_compliant_count || 0,
+            pending: d.needs_review_count || 0,
+            recent: (d.recent_scans || []).map(s => ({
+              id: s.id,
+              name: s.product_name || s.brand_name || 'Unknown Product',
+              status: s.overall_compliance || s.overallStatus || 'NOT VERIFIED',
+              date: new Date(s.created_at).toLocaleDateString()
+            }))
+          });
+        }
         else throw new Error('Failed');
       } catch (err) {
         setStats({

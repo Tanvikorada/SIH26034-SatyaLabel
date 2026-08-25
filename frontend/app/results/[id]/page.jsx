@@ -26,7 +26,22 @@ export default function Results({ params }) {
           headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
         });
         if (res.ok) {
-          setReport(await res.json());
+          const json = await res.json();
+          const d = json.data || json;
+          setReport({
+            id: d.id,
+            product_name: d.product?.product_name || d.product?.brand_name || 'Verification Report',
+            overall_status: d.overall_compliance || d.overallStatus || 'NOT VERIFIED',
+            extracted_fields: d.extracted_fields || d.extractedFields || {},
+            raw_ocr_text: d.ocr_raw_text || d.ocrRawText || 'No OCR text available.',
+            rule_checks: (d.violations || []).map(v => ({
+              rule_id: v.rule_id || v.ruleId,
+              name: v.rule_title || v.ruleTitle || v.rule_id,
+              status: v.status || 'NOT VERIFIED',
+              detail: v.detail || 'No details provided.',
+              severity: v.severity || 'Medium'
+            }))
+          });
         } else {
           throw new Error('Failed');
         }
