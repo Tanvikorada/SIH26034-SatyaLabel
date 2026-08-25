@@ -57,16 +57,16 @@ export default function UploadPage() {
       formData.append('image', file);
       formData.append('metadata', JSON.stringify(metadata));
 
-      const res = await fetch(${API}/scans/upload, {
+      const res = await fetch(`${API}/scans/upload`, {
         method: 'POST',
-        headers: { 'Authorization': Bearer  },
+        headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` },
         body: formData
       });
       if (!res.ok) throw new Error("API Error");
       const data = await res.json();
       
       toast.success('Scan complete', { id: toastId });
-      setTimeout(() => router.push(/results/), 1000);
+      setTimeout(() => router.push(`/results/${data.scanId || data.id || 'mock'}`), 1000);
     } catch (err) {
       await saveToSyncQueue(file, metadata);
       toast.warning('Network Offline', { id: toastId, description: 'Scan queued locally.' });
@@ -80,7 +80,7 @@ export default function UploadPage() {
       let i = 0;
       const interval = setInterval(() => {
         if (i < msgs.length) {
-          setLogs(prev => [...prev, > ]);
+          setLogs(prev => [...prev, `> ${msgs[i]}`]);
           i++;
         }
       }, 800);
@@ -135,7 +135,7 @@ export default function UploadPage() {
 
           <div className="mello-card-flat p-6 col-span-2 flex flex-col h-[480px]">
             <h3 className="text-[14px] font-medium tracking-tight mb-4 flex items-center gap-2">
-              <div className={w-2 h-2 rounded-full }></div>
+              <div className={`w-2 h-2 rounded-full ${loading ? 'bg-[#4ade80] animate-pulse' : 'bg-graphite'}`}></div>
               System Output
             </h3>
             <div className="flex-1 font-mono text-[12px] leading-relaxed text-ash flex flex-col gap-2 overflow-y-auto bg-midnight rounded-lg p-4 border border-graphite">

@@ -12,7 +12,7 @@ export default function RulesPage() {
     if (!localStorage.getItem('token') || localStorage.getItem('role') !== 'admin') return router.push('/dashboard');
     const fetchRules = async () => {
       try {
-        const res = await fetch(${process.env.NEXT_PUBLIC_API_URL || 'https://satyalabel-backend.onrender.com/api/v1'}/rules);
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'https://satyalabel-backend.onrender.com/api/v1'}/rules`);
         if (!res.ok) throw new Error("API Error");
         const json = await res.json();
         setRules(json.data || json || []);
@@ -37,7 +37,7 @@ export default function RulesPage() {
             <div key={i} className="mello-card-flat p-6 flex flex-col group hover:border-mist transition-colors">
               <div className="flex justify-between items-center mb-4">
                 <div className="flex items-center gap-3">
-                  <div className={w-2 h-2 rounded-full }></div>
+                  <div className={`w-2 h-2 rounded-full ${r.active ? 'bg-[#4ade80]' : 'bg-fog'}`}></div>
                   <span className="font-mono text-[13px] text-mist">{r.rule_id}</span>
                 </div>
                 <span className={r.active ? 'mello-badge-pass' : 'mello-badge-na'}>{r.active ? 'Active' : 'Inactive'}</span>
@@ -46,7 +46,7 @@ export default function RulesPage() {
               <p className="text-[14px] text-fog leading-relaxed mb-6 flex-1">{r.description}</p>
               
               <div className="pt-4 border-t border-graphite flex justify-between items-center">
-                <span className={	ext-[12px] font-medium uppercase tracking-wider }>{r.severity} severity</span>
+                <span className={`text-[12px] font-medium uppercase tracking-wider ${r.severity === 'high' ? 'text-[#f87171]' : 'text-mist'}`}>{r.severity} severity</span>
                 <button className="mello-btn-secondary !py-1 !px-3 !text-[12px] opacity-0 group-hover:opacity-100 transition-opacity">Edit</button>
               </div>
             </div>

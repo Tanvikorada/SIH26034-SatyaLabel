@@ -12,7 +12,7 @@ export default function Dashboard() {
     if (!localStorage.getItem('token')) return router.push('/login');
     const fetchStats = async () => {
       try {
-        const res = await fetch(${process.env.NEXT_PUBLIC_API_URL || 'https://satyalabel-backend.onrender.com/api/v1'}/dashboard/stats);
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'https://satyalabel-backend.onrender.com/api/v1'}/dashboard/stats`);
         if (!res.ok) throw new Error("API Error");
         const json = await res.json();
         setStats(json.data || json);
@@ -73,7 +73,7 @@ export default function Dashboard() {
             </h3>
             <div className="flex flex-col">
               {(stats.recent_scans || stats.recent || []).map((scan, i) => (
-                <div key={i} className="flex justify-between items-center py-4 border-b border-graphite last:border-0 cursor-pointer hover:bg-charcoal/50 rounded-lg px-2 -mx-2 transition-colors" onClick={() => router.push(/results/)}>
+                <div key={i} className="flex justify-between items-center py-4 border-b border-graphite last:border-0 cursor-pointer hover:bg-charcoal/50 rounded-lg px-2 -mx-2 transition-colors" onClick={() => router.push(`/results/${scan.id || 'mock'}`)}>
                   <div>
                     <div className="text-[14px] font-medium text-white">{scan.product_name || 'Unknown Product'}</div>
                     <div className="text-[12px] text-fog">{new Date(scan.created_at).toLocaleString()}</div>
