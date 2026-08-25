@@ -51,7 +51,7 @@ export default function NavBar() {
         {/* Center Links */}
         <div className="hidden md:flex gap-8">
           {links.map(l => (
-            <Link key={l.name} href={l.path} className={	ext-[14px]  text-obsidian-ink}>
+            <Link key={l.name} href={l.path} className={`text-[14px] ${pathname.includes(l.path) ? 'font-bold' : 'font-normal'} text-obsidian-ink`}>
               {l.name}
             </Link>
           ))}

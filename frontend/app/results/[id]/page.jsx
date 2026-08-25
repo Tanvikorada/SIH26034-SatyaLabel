@@ -25,7 +25,7 @@ export default function Results({ params }) {
       const pdfWidth = pdf.internal.pageSize.getWidth();
       const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
       pdf.addImage(canvas.toDataURL('image/png'), 'PNG', 0, 0, pdfWidth, pdfHeight);
-      pdf.save(Notice_.pdf);
+      pdf.save(`Notice_${report.id}.pdf`);
       toast.success('Downloaded', { id: toastId });
     } catch (err) {
       toast.error('Failed', { id: toastId });
@@ -36,8 +36,8 @@ export default function Results({ params }) {
     if (!localStorage.getItem('token')) return router.push('/login');
     const fetchScan = async () => {
       try {
-        const res = await fetch(${API}/scans/, {
-          headers: { 'Authorization': Bearer  }
+        const res = await fetch(`${API}/scans/${resolvedParams.id}`, {
+          headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
         });
         const json = await res.json();
         setReport(json.data || json);

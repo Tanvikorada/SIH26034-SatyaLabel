@@ -12,7 +12,7 @@ export default function HistoryPage() {
     if (!localStorage.getItem('token')) return router.push('/login');
     const fetchScans = async () => {
       try {
-        const res = await fetch(${process.env.NEXT_PUBLIC_API_URL || 'https://satyalabel-backend.onrender.com/api/v1'}/scans);
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'https://satyalabel-backend.onrender.com/api/v1'}/scans`);
         const json = await res.json();
         setScans(json.data || json || []);
       } catch {
@@ -46,7 +46,7 @@ export default function HistoryPage() {
                 <span className={s.overall_compliance === 'PASS' ? 'badge-pass' : 'badge-fail'}>{s.overall_compliance}</span>
               </div>
               <div className="w-1/6 text-right">
-                <button onClick={() => router.push(/results/)} className="text-[13px] font-bold text-obsidian-ink hover:underline">View &rarr;</button>
+                <button onClick={() => router.push(`/results/${s.id}`)} className="text-[13px] font-bold text-obsidian-ink hover:underline">View &rarr;</button>
               </div>
             </div>
           ))}
