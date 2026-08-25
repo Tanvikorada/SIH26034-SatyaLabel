@@ -1,48 +1,55 @@
 "use client";
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { FileSearch } from 'lucide-react';
+import { Search } from 'lucide-react';
 
-export default function HistoryPage() {
+export default function History() {
   const router = useRouter();
-  const [history, setHistory] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [filter, setFilter] = useState('ALL');
 
-  useEffect(() => {
-    // In a real app, we fetch from API. 
-    // For MVP, we load mock history to show table layout
-    setTimeout(() => {
-      setHistory([
-        { id: 'SCN-84920', product: 'Britannia Good Day', date: '2026-08-25', status: 'PASS' },
-        { id: 'SCN-84919', product: 'Maggi Noodles 70g', date: '2026-08-25', status: 'POTENTIAL NON-COMPLIANCE' },
-        { id: 'SCN-84918', product: 'Amul Taaza 1L', date: '2026-08-24', status: 'MANUAL REVIEW' },
-        { id: 'SCN-84917', product: 'Generic Rice 5kg', date: '2026-08-24', status: 'PASS' },
-      ]);
-      setLoading(false);
-    }, 400);
-  }, []);
+  const scans = [
+    { id: 'SCN-84920', name: 'Britannia Good Day', date: '25 Aug 2026', status: 'PASS' },
+    { id: 'SCN-84919', name: 'Generic Milk 1L', date: '25 Aug 2026', status: 'POTENTIAL NON-COMPLIANCE' },
+    { id: 'SCN-84918', name: 'Maggi Noodles', date: '25 Aug 2026', status: 'MANUAL REVIEW' },
+    { id: 'SCN-84917', name: 'Amul Butter 100g', date: '24 Aug 2026', status: 'PASS' },
+    { id: 'SCN-84916', name: 'Sony Headphones', date: '24 Aug 2026', status: 'NOT APPLICABLE' },
+  ];
 
-  const getStatusColor = (status) => {
-    if (status === 'PASS') return 'text-emerald-700 bg-emerald-100';
-    if (status === 'POTENTIAL NON-COMPLIANCE') return 'text-red-700 bg-red-100';
-    if (status === 'MANUAL REVIEW') return 'text-amber-700 bg-amber-100';
-    return 'text-gray-700 bg-gray-100';
-  };
+  const filters = ['ALL', 'PASS', 'POTENTIAL NON-COMPLIANCE', 'MANUAL REVIEW', 'NOT APPLICABLE'];
 
-  if (loading) return <div className="p-8 text-center text-gray-500">Loading history...</div>;
+  const filteredScans = filter === 'ALL' ? scans : scans.filter(s => s.status === filter);
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-[#0f172a]">Inspection History</h1>
-          <p className="text-gray-500">Repository of all scanned packaging labels</p>
-        </div>
-        <button onClick={() => router.push('/upload')} className="gov-btn flex items-center gap-2">
-          <FileSearch className="w-4 h-4" />
-          New Scan
-        </button>
+      <div>
+        <h1 className="text-2xl md:text-3xl font-semibold text-text-primary">Repository</h1>
+        <p className="text-text-secondary text-sm md:text-base mt-1">Search and filter past inspections</p>
+      </div>
+
+      <div className="relative">
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-text-muted" />
+        <input 
+          type="text" 
+          placeholder="Search by Scan ID or Product Name..."
+          className="w-full pl-10 pr-4 py-3 border border-border rounded-sm bg-surface-alt text-sm focus:outline-none focus:border-navy-900"
+        />
+      </div>
+
+      <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
+        {filters.map(f => (
+          <button
+            key={f}
+            onClick={() => setFilter(f)}
+            className={`whitespace-nowrap px-4 py-1.5 rounded-full text-xs font-semibold uppercase tracking-wide border transition-colors ${
+              filter === f 
+                ? 'bg-navy-900 text-white border-navy-900' 
+                : 'bg-surface-alt text-text-secondary border-border hover:border-navy-900'
+            }`}
+          >
+            {f}
+          </button>
+        ))}
       </div>
 
       <div className="gov-table-container">
@@ -50,36 +57,29 @@ export default function HistoryPage() {
           <thead>
             <tr>
               <th>Scan ID</th>
-              <th>Product Name</th>
+              <th>Product</th>
               <th>Date</th>
-              <th>Compliance Status</th>
-              <th>Action</th>
+              <th>Status</th>
             </tr>
           </thead>
           <tbody>
-            {history.map(item => (
-              <tr key={item.id}>
-                <td className="font-mono font-medium">{item.id}</td>
-                <td className="font-medium text-[#0f172a]">{item.product}</td>
-                <td>{item.date}</td>
+            {filteredScans.map(s => (
+              <tr key={s.id} onClick={() => router.push(`/results/${s.id}`)} className="cursor-pointer">
+                <td className="font-mono">{s.id}</td>
+                <td className="font-medium">{s.name}</td>
+                <td className="text-text-muted font-mono">{s.date}</td>
                 <td>
-                  <span className={`px-2 py-1 text-xs font-bold rounded ${getStatusColor(item.status)}`}>
-                    {item.status}
-                  </span>
-                </td>
-                <td>
-                  <button 
-                    onClick={() => router.push(`/results/${item.id}`)}
-                    className="text-sm font-medium text-blue-600 hover:underline"
-                  >
-                    View Report
-                  </button>
+                  <div className="stamp-badge border-[1px] p-1" style={{ 
+                    borderColor: s.status === 'PASS' ? 'var(--color-pass)' : s.status === 'POTENTIAL NON-COMPLIANCE' ? 'var(--color-noncompliant)' : s.status === 'MANUAL REVIEW' ? 'var(--color-review)' : 'var(--color-na)',
+                    backgroundColor: s.status === 'PASS' ? 'var(--color-pass-bg)' : s.status === 'POTENTIAL NON-COMPLIANCE' ? 'var(--color-noncompliant-bg)' : s.status === 'MANUAL REVIEW' ? 'var(--color-review-bg)' : 'var(--color-na-bg)',
+                  }}>
+                    <span className="font-mono text-[10px] font-bold uppercase" style={{
+                        color: s.status === 'PASS' ? 'var(--color-pass)' : s.status === 'POTENTIAL NON-COMPLIANCE' ? 'var(--color-noncompliant)' : s.status === 'MANUAL REVIEW' ? 'var(--color-review)' : 'var(--color-na)',
+                    }}>{s.status}</span>
+                  </div>
                 </td>
               </tr>
             ))}
-            {history.length === 0 && (
-              <tr><td colSpan="5" className="text-center text-gray-500 py-8">No scans found.</td></tr>
-            )}
           </tbody>
         </table>
       </div>

@@ -1,11 +1,12 @@
 import './globals.css';
 import NavBar from '@/components/NavBar';
+import PageTransition from '@/components/PageTransition';
 
 export const metadata = {
   title: 'SatyaLabel — Official Verification',
   description: 'Legal Metrology Compliance Tool',
   manifest: '/manifest.json',
-  themeColor: '#0f172a',
+  themeColor: '#0B1F3A',
   viewport: 'width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0',
 };
 
@@ -18,7 +19,9 @@ export default function RootLayout({ children }) {
       <body>
         <NavBar />
         <main className="max-w-6xl mx-auto px-4 py-8">
-          {children}
+          <PageTransition>
+            {children}
+          </PageTransition>
         </main>
       </body>
     </html>
