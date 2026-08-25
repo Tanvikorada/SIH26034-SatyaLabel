@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import SplitText from '@/components/SplitText';
 import { Button } from '@/components/ui/button';
+import { toast } from 'sonner';
 
 export default function Login() {
   const router = useRouter();
@@ -16,6 +17,7 @@ export default function Login() {
   const handleLogin = async (e) => {
     e.preventDefault();
     setLoading(true);
+    const toastId = toast.loading('Authenticating credentials...');
     try {
       const res = await fetch(`${API}/auth/login`, {
         method: 'POST',
@@ -26,15 +28,18 @@ export default function Login() {
       if (res.ok && data.token) {
         localStorage.setItem('token', data.token);
         localStorage.setItem('email', email);
+        toast.success('Login Successful', { id: toastId, description: 'Welcome to SatyaLabel.' });
         router.push('/dashboard');
       } else {
         localStorage.setItem('token', 'demo-token');
         localStorage.setItem('email', email);
+        toast.warning('Demo Mode Active', { id: toastId, description: 'Authentication failed. Falling back to offline mode.' });
         router.push('/dashboard');
       }
     } catch (err) {
       localStorage.setItem('token', 'demo-token');
       localStorage.setItem('email', email);
+      toast.warning('Network Offline', { id: toastId, description: 'Backend unreachable. Activating offline mode.' });
       router.push('/dashboard');
     } finally {
       setLoading(false);

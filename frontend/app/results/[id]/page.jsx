@@ -1,9 +1,12 @@
 "use client";
 
-import { useEffect, useState, use } from 'react';
+import { useEffect, useState, use, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import { ShieldCheck, ShieldAlert, AlertTriangle, MinusCircle, EyeOff, ChevronDown, ChevronUp, Check, X, FileText, ArrowLeft } from 'lucide-react';
+import { ShieldCheck, ShieldAlert, AlertTriangle, MinusCircle, EyeOff, ChevronDown, ChevronUp, Check, X, FileText, ArrowLeft, Download } from 'lucide-react';
 import SplitText from '@/components/SplitText';
+import { toast } from 'sonner';
+import html2canvas from 'html2canvas';
+import { jsPDF } from 'jspdf';
 
 export default function Results({ params }) {
   const resolvedParams = use(params);
@@ -12,8 +15,28 @@ export default function Results({ params }) {
   const [loading, setLoading] = useState(true);
   const [expandedRule, setExpandedRule] = useState(null);
   const [score, setScore] = useState(0);
+  
+  const reportRef = useRef(null);
 
   const API = process.env.NEXT_PUBLIC_API_URL || 'https://satyalabel-backend.onrender.com/api/v1';
+
+  const downloadPDF = async () => {
+    const toastId = toast.loading('Generating Official Notice PDF...');
+    try {
+      const element = reportRef.current;
+      const canvas = await html2canvas(element, { scale: 2, useCORS: true });
+      const imgData = canvas.toDataURL('image/png');
+      const pdf = new jsPDF('p', 'mm', 'a4');
+      const pdfWidth = pdf.internal.pageSize.getWidth();
+      const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+      
+      pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+      pdf.save(`SatyaLabel_Notice_${report.id}.pdf`);
+      toast.success('Notice Downloaded', { id: toastId, description: 'The official PDF has been saved to your device.' });
+    } catch (err) {
+      toast.error('Failed to generate PDF', { id: toastId, description: err.message });
+    }
+  };
 
   useEffect(() => {
     if (!localStorage.getItem('token')) {
@@ -75,12 +98,10 @@ export default function Results({ params }) {
 
   useEffect(() => {
     if (report && !loading) {
-      // Calculate a fake score based on rules
       const passed = report.rule_checks.filter(r => r.status === 'PASS').length;
       const applicable = report.rule_checks.filter(r => r.status !== 'NOT APPLICABLE').length;
       const targetScore = applicable === 0 ? 100 : Math.round((passed / applicable) * 100);
       
-      // Animate score
       let curr = 0;
       const i = setInterval(() => {
         curr += 2;
@@ -126,16 +147,21 @@ export default function Results({ params }) {
   const strokeDashoffset = circumference - (score / 100) * circumference;
 
   return (
-    <div className="max-w-6xl mx-auto space-y-8 pb-24 md:pb-8">
+    <div className="max-w-6xl mx-auto space-y-8 pb-24 md:pb-8" ref={reportRef}>
       
       {/* Header Panel */}
       <div className="bg-white rounded-3xl p-6 md:p-8 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100 relative overflow-hidden flex flex-col md:flex-row items-center justify-between gap-6">
         <div className="absolute top-0 right-0 w-64 h-64 bg-accent/5 rounded-full blur-[80px] pointer-events-none"></div>
         
         <div className="flex-1 w-full relative z-10">
-          <button onClick={() => router.push('/dashboard')} className="flex items-center gap-1 text-sm font-bold text-gray-400 hover:text-navy-900 transition-colors mb-4">
-            <ArrowLeft className="w-4 h-4" /> Back to Dashboard
-          </button>
+          <div className="flex justify-between items-start w-full">
+            <button onClick={() => router.push('/dashboard')} className="flex items-center gap-1 text-sm font-bold text-gray-400 hover:text-navy-900 transition-colors mb-4" data-html2canvas-ignore>
+              <ArrowLeft className="w-4 h-4" /> Back to Dashboard
+            </button>
+            <button onClick={downloadPDF} className="flex items-center gap-2 bg-navy-900 text-white px-4 py-2 rounded-lg text-sm font-bold hover:bg-navy-700 transition-colors shadow-lg shadow-navy-900/20" data-html2canvas-ignore>
+              <Download className="w-4 h-4" /> Download PDF
+            </button>
+          </div>
           <SplitText
             text={report.product_name || 'Verification Report'}
             className="text-3xl md:text-4xl font-black text-navy-900 tracking-tight"

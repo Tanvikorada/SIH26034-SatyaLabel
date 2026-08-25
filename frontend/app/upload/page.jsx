@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { Camera, FileImage, ShieldCheck, ScanLine, BrainCircuit, Sparkles } from 'lucide-react';
 import SplitText from '@/components/SplitText';
 import { Button } from '@/components/ui/button';
+import { toast } from 'sonner';
 
 export default function UploadPage() {
   const router = useRouter();
@@ -56,14 +57,17 @@ export default function UploadPage() {
     if (selectedFile) {
       setFile(selectedFile);
       setPreview(URL.createObjectURL(selectedFile));
+      toast.success('Image selected', { description: selectedFile.name });
     }
   };
 
   const handleUpload = async (e) => {
     e.preventDefault();
-    if (!file) return alert('Please capture or select an image');
+    if (!file) return toast.error('No image selected', { description: 'Please capture or upload a product label.' });
     
     setLoading(true);
+    const toastId = toast.loading('Initializing compliance scan...');
+    
     try {
       const formData = new FormData();
       formData.append('image', file);
@@ -82,12 +86,14 @@ export default function UploadPage() {
       
       const data = await res.json();
       if (res.ok) {
+        toast.success('Scan complete', { id: toastId, description: 'Redirecting to enforcement report.' });
         setTimeout(() => router.push(`/results/${data.scanId || data.id}`), 1000);
       } else {
-        alert(data.error || 'Upload failed');
+        toast.error('Scan failed', { id: toastId, description: data.error || 'Server rejected the upload.' });
         setLoading(false);
       }
     } catch (err) {
+      toast.error('Network Error', { id: toastId, description: 'Backend unreachable. Using demo data fallback.' });
       setTimeout(() => router.push('/results/DEMO-SCN-01'), 4000); // Wait longer to show off logs
     }
   };

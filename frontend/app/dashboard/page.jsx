@@ -36,6 +36,10 @@ export default function Dashboard() {
               name: s.product_name || s.brand_name || 'Unknown Product',
               status: s.overall_compliance || s.overallStatus || 'NOT VERIFIED',
               date: new Date(s.created_at).toLocaleDateString()
+            })),
+            chartData: (d.top_violated_rules || []).map(r => ({
+              name: r.rule_title || r.ruleId,
+              count: Number(r.count)
             }))
           });
         }
@@ -43,6 +47,12 @@ export default function Dashboard() {
       } catch (err) {
         setStats({
           total_scans: 124, compliant: 89, violations: 15, pending: 20,
+          chartData: [
+            { name: 'Rule 26', count: 12 },
+            { name: 'Rule 3', count: 8 },
+            { name: 'Rule 31', count: 5 },
+            { name: 'Rule 6', count: 2 },
+          ],
           recent: [
             { id: 'SCN-84920', name: 'Britannia Good Day', status: 'PASS', date: '2 mins ago' },
             { id: 'SCN-84919', name: 'Generic Milk 1L', status: 'POTENTIAL NON-COMPLIANCE', date: '15 mins ago' },
@@ -56,14 +66,9 @@ export default function Dashboard() {
     fetchStats();
   }, []);
 
-  const chartData = [
-    { name: 'Rule 26', count: 12 },
-    { name: 'Rule 3', count: 8 },
-    { name: 'Rule 31', count: 5 },
-    { name: 'Rule 6', count: 2 },
-  ];
-
   if (loading) return <div className="p-8 text-center font-mono text-sm uppercase text-text-muted">Loading Data...</div>;
+
+  const chartData = stats?.chartData || [];
 
   const StatCard = ({ title, value }) => (
     <div className="gov-card p-6 shadow-sm hover:shadow-md transition-shadow bg-white rounded-xl border border-gray-100">
