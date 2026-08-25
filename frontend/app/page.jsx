@@ -79,7 +79,8 @@ function GrainCanvas() {
       if (frame % 2 !== 0) { rafId = requestAnimationFrame(draw); return; }
       const w = canvas.width = canvas.offsetWidth;
       const h = canvas.height = canvas.offsetHeight;
-      const imageData = ctx.createImageData(w, h);
+      if (w === 0 || h === 0) { rafId = requestAnimationFrame(draw); return; }
+        const imageData = ctx.createImageData(w, h);
       const data = imageData.data;
       for (let i = 0; i < data.length; i += 4) {
         const v = Math.random() * 255;
