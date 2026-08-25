@@ -4,7 +4,7 @@
   "description": "SIH26034 - Legal Metrology Compliance Checker Backend",
   "main": "server.js",
   "engines": {
-    "node": ">=22.0.0"
+    "node": "22.x"
   },
   "scripts": {
     "start": "node server.js",
