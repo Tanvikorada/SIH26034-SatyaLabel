@@ -108,7 +108,7 @@ export default function Dashboard() {
                 </tr>
               </thead>
               <tbody>
-                {stats.recent.map(r => (
+                {stats.recent?.map(r => (
                   <tr key={r.id} onClick={() => router.push(`/results/${r.id}`)} className="cursor-pointer">
                     <td className="font-mono">{r.id}</td>
                     <td className="font-medium">{r.name}</td>
