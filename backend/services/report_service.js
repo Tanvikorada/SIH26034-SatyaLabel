@@ -203,7 +203,15 @@ async function generateReport(scan, outputDir = './reports') {
     country_of_origin: 'Country of Origin',
   };
 
-  const fields = scan.extractedFields || [];
+  const extractedObj = scan.extractedFields || {};
+  const fields = Array.isArray(extractedObj) 
+    ? extractedObj 
+    : Object.keys(extractedObj).filter(k => !k.startsWith('_')).map(k => ({
+        fieldName: k,
+        fieldValue: extractedObj[k],
+        isPresent: !!extractedObj[k]
+      }));
+
   let rowBg = false;
 
   for (const field of fields) {
@@ -213,14 +221,17 @@ async function generateReport(scan, outputDir = './reports') {
     if (rowBg) drawRect(page1, margin, y - 3, contentW, 14, COLORS.lightGray);
     rowBg = !rowBg;
 
-    const statusText = field.isPresent ? '✓ Found' : '✗ Missing';
+    const statusText = field.isPresent ? ' Found' : ' Missing';
     const statusColor = field.isPresent ? COLORS.green : COLORS.red;
 
     page1.drawText(fieldLabels[field.fieldName], {
       x: margin + 5, y,
       size: 7.5, font: helveticaBold, color: COLORS.textDark,
     });
-    page1.drawText(truncate(field.fieldValue || '—', 45), {
+    
+    // Ensure string
+    const valText = typeof field.fieldValue === 'object' ? JSON.stringify(field.fieldValue) : String(field.fieldValue || '');
+    page1.drawText(truncate(valText, 45), {
       x: margin + 150, y,
       size: 7.5, font: helvetica, color: COLORS.textDark,
     });
