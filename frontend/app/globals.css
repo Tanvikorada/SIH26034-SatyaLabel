@@ -75,24 +75,28 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    background-color: var(--color-primary);
-    color: var(--color-background);
+    background: linear-gradient(135deg, var(--color-primary) 0%, color-mix(in srgb, var(--color-primary) 85%, var(--color-background)) 100%);
+    color: var(--color-surface);
     font-weight: 500;
     font-size: 14px;
     padding: 10px 18px;
     border-radius: 4px;
     border: 1px solid transparent;
     cursor: pointer;
-    transition: background-color 0.2s ease;
+    transition: all 0.2s ease;
     text-decoration: none;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.1), 0 1px 3px rgba(0,0,0,0.1);
   }
-  .mello-btn-primary:hover { background-color: var(--color-primary-hover); }
+  .mello-btn-primary:hover {
+    background: linear-gradient(135deg, var(--color-primary-hover) 0%, var(--color-primary) 100%);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.15), 0 2px 5px rgba(0,0,0,0.15);
+  }
 
   .mello-btn-secondary {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    background-color: var(--color-surface);
+    background: linear-gradient(135deg, var(--color-surface) 0%, var(--color-background) 100%);
     border: 1px solid var(--color-border);
     color: var(--color-text-primary);
     font-weight: 500;
@@ -100,10 +104,14 @@
     padding: 10px 18px;
     border-radius: 4px;
     cursor: pointer;
-    transition: background-color 0.2s ease;
+    transition: all 0.2s ease;
     text-decoration: none;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.03);
   }
-  .mello-btn-secondary:hover { background-color: var(--color-background); }
+  .mello-btn-secondary:hover { 
+    background: var(--color-surface);
+    border-color: color-mix(in srgb, var(--color-border) 80%, var(--color-primary));
+  }
 
   /* Status Badges */
   .mello-badge-pass {
