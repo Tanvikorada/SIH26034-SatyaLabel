@@ -16,7 +16,7 @@ import {
 import { 
   SiNextdotjs, SiReact, SiTailwindcss, SiTypescript, 
   SiPostgresql, SiFramer, SiVercel, SiRender, 
-  SiGoogle, SiGithub, SiPython,  as Dummy
+  SiGoogle, SiGithub, SiPython, 
 } from 'react-icons/si';
 
 function useReducedMotion() {
@@ -547,7 +547,7 @@ function TechStack() {
 
             {/* OCR/AI */}
             <div className="absolute bottom-12 right-12 flex flex-col items-center gap-2 group cursor-help">
-              <div className="w-14 h-14 bg-[var(--color-surface)] border border-[var(--color-border)] rounded-2xl flex items-center justify-center shadow-lg group-hover:border-[var(--color-primary)] transition-colors">< as Dummy size={24} className="text-[#10a37f]" /></div>
+              <div className="w-14 h-14 bg-[var(--color-surface)] border border-[var(--color-border)] rounded-2xl flex items-center justify-center shadow-lg group-hover:border-[var(--color-primary)] transition-colors">< size={24} className="text-[#10a37f]" /></div>
               <span className="text-[10px] font-medium text-[var(--color-text-secondary)] bg-[var(--color-background)] px-2 py-0.5 rounded border border-[var(--color-border)]">Vision AI</span>
             </div>
 
