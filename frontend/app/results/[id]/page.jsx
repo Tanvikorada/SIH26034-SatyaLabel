@@ -19,13 +19,12 @@ export default function Results({ params }) {
   const downloadPDF = async () => {
     const toastId = toast.loading('Generating PDF...');
     try {
-      const element = reportRef.current;
-      const canvas = await html2canvas(element, { scale: 2, useCORS: true });
+      const canvas = await html2canvas(reportRef.current, { scale: 2, useCORS: true, backgroundColor: '#000000' });
       const pdf = new jsPDF('p', 'mm', 'a4');
       const pdfWidth = pdf.internal.pageSize.getWidth();
       const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
       pdf.addImage(canvas.toDataURL('image/png'), 'PNG', 0, 0, pdfWidth, pdfHeight);
-      pdf.save(`Notice_${report.id}.pdf`);
+      pdf.save(Notice_.pdf);
       toast.success('Downloaded', { id: toastId });
     } catch (err) {
       toast.error('Failed', { id: toastId });
@@ -36,19 +35,17 @@ export default function Results({ params }) {
     if (!localStorage.getItem('token')) return router.push('/login');
     const fetchScan = async () => {
       try {
-        const res = await fetch(`${API}/scans/${resolvedParams.id}`, {
-          headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+        const res = await fetch(${API}/scans/, {
+          headers: { 'Authorization': Bearer  }
         });
+        if (!res.ok) throw new Error("API Error");
         const json = await res.json();
         setReport(json.data || json);
       } catch {
-        // Mock fallback
         setReport({
           id: resolvedParams.id, status: 'completed', overallStatus: 'POTENTIAL NON-COMPLIANCE',
-          compliance_score: 42,
-          product: { product_name: 'Mock Product', brand_name: 'Mock Brand' },
-          extractedFields: { net_quantity: '100g', mrp: '50' },
-          ocr_raw_text: "NET WT 100g MRP 50 INGREDIENTS SUGAR",
+          compliance_score: 42, product: { product_name: 'Mock Product', brand_name: 'Mock Brand' },
+          extractedFields: { net_quantity: '100g', mrp: '50' }, ocr_raw_text: "NET WT 100g MRP 50",
           violations: [
             { rule_id: 'C02', detail_text: 'MRP not in standard format.', severity: 'high', status: 'POTENTIAL NON-COMPLIANCE' },
             { rule_id: 'C05', detail_text: 'Veg logo missing.', severity: 'low', status: 'MANUAL REVIEW' }
@@ -59,76 +56,80 @@ export default function Results({ params }) {
     fetchScan();
   }, [resolvedParams.id, router, API]);
 
-  if (loading) return <div className="p-8"><NavBar/><div className="mt-8 text-fog text-[14px]">Loading report...</div></div>;
-  if (!report) return <div className="p-8"><NavBar/><div className="mt-8 text-red-500">Not found</div></div>;
+  if (loading) return <div className="min-h-screen bg-midnight text-white"><NavBar/><div className="p-10 text-mist text-[14px]">Loading report...</div></div>;
+  if (!report) return <div className="min-h-screen bg-midnight text-white"><NavBar/><div className="p-10 text-red-500">Not found</div></div>;
 
   const getBadge = (s) => {
-    if (s === 'PASS') return 'badge-pass';
-    if (s === 'MANUAL REVIEW') return 'badge-review';
-    if (s === 'POTENTIAL NON-COMPLIANCE') return 'badge-fail';
-    return 'badge-na';
+    if (s === 'PASS') return 'mello-badge-pass';
+    if (s === 'MANUAL REVIEW') return 'mello-badge-review';
+    if (s === 'POTENTIAL NON-COMPLIANCE') return 'mello-badge-fail';
+    return 'mello-badge-na';
   };
 
   return (
-    <div className="min-h-screen bg-canvas pb-24">
+    <div className="min-h-screen bg-midnight text-white pb-24">
       <NavBar />
       
-      <div className="max-w-[1000px] mx-auto px-6 py-[60px]" ref={reportRef}>
-        <div className="flex justify-between items-end border-b border-ash pb-8 mb-8">
+      <div className="max-w-[1000px] mx-auto px-6 py-12" ref={reportRef}>
+        <div className="flex justify-between items-start border-b border-graphite pb-8 mb-8">
           <div>
-            <div className="text-[14px] text-fog font-bold tracking-widest uppercase mb-2">Notice of Inspection</div>
-            <h1 className="text-[56px] leading-[1.07] tracking-[-1.68px] mb-2">{report.product?.product_name || 'Unknown Product'}</h1>
-            <p className="text-[18px] text-fog">ID: {report.id} &middot; {report.product?.brand_name || 'No Brand'}</p>
+            <div className="flex items-center gap-2 mb-4">
+              <div className={getBadge(report.overallStatus || report.overall_compliance)}>{report.overallStatus || report.overall_compliance}</div>
+              <span className="text-[13px] text-fog font-mono">ID: {report.id}</span>
+            </div>
+            <h1 className="text-[40px] font-medium tracking-tight leading-[1.1] mb-2">{report.product?.product_name || 'Unknown Product'}</h1>
+            <p className="text-[16px] text-mist">{report.product?.brand_name || 'No Brand'}</p>
           </div>
-          <div className="text-right flex flex-col items-end">
-             <div className="text-[56px] leading-[1.07] tracking-[-1.68px] mb-2">{report.compliance_score || 0}%</div>
-             <div className={getBadge(report.overallStatus || report.overall_compliance)}>{report.overallStatus || report.overall_compliance}</div>
+          <div className="text-right mello-card-flat px-6 py-4 flex flex-col items-center">
+             <div className="text-[13px] text-fog mb-1">Compliance Score</div>
+             <div className="text-[40px] font-medium tracking-tight">{report.compliance_score || 0}%</div>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-[32px]">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div className="md:col-span-2 flex flex-col gap-4">
-            <h3 className="text-[20px] font-bold tracking-[-0.4px] mb-2">Rule Checks</h3>
+            <h3 className="text-[18px] font-medium tracking-tight mb-2">Rule Checks</h3>
             {(report.violations || []).map((v, i) => (
-              <div key={i} className="privy-card hover:bg-canvas/50 cursor-pointer" onClick={() => setExpandedRule(expandedRule === i ? null : i)}>
-                <div className="flex justify-between items-center">
+              <div key={i} className="mello-card-flat hover:bg-charcoal/80 transition-colors cursor-pointer" onClick={() => setExpandedRule(expandedRule === i ? null : i)}>
+                <div className="flex justify-between items-center p-5">
                   <div className="flex items-center gap-4">
-                    <div className="w-[8px] h-[8px] rounded-full bg-obsidian-ink"></div>
-                    <span className="font-bold text-[15px]">{v.rule_id}</span>
+                    <div className="w-[6px] h-[6px] rounded-full bg-mist"></div>
+                    <span className="font-medium text-[15px]">{v.rule_id}</span>
                   </div>
                   <div className={getBadge(v.status)}>{v.status}</div>
                 </div>
                 {expandedRule === i && (
-                  <div className="mt-4 pt-4 border-t border-ash text-[14px] text-fog">
+                  <div className="px-5 pb-5 pt-2 border-t border-graphite text-[14px] text-pearl leading-relaxed bg-charcoal/30 rounded-b-[24px]">
                     {v.detail_text}
                   </div>
                 )}
               </div>
             ))}
             
-            {/* Raw Text */}
-            <div className="privy-card mt-8">
-              <h3 className="text-[14px] font-bold mb-4 tracking-[-0.02em]">Raw Extraction Log</h3>
-              <div className="bg-canvas border border-ash p-4 rounded-lg font-mono text-[12px] text-fog whitespace-pre-wrap">
+            <div className="mello-card p-6 mt-6">
+              <h3 className="text-[15px] font-medium mb-4">Raw Extraction Log</h3>
+              <div className="bg-midnight border border-graphite p-4 rounded-[12px] font-mono text-[12px] text-ash whitespace-pre-wrap">
                 {report.ocr_raw_text || 'No raw text available.'}
               </div>
             </div>
           </div>
 
           <div className="flex flex-col gap-4">
-             <h3 className="text-[20px] font-bold tracking-[-0.4px] mb-2">Extracted Data</h3>
-             <div className="privy-card">
-               {Object.entries(report.extractedFields || report.extracted_fields || {}).map(([k,v]) => (
-                 <div key={k} className="table-row-privy py-3 flex justify-between">
-                   <span className="text-[13px] text-fog font-medium">{k}</span>
-                   <span className="text-[13px] font-bold max-w-[150px] truncate">{String(v)}</span>
-                 </div>
-               ))}
+             <h3 className="text-[18px] font-medium tracking-tight mb-2">Extracted Data</h3>
+             <div className="mello-card p-6">
+               <div className="flex flex-col">
+                 {Object.entries(report.extractedFields || report.extracted_fields || {}).map(([k,v]) => (
+                   <div key={k} className="py-3 flex flex-col gap-1 border-b border-graphite last:border-0">
+                     <span className="text-[12px] text-fog uppercase tracking-wider">{k.replace(/_/g, ' ')}</span>
+                     <span className="text-[14px] font-medium text-white truncate">{String(v)}</span>
+                   </div>
+                 ))}
+               </div>
              </div>
              
-             <button onClick={downloadPDF} className="btn-ghost w-full mt-4">Download PDF Notice</button>
+             <button onClick={downloadPDF} className="mello-btn-secondary w-full mt-2">Download PDF Notice</button>
              {localStorage.getItem('role') === 'admin' && (
-                <button className="btn-ghost w-full text-red-600 border-red-600 hover:bg-red-600 hover:text-white">Delete Record</button>
+                <button className="mello-btn-secondary w-full text-[#f87171] border-[#521c1c] hover:bg-[#260e0e]">Delete Record</button>
              )}
           </div>
         </div>

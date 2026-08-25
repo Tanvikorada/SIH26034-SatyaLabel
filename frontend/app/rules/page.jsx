@@ -12,7 +12,7 @@ export default function RulesPage() {
     if (!localStorage.getItem('token') || localStorage.getItem('role') !== 'admin') return router.push('/dashboard');
     const fetchRules = async () => {
       try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'https://satyalabel-backend.onrender.com/api/v1'}/rules`);
+        const res = await fetch(${process.env.NEXT_PUBLIC_API_URL || 'https://satyalabel-backend.onrender.com/api/v1'}/rules);
         if (!res.ok) throw new Error("API Error");
         const json = await res.json();
         setRules(json.data || json || []);
@@ -23,27 +23,31 @@ export default function RulesPage() {
     fetchRules();
   }, [router]);
 
-  if (loading) return <div className="p-8"><NavBar/><div className="mt-8 text-fog text-[14px]">Loading...</div></div>;
+  if (loading) return <div className="min-h-screen bg-midnight text-white"><NavBar/><div className="p-10 text-mist text-[14px]">Loading...</div></div>;
 
   return (
-    <div className="min-h-screen bg-canvas">
+    <div className="min-h-screen bg-midnight text-white">
       <NavBar />
-      <div className="max-w-[1000px] mx-auto px-6 py-[80px]">
-        <h1 className="text-[56px] leading-[1.07] tracking-[-1.68px] mb-2">Rules Config</h1>
-        <p className="text-[18px] text-fog mb-12">Manage Legal Metrology Act constraints.</p>
+      <div className="max-w-[1000px] mx-auto px-6 py-12">
+        <h1 className="text-[32px] font-medium tracking-tight leading-[1.1] mb-2">Rules Config</h1>
+        <p className="text-[15px] text-mist mb-10">Manage Legal Metrology Act constraints.</p>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-[16px]">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {rules.map((r, i) => (
-            <div key={i} className="privy-card flex flex-col gap-2">
-              <div className="flex justify-between items-center mb-2">
-                <span className="font-bold text-[16px] tracking-[-0.02em]">{r.rule_id}</span>
-                <span className={r.active ? 'badge-pass' : 'badge-na'}>{r.active ? 'Active' : 'Inactive'}</span>
+            <div key={i} className="mello-card-flat p-6 flex flex-col group hover:border-mist transition-colors">
+              <div className="flex justify-between items-center mb-4">
+                <div className="flex items-center gap-3">
+                  <div className={w-2 h-2 rounded-full }></div>
+                  <span className="font-mono text-[13px] text-mist">{r.rule_id}</span>
+                </div>
+                <span className={r.active ? 'mello-badge-pass' : 'mello-badge-na'}>{r.active ? 'Active' : 'Inactive'}</span>
               </div>
-              <h3 className="font-bold text-[14px] text-obsidian-ink">{r.name}</h3>
-              <p className="text-[13px] text-fog">{r.description}</p>
-              <div className="mt-4 pt-4 border-t border-ash flex justify-between items-center">
-                <span className="text-[12px] font-bold uppercase tracking-widest text-fog">{r.severity} severity</span>
-                <button className="btn-pill !border-obsidian-ink !text-obsidian-ink">Edit</button>
+              <h3 className="font-medium text-[16px] text-white mb-2">{r.name}</h3>
+              <p className="text-[14px] text-fog leading-relaxed mb-6 flex-1">{r.description}</p>
+              
+              <div className="pt-4 border-t border-graphite flex justify-between items-center">
+                <span className={	ext-[12px] font-medium uppercase tracking-wider }>{r.severity} severity</span>
+                <button className="mello-btn-secondary !py-1 !px-3 !text-[12px] opacity-0 group-hover:opacity-100 transition-opacity">Edit</button>
               </div>
             </div>
           ))}

@@ -3,54 +3,59 @@
 @import "shadcn/tailwind.css";
 
 @theme {
-  /* Colors */
-  --color-canvas: #ffffff;
-  --color-obsidian-ink: #010110;
-  --color-carbon: #111117;
-  --color-graphite: #22222a;
-  --color-fog: #73737c;
-  --color-ash: #d9d9d9;
-  --color-iris-pulse: #635bff;
-  --color-deep-teal: #072723;
+  /* Mello Colors */
+  --color-midnight: #000000;
+  --color-obsidian: #0f0f10;
+  --color-charcoal: #1c1d1f;
+  --color-graphite: #333333;
+  --color-white: #ffffff;
+  --color-pearl: #cccccc;
+  --color-mist: #b8babf;
+  --color-ash: #888b91;
+  --color-fog: #70757c;
 
   /* Typography */
   --font-sans: 'Inter', ui-sans-serif, system-ui, -apple-system, sans-serif;
-  --font-display: 'Source Serif 4', ui-serif, Georgia, serif;
 }
 
 @layer base {
   body {
-    @apply bg-canvas text-obsidian-ink font-sans antialiased tracking-[-0.02em];
-  }
-  
-  h1, h2, h3, h4, h5, h6 {
-    @apply font-display tracking-[-0.03em] font-normal;
+    @apply bg-midnight text-white font-sans antialiased;
   }
 }
 
-/* Privy Components */
 @layer components {
-  .btn-primary {
-    @apply bg-obsidian-ink text-canvas font-medium text-[15px] px-[20px] py-[12px] rounded-full border-none cursor-pointer flex items-center justify-center transition-opacity hover:opacity-90;
+  /* Buttons */
+  .mello-btn-primary {
+    @apply bg-white text-midnight font-medium text-[14px] px-[18px] py-[10px] rounded-[9px] border border-white cursor-pointer flex items-center justify-center transition-all hover:bg-pearl hover:border-pearl active:scale-[0.98];
   }
-  .btn-ghost {
-    @apply bg-transparent border border-obsidian-ink text-obsidian-ink font-medium text-[15px] px-[20px] py-[12px] rounded-full cursor-pointer flex items-center justify-center transition-colors hover:bg-obsidian-ink hover:text-canvas;
-  }
-  .btn-pill {
-    @apply bg-transparent border border-canvas text-canvas text-[13px] px-[14px] py-[6px] rounded-full hover:bg-canvas/10 transition-colors cursor-pointer;
+  
+  .mello-btn-secondary {
+    @apply bg-charcoal border border-graphite text-white font-medium text-[14px] px-[18px] py-[10px] rounded-[9px] cursor-pointer flex items-center justify-center transition-all hover:bg-graphite active:scale-[0.98];
   }
 
   /* Status Badges */
-  .badge-pass { @apply bg-emerald-50 border border-obsidian-ink/20 text-obsidian-ink px-[12px] py-[4px] rounded-full text-[13px] font-medium tracking-[-0.02em]; }
-  .badge-review { @apply bg-amber-50 border border-obsidian-ink/20 text-obsidian-ink px-[12px] py-[4px] rounded-full text-[13px] font-medium tracking-[-0.02em]; }
-  .badge-fail { @apply bg-red-50 border border-obsidian-ink/20 text-obsidian-ink px-[12px] py-[4px] rounded-full text-[13px] font-medium tracking-[-0.02em]; }
-  .badge-na { @apply bg-slate-50 border border-obsidian-ink/20 text-obsidian-ink px-[12px] py-[4px] rounded-full text-[13px] font-medium tracking-[-0.02em]; }
+  .mello-badge-pass { @apply bg-[#0c1f14] border border-[#1e4a30] text-[#4ade80] px-[10px] py-[4px] rounded-full text-[12px] font-medium; }
+  .mello-badge-review { @apply bg-[#2b1d0a] border border-[#5c3e14] text-[#fbbf24] px-[10px] py-[4px] rounded-full text-[12px] font-medium; }
+  .mello-badge-fail { @apply bg-[#260e0e] border border-[#521c1c] text-[#f87171] px-[10px] py-[4px] rounded-full text-[12px] font-medium; }
+  .mello-badge-na { @apply bg-charcoal border border-graphite text-mist px-[10px] py-[4px] rounded-full text-[12px] font-medium; }
 
   /* Cards */
-  .privy-card { @apply bg-canvas border border-ash rounded-lg p-[24px] shadow-none; }
-  .privy-card-dark { @apply bg-graphite border-none rounded-lg p-[24px] text-canvas shadow-none; }
-  .privy-input { @apply bg-canvas border border-ash text-obsidian-ink rounded-lg px-[16px] py-[12px] text-[15px] w-full focus:border-obsidian-ink focus:outline-none transition-colors; }
+  .mello-card {
+    @apply bg-obsidian border border-graphite rounded-[24px] shadow-2xl;
+  }
   
-  /* Tables */
-  .table-row-privy { @apply border-b border-ash bg-canvas transition-colors hover:bg-ash/20; }
+  .mello-card-flat {
+    @apply bg-charcoal border border-graphite rounded-[24px];
+  }
+  
+  /* Inputs */
+  .mello-input {
+    @apply bg-charcoal border border-graphite text-white rounded-[9px] px-[14px] py-[12px] text-[14px] w-full focus:border-mist focus:outline-none transition-colors placeholder:text-fog shadow-inner;
+  }
+  
+  /* Table Rows */
+  .mello-table-row {
+    @apply border-b border-graphite transition-colors hover:bg-charcoal/50;
+  }
 }

@@ -31,38 +31,26 @@ export default function NavBar() {
   if (pathname === '/login') return null;
 
   return (
-    <div className="w-full">
-      {/* Announcement Band */}
-      <div className="w-full bg-iris-pulse py-[10px] px-[24px] flex justify-between items-center">
-        <div className="text-canvas text-[13px] font-medium text-center w-full">
-          SIH26034 v2.0 deployed. All scans now processed via Edge OCR.
+    <nav className="w-full bg-midnight/80 backdrop-blur-md border-b border-graphite h-[64px] flex items-center justify-between px-6 sticky top-0 z-50">
+      <div className="flex items-center gap-3">
+        <div className="w-5 h-5 rounded-full bg-white flex items-center justify-center">
+          <div className="w-1.5 h-1.5 rounded-full bg-midnight"></div>
         </div>
-        <button className="btn-pill shrink-0 whitespace-nowrap">View docs →</button>
+        <span className="font-medium tracking-tight text-[15px] text-white">satyalabel</span>
       </div>
-      
-      {/* Navigation */}
-      <nav className="w-full bg-canvas border-b border-obsidian-ink/15 h-[64px] flex items-center justify-between px-[24px]">
-        {/* Logo */}
-        <div className="flex items-center gap-2">
-          <div className="w-[8px] h-[8px] rounded-full bg-obsidian-ink"></div>
-          <span className="font-bold text-[16px] tracking-[-0.02em] text-obsidian-ink">satyalabel</span>
-        </div>
 
-        {/* Center Links */}
-        <div className="hidden md:flex gap-8">
-          {links.map(l => (
-            <Link key={l.name} href={l.path} className={`text-[14px] ${pathname.includes(l.path) ? 'font-bold' : 'font-normal'} text-obsidian-ink`}>
-              {l.name}
-            </Link>
-          ))}
-        </div>
+      <div className="hidden md:flex gap-6">
+        {links.map(l => (
+          <Link key={l.name} href={l.path} className={	ext-[14px] transition-colors }>
+            {l.name}
+          </Link>
+        ))}
+      </div>
 
-        {/* Right Nav */}
-        <div className="flex items-center gap-4">
-          <span className="text-[14px] text-fog">{email}</span>
-          <button onClick={handleLogout} className="btn-ghost !py-[8px] !px-[18px] !text-[14px]">Log out</button>
-        </div>
-      </nav>
-    </div>
+      <div className="flex items-center gap-4">
+        <span className="text-[13px] text-fog hidden md:block">{email}</span>
+        <button onClick={handleLogout} className="mello-btn-secondary !py-1.5 !px-3 !text-[13px] !rounded-full">Log out</button>
+      </div>
+    </nav>
   );
 }

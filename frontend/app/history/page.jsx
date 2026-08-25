@@ -12,7 +12,7 @@ export default function HistoryPage() {
     if (!localStorage.getItem('token')) return router.push('/login');
     const fetchScans = async () => {
       try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'https://satyalabel-backend.onrender.com/api/v1'}/scans`);
+        const res = await fetch(${process.env.NEXT_PUBLIC_API_URL || 'https://satyalabel-backend.onrender.com/api/v1'}/scans);
         if (!res.ok) throw new Error("API Error");
         const json = await res.json();
         setScans(json.data || json || []);
@@ -23,34 +23,36 @@ export default function HistoryPage() {
     fetchScans();
   }, [router]);
 
-  if (loading) return <div className="p-8"><NavBar/><div className="mt-8 text-fog text-[14px]">Loading...</div></div>;
+  if (loading) return <div className="min-h-screen bg-midnight text-white"><NavBar/><div className="p-10 text-mist text-[14px]">Loading...</div></div>;
 
   return (
-    <div className="min-h-screen bg-canvas">
+    <div className="min-h-screen bg-midnight text-white">
       <NavBar />
-      <div className="max-w-[1000px] mx-auto px-6 py-[80px]">
-        <h1 className="text-[56px] leading-[1.07] tracking-[-1.68px] mb-2">Scan Repository</h1>
-        <p className="text-[18px] text-fog mb-12">Historical record of all compliance checks.</p>
+      <div className="max-w-[1000px] mx-auto px-6 py-12">
+        <h1 className="text-[32px] font-medium tracking-tight leading-[1.1] mb-2">Scan Repository</h1>
+        <p className="text-[15px] text-mist mb-10">Historical record of all compliance checks.</p>
 
-        <div className="w-full border-t border-obsidian-ink/10">
-          <div className="flex w-full py-4 text-[12px] font-bold text-fog uppercase tracking-widest border-b border-obsidian-ink/10">
-            <div className="w-1/3">Product</div>
-            <div className="w-1/4">Date</div>
-            <div className="w-1/4">Status</div>
-            <div className="w-1/6 text-right">Action</div>
+        <div className="mello-card overflow-hidden">
+          <div className="flex w-full px-6 py-4 text-[12px] font-medium text-fog border-b border-graphite bg-charcoal">
+            <div className="w-2/5">PRODUCT</div>
+            <div className="w-1/4">DATE</div>
+            <div className="w-1/4">STATUS</div>
+            <div className="w-1/12 text-right"></div>
           </div>
-          {scans.map((s, i) => (
-            <div key={i} className="flex w-full py-4 items-center border-b border-ash hover:bg-canvas/50 transition-colors">
-              <div className="w-1/3 font-medium text-[14px]">{s.product?.product_name || s.id}</div>
-              <div className="w-1/4 text-[14px] text-fog">{new Date(s.createdAt || s.created_at).toLocaleDateString()}</div>
-              <div className="w-1/4">
-                <span className={s.overall_compliance === 'PASS' ? 'badge-pass' : 'badge-fail'}>{s.overall_compliance}</span>
+          <div className="flex flex-col">
+            {scans.map((s, i) => (
+              <div key={i} className="flex w-full px-6 py-5 items-center border-b border-graphite last:border-0 hover:bg-charcoal/50 transition-colors cursor-pointer" onClick={() => router.push(/results/)}>
+                <div className="w-2/5 font-medium text-[14px] text-white">{s.product?.product_name || s.id}</div>
+                <div className="w-1/4 text-[14px] text-mist">{new Date(s.createdAt || s.created_at).toLocaleDateString()}</div>
+                <div className="w-1/4">
+                  <span className={s.overall_compliance === 'PASS' ? 'mello-badge-pass' : 'mello-badge-fail'}>{s.overall_compliance}</span>
+                </div>
+                <div className="w-1/12 text-right text-fog hover:text-white transition-colors">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                </div>
               </div>
-              <div className="w-1/6 text-right">
-                <button onClick={() => router.push(`/results/${s.id}`)} className="text-[13px] font-bold text-obsidian-ink hover:underline">View &rarr;</button>
-              </div>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
       </div>
     </div>
