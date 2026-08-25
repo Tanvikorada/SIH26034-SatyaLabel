@@ -1,282 +1,56 @@
-@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 
-@custom-variant dark (&:is(.dark *));
-
 @theme {
-  --font-sans: 'IBM Plex Sans', sans-serif;
-  --font-mono: 'IBM Plex Mono', monospace;
+  /* Colors */
+  --color-canvas: #ffffff;
+  --color-obsidian-ink: #010110;
+  --color-carbon: #111117;
+  --color-graphite: #22222a;
+  --color-fog: #73737c;
+  --color-ash: #d9d9d9;
+  --color-iris-pulse: #635bff;
+  --color-deep-teal: #072723;
 
-  --color-ink: #0A1628;
-  --color-navy-900: #0B1F3A;
-  --color-navy-700: #16335C;
-  --color-navy-100: #E7ECF3;
-
-  --color-surface: #F6F5F1;
-  --color-surface-alt: #FFFFFF;
-  --color-border: #D9D5CB;
-
-  --color-accent: #B4802A;
-  --color-accent-soft: #F1E4C9;
-
-  --color-pass: #1E7A46;
-  --color-pass-bg: #E7F3EC;
-  --color-noncompliant: #A32020;
-  --color-noncompliant-bg: #FBEAEA;
-  --color-review: #A15C07;
-  --color-review-bg: #FBF1DE;
-  --color-na: #5B6472;
-  --color-na-bg: #ECEDEF;
-  --color-nv: #55606E;
-  --color-nv-bg: #EAEDF1;
-
-  --color-text-primary: #0A1628;
-  --color-text-secondary: #4A5468;
-  --color-text-muted: #7B8494;
-  --color-text-inverse: #F6F5F1;
-}
-
-body {
-  background-color: var(--color-surface);
-  color: var(--color-text-primary);
-  font-family: var(--font-sans);
-  -webkit-font-smoothing: antialiased;
-}
-
-.font-mono {
-  font-family: var(--font-mono);
-}
-
-/* Base styles for flat cards */
-.gov-card {
-  background-color: var(--color-surface-alt);
-  border: 1px solid var(--color-border);
-  border-radius: 2px;
-}
-
-/* Official button styles */
-.gov-btn {
-  background-color: var(--color-navy-900);
-  color: var(--color-surface-alt);
-  border-radius: 2px;
-  padding: 0.5rem 1rem;
-  font-weight: 500;
-  transition: background-color 120ms ease-out;
-  text-align: center;
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-}
-.gov-btn:hover { background-color: var(--color-navy-700); }
-
-.gov-btn-outline {
-  background-color: transparent;
-  color: var(--color-navy-900);
-  border: 1px solid var(--color-navy-900);
-  border-radius: 2px;
-  padding: 0.5rem 1rem;
-  font-weight: 500;
-  transition: background-color 120ms ease-out;
-  text-align: center;
-  cursor: pointer;
-}
-.gov-btn-outline:hover { background-color: var(--color-navy-100); }
-
-/* Tables */
-.gov-table-container {
-  overflow-x: auto;
-  border-bottom: 1px solid var(--color-border);
-}
-.gov-table {
-  width: 100%;
-  border-collapse: collapse;
-}
-.gov-table th {
-  color: var(--color-text-secondary);
-  font-weight: 600;
-  text-transform: uppercase;
-  font-size: 0.75rem;
-  padding: 1rem;
-  text-align: left;
-  border-bottom: 1px solid var(--color-border);
-}
-.gov-table td {
-  padding: 1rem;
-  border-bottom: 1px solid var(--color-border);
-  color: var(--color-text-primary);
-  font-size: 0.875rem;
-}
-.gov-table tr:hover td {
-  background-color: rgba(231, 236, 243, 0.5); /* navy-100 semi */
-}
-
-/* Status Stamp Badge */
-.stamp-badge {
-  display: inline-flex;
-  flex-direction: column;
-  align-items: flex-start;
-  border-width: 2px;
-  border-style: solid;
-  border-radius: 2px;
-  padding: 0.25rem 0.5rem;
-  transform: rotate(-1.5deg);
-}
-
-/* Animations */
-@keyframes scanning-line {
-  0% { top: 0%; opacity: 0; box-shadow: 0 0 0 transparent; }
-  10% { opacity: 1; box-shadow: 0 0 10px var(--color-accent); }
-  90% { opacity: 1; box-shadow: 0 0 10px var(--color-accent); }
-  100% { top: 100%; opacity: 0; box-shadow: 0 0 0 transparent; }
-}
-.animate-scan {
-  animation: scanning-line 1.5s ease-in-out infinite;
-  background-color: var(--color-accent);
-}
-
-@keyframes stamp-in {
-  0% { transform: scale(1.15) rotate(-1.5deg); opacity: 0; }
-  100% { transform: scale(1) rotate(-1.5deg); opacity: 1; }
-}
-.animate-stamp {
-  animation: stamp-in 180ms ease-out forwards;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .animate-stamp {
-    animation: none;
-    transform: rotate(-1.5deg);
-  }
-  .animate-scan {
-    animation: none;
-    display: none;
-  }
-}
-
-@theme inline {
-  --font-heading: var(--font-sans);
-  --font-sans: var(--font-sans);
-  --color-sidebar-ring: var(--sidebar-ring);
-  --color-sidebar-border: var(--sidebar-border);
-  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
-  --color-sidebar-accent: var(--sidebar-accent);
-  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
-  --color-sidebar-primary: var(--sidebar-primary);
-  --color-sidebar-foreground: var(--sidebar-foreground);
-  --color-sidebar: var(--sidebar);
-  --color-chart-5: var(--chart-5);
-  --color-chart-4: var(--chart-4);
-  --color-chart-3: var(--chart-3);
-  --color-chart-2: var(--chart-2);
-  --color-chart-1: var(--chart-1);
-  --color-ring: var(--ring);
-  --color-input: var(--input);
-  --color-border: var(--border);
-  --color-destructive: var(--destructive);
-  --color-accent-foreground: var(--accent-foreground);
-  --color-accent: var(--accent);
-  --color-muted-foreground: var(--muted-foreground);
-  --color-muted: var(--muted);
-  --color-secondary-foreground: var(--secondary-foreground);
-  --color-secondary: var(--secondary);
-  --color-primary-foreground: var(--primary-foreground);
-  --color-primary: var(--primary);
-  --color-popover-foreground: var(--popover-foreground);
-  --color-popover: var(--popover);
-  --color-card-foreground: var(--card-foreground);
-  --color-card: var(--card);
-  --color-foreground: var(--foreground);
-  --color-background: var(--background);
-  --radius-sm: calc(var(--radius) * 0.6);
-  --radius-md: calc(var(--radius) * 0.8);
-  --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) * 1.4);
-  --radius-2xl: calc(var(--radius) * 1.8);
-  --radius-3xl: calc(var(--radius) * 2.2);
-  --radius-4xl: calc(var(--radius) * 2.6);
-}
-
-:root {
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
-  --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
-  --radius: 0.625rem;
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.205 0 0);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
-}
-
-.dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.205 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.205 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.922 0 0);
-  --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.556 0 0);
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
-  --sidebar: oklch(0.205 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.556 0 0);
+  /* Typography */
+  --font-sans: 'Inter', ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --font-display: 'Source Serif 4', ui-serif, Georgia, serif;
 }
 
 @layer base {
-  * {
-    @apply border-border outline-ring/50;
-  }
   body {
-    @apply bg-background text-foreground;
+    @apply bg-canvas text-obsidian-ink font-sans antialiased tracking-[-0.02em];
   }
-  html {
-    @apply font-sans;
+  
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-display tracking-[-0.03em] font-normal;
   }
+}
+
+/* Privy Components */
+@layer components {
+  .btn-primary {
+    @apply bg-obsidian-ink text-canvas font-medium text-[15px] px-[20px] py-[12px] rounded-full border-none cursor-pointer flex items-center justify-center transition-opacity hover:opacity-90;
+  }
+  .btn-ghost {
+    @apply bg-transparent border border-obsidian-ink text-obsidian-ink font-medium text-[15px] px-[20px] py-[12px] rounded-full cursor-pointer flex items-center justify-center transition-colors hover:bg-obsidian-ink hover:text-canvas;
+  }
+  .btn-pill {
+    @apply bg-transparent border border-canvas text-canvas text-[13px] px-[14px] py-[6px] rounded-full hover:bg-canvas/10 transition-colors cursor-pointer;
+  }
+
+  /* Status Badges */
+  .badge-pass { @apply bg-emerald-50 border border-obsidian-ink/20 text-obsidian-ink px-[12px] py-[4px] rounded-full text-[13px] font-medium tracking-[-0.02em]; }
+  .badge-review { @apply bg-amber-50 border border-obsidian-ink/20 text-obsidian-ink px-[12px] py-[4px] rounded-full text-[13px] font-medium tracking-[-0.02em]; }
+  .badge-fail { @apply bg-red-50 border border-obsidian-ink/20 text-obsidian-ink px-[12px] py-[4px] rounded-full text-[13px] font-medium tracking-[-0.02em]; }
+  .badge-na { @apply bg-slate-50 border border-obsidian-ink/20 text-obsidian-ink px-[12px] py-[4px] rounded-full text-[13px] font-medium tracking-[-0.02em]; }
+
+  /* Cards */
+  .privy-card { @apply bg-canvas border border-ash rounded-lg p-[24px] shadow-none; }
+  .privy-card-dark { @apply bg-graphite border-none rounded-lg p-[24px] text-canvas shadow-none; }
+  .privy-input { @apply bg-canvas border border-ash text-obsidian-ink rounded-lg px-[16px] py-[12px] text-[15px] w-full focus:border-obsidian-ink focus:outline-none transition-colors; }
+  
+  /* Tables */
+  .table-row-privy { @apply border-b border-ash bg-canvas transition-colors hover:bg-ash/20; }
 }

@@ -1,149 +1,114 @@
-"use client";
-
-import { useState, useEffect } from 'react';
+'use client';
+import { useEffect, useState } from 'react';
+import NavBar from '@/components/NavBar';
 import { useRouter } from 'next/navigation';
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts';
-
-import SplitText from '@/components/SplitText';
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 
 export default function Dashboard() {
-  const router = useRouter();
   const [stats, setStats] = useState(null);
-  const [loading, setLoading] = useState(true);
-
-  const API = process.env.NEXT_PUBLIC_API_URL || 'https://satyalabel-backend.onrender.com/api/v1';
+  const router = useRouter();
 
   useEffect(() => {
     if (!localStorage.getItem('token')) {
       router.push('/login');
       return;
     }
-    const fetchStats = async () => {
-      try {
-        const res = await fetch(`${API}/dashboard/stats`, {
-          headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
-        });
-        if (res.ok) {
-          const json = await res.json();
-          const d = json.data || json;
-          setStats({
-            total_scans: d.total_scans || 0,
-            compliant: d.compliant_count || 0,
-            violations: d.non_compliant_count || 0,
-            pending: d.needs_review_count || 0,
-            recent: (d.recent_scans || []).map(s => ({
-              id: s.id,
-              name: s.product_name || s.brand_name || 'Unknown Product',
-              status: s.overall_compliance || s.overallStatus || 'NOT VERIFIED',
-              date: new Date(s.created_at).toLocaleDateString()
-            })),
-            chartData: (d.top_violated_rules || []).map(r => ({
-              name: r.rule_title || r.ruleId,
-              count: Number(r.count)
-            }))
-          });
-        }
-        else throw new Error('Failed');
-      } catch (err) {
-        setStats({
-          total_scans: 124, compliant: 89, violations: 15, pending: 20,
-          chartData: [
-            { name: 'Rule 26', count: 12 },
-            { name: 'Rule 3', count: 8 },
-            { name: 'Rule 31', count: 5 },
-            { name: 'Rule 6', count: 2 },
-          ],
-          recent: [
-            { id: 'SCN-84920', name: 'Britannia Good Day', status: 'PASS', date: '2 mins ago' },
-            { id: 'SCN-84919', name: 'Generic Milk 1L', status: 'POTENTIAL NON-COMPLIANCE', date: '15 mins ago' },
-            { id: 'SCN-84918', name: 'Maggi Noodles', status: 'MANUAL REVIEW', date: '1 hour ago' },
-          ]
-        });
-      } finally {
-        setLoading(false);
-      }
-    };
     fetchStats();
-  }, []);
+  }, [router]);
 
-  if (loading) return <div className="p-8 text-center font-mono text-sm uppercase text-text-muted">Loading Data...</div>;
+  const fetchStats = async () => {
+    try {
+      const res = await fetch(\\/dashboard/stats\);
+      const json = await res.json();
+      const d = json.data || json;
+      setStats(d);
+    } catch {
+      // Offline fallback
+      setStats({
+        total_scans: 142,
+        compliant: 89,
+        violations: 41,
+        manual_review: 12,
+        top_violated_rules: [
+          { rule_id: 'C02', count: 28 },
+          { rule_id: 'C05', count: 14 },
+          { rule_id: 'C01', count: 9 },
+        ],
+        recent_scans: [
+          { id: '1', product_name: 'Organic Honey', status: 'PASS', created_at: new Date().toISOString() },
+          { id: '2', product_name: 'Face Wash 100ml', status: 'POTENTIAL NON-COMPLIANCE', created_at: new Date().toISOString() }
+        ]
+      });
+    }
+  };
 
-  const chartData = stats?.chartData || [];
+  const getBadgeClass = (status) => {
+    if (status === 'PASS') return 'badge-pass';
+    if (status === 'MANUAL REVIEW') return 'badge-review';
+    if (status === 'POTENTIAL NON-COMPLIANCE') return 'badge-fail';
+    return 'badge-na';
+  };
 
-  const StatCard = ({ title, value }) => (
-    <div className="gov-card p-6 shadow-sm hover:shadow-md transition-shadow bg-white rounded-xl border border-gray-100">
-      <p className="text-xs font-semibold text-text-secondary uppercase tracking-wider">{title}</p>
-      <p className="text-4xl font-black text-navy-900 mt-3 font-sans tracking-tight">{value}</p>
-    </div>
-  );
+  if (!stats) return <div className="p-8"><NavBar/><div className="mt-8 text-fog text-[14px]">Loading infrastructure...</div></div>;
 
   return (
-    <div className="space-y-8">
-      <div>
-        <SplitText
-          text="Officer Dashboard"
-          className="text-3xl md:text-4xl font-bold text-navy-900 tracking-tight"
-          delay={30}
-          duration={0.8}
-          tag="h1"
-        />
-        <p className="text-text-secondary text-sm md:text-base mt-2">Live inspection metrics and recent scans</p>
-      </div>
+    <div className="min-h-screen bg-canvas">
+      <NavBar />
+      <div className="max-w-[1200px] mx-auto px-6 py-[80px]">
+        <h1 className="text-[38px] leading-[1.15] tracking-[-1.14px] mb-2">Compliance Overview</h1>
+        <p className="text-[16px] text-fog mb-12">System status and scan metrics across all zones.</p>
 
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <StatCard title="Total Inspections" value={stats.total_scans} />
-        <StatCard title="Compliant (Pass)" value={stats.compliant} />
-        <StatCard title="Non-Compliant" value={stats.violations} />
-        <StatCard title="Pending Review" value={stats.pending} />
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="space-y-4">
-          <h2 className="text-lg font-semibold text-text-primary">Top Violated Rules</h2>
-          <div className="gov-card p-6 h-[300px]">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={chartData} layout="vertical" margin={{ top: 0, right: 0, left: 0, bottom: 0 }}>
-                <XAxis type="number" hide />
-                <YAxis dataKey="name" type="category" axisLine={false} tickLine={false} tick={{ fill: '#4A5468', fontSize: 12, fontFamily: 'IBM Plex Mono' }} width={80} />
-                <Tooltip cursor={{fill: '#F6F5F1'}} contentStyle={{borderRadius: '2px', borderColor: '#D9D5CB', fontSize: '12px'}} />
-                <Bar dataKey="count" radius={[0, 2, 2, 0]} barSize={24}>
-                  {chartData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={index === 0 ? 'var(--color-accent)' : 'var(--color-navy-900)'} />
-                  ))}
-                </Bar>
-              </BarChart>
-            </ResponsiveContainer>
+        {/* KPI Row */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-[16px] mb-[80px]">
+          <div className="privy-card">
+            <div className="text-[14px] text-fog mb-2">Total Scans</div>
+            <div className="text-[38px] leading-[1.15] tracking-[-1.14px]">{stats.total_scans}</div>
+          </div>
+          <div className="privy-card">
+            <div className="text-[14px] text-fog mb-2">Compliant</div>
+            <div className="text-[38px] leading-[1.15] tracking-[-1.14px]">{stats.compliant}</div>
+          </div>
+          <div className="privy-card">
+            <div className="text-[14px] text-fog mb-2">Violations</div>
+            <div className="text-[38px] leading-[1.15] tracking-[-1.14px] text-red-600">{stats.violations}</div>
+          </div>
+          <div className="privy-card">
+            <div className="text-[14px] text-fog mb-2">Manual Review</div>
+            <div className="text-[38px] leading-[1.15] tracking-[-1.14px] text-amber-600">{stats.manual_review}</div>
           </div>
         </div>
 
-        <div className="space-y-4">
-          <h2 className="text-lg font-semibold text-text-primary">Recent Inspections</h2>
-          <div className="gov-table-container">
-            <table className="gov-table">
-              <thead>
-                <tr>
-                  <th>Scan ID</th>
-                  <th>Status</th>
-                </tr>
-              </thead>
-              <tbody>
-                {stats.recent?.map(r => (
-                  <tr key={r.id} onClick={() => router.push(`/results/${r.id}`)} className="cursor-pointer">
-                    <td className="font-mono">{r.id}</td>
-                    <td>
-                      <div className="stamp-badge border-[1px] p-1" style={{ 
-                        borderColor: r.status === 'PASS' ? 'var(--color-pass)' : r.status === 'POTENTIAL NON-COMPLIANCE' ? 'var(--color-noncompliant)' : 'var(--color-review)',
-                        backgroundColor: r.status === 'PASS' ? 'var(--color-pass-bg)' : r.status === 'POTENTIAL NON-COMPLIANCE' ? 'var(--color-noncompliant-bg)' : 'var(--color-review-bg)',
-                      }}>
-                        <span className="font-mono text-[10px] font-bold uppercase" style={{
-                           color: r.status === 'PASS' ? 'var(--color-pass)' : r.status === 'POTENTIAL NON-COMPLIANCE' ? 'var(--color-noncompliant)' : 'var(--color-review)',
-                        }}>{r.status}</span>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-[16px]">
+          {/* Recent Scans */}
+          <div className="privy-card">
+            <h3 className="text-[20px] font-bold tracking-[-0.4px] mb-6">Recent Activity</h3>
+            <div className="flex flex-col gap-2">
+              {(stats.recent_scans || stats.recent || []).map((scan, i) => (
+                <div key={i} className="flex justify-between items-center py-4 border-b border-ash last:border-0 cursor-pointer hover:bg-canvas/80" onClick={() => router.push(\/results/\\)}>
+                  <div>
+                    <div className="text-[15px] font-medium">{scan.product_name || 'Unknown Product'}</div>
+                    <div className="text-[12px] text-fog">{new Date(scan.created_at).toLocaleString()}</div>
+                  </div>
+                  <div className={getBadgeClass(scan.status)}>{scan.status}</div>
+                </div>
+              ))}
+            </div>
+            <button className="btn-ghost w-full mt-6" onClick={() => router.push('/history')}>View all history →</button>
+          </div>
+
+          {/* Top Violations Chart */}
+          <div className="privy-card">
+            <h3 className="text-[20px] font-bold tracking-[-0.4px] mb-6">Top Violated Rules</h3>
+            <div className="h-[300px]">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={stats.top_violated_rules || []}>
+                  <XAxis dataKey="rule_id" axisLine={false} tickLine={false} tick={{fill: '#73737c', fontSize: 12}} />
+                  <YAxis axisLine={false} tickLine={false} tick={{fill: '#73737c', fontSize: 12}} />
+                  <Tooltip cursor={{fill: '#d9d9d9', opacity: 0.2}} contentStyle={{borderRadius: '8px', border: '1px solid #d9d9d9', boxShadow: 'none'}} />
+                  <Bar dataKey="count" fill="#010110" radius={[4, 4, 0, 0]} barSize={40} />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
           </div>
         </div>
       </div>

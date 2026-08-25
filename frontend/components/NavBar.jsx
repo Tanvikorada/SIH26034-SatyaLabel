@@ -1,19 +1,16 @@
-"use client";
-
+'use client';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { useState, useEffect } from 'react';
-import { Menu, X, ShieldCheck } from 'lucide-react';
 
 export default function NavBar() {
   const pathname = usePathname();
   const router = useRouter();
   const [email, setEmail] = useState('');
   const [role, setRole] = useState('');
-  const [isOpen, setIsOpen] = useState(false);
 
   useEffect(() => {
-    setEmail(localStorage.getItem('email') || 'Officer');
+    setEmail(localStorage.getItem('email') || 'officer@gov.in');
     setRole(localStorage.getItem('role') || '');
   }, []);
 
@@ -24,7 +21,7 @@ export default function NavBar() {
     router.push('/login');
   };
 
-  const navLinks = [
+  const links = [
     { name: 'Dashboard', path: '/dashboard' },
     { name: 'Upload Scan', path: '/upload' },
     { name: 'History', path: '/history' },
@@ -34,75 +31,38 @@ export default function NavBar() {
   if (pathname === '/login') return null;
 
   return (
-    <nav className="bg-navy-900 text-surface-alt sticky top-0 z-50 border-b border-border">
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16">
-          <div className="flex items-center gap-3">
-            <ShieldCheck className="w-6 h-6 text-accent" strokeWidth={1.75} />
-            <span className="text-xl tracking-tight">
-              <span className="font-bold">SATYA</span><span className="text-accent font-medium">LABEL</span>
-            </span>
-          </div>
-
-          <div className="hidden md:block">
-            <div className="ml-10 flex items-baseline space-x-4">
-              {navLinks.map((link) => (
-                <Link
-                  key={link.name}
-                  href={link.path}
-                  className={`px-3 py-2 rounded-sm text-sm font-medium transition-colors ${
-                    pathname === link.path 
-                      ? 'bg-navy-700 text-white border-b-2 border-accent' 
-                      : 'text-text-muted hover:bg-navy-700 hover:text-white border-b-2 border-transparent'
-                  }`}
-                >
-                  {link.name}
-                </Link>
-              ))}
-            </div>
-          </div>
-
-          <div className="hidden md:flex items-center gap-4">
-            <div className="text-sm text-text-muted">
-              ID: <span className="font-mono text-surface-alt">{email.split('@')[0].toUpperCase()}</span>
-            </div>
-            <button onClick={handleLogout} className="text-sm text-accent hover:text-accent-soft font-medium">
-              Logout
-            </button>
-          </div>
-
-          <div className="md:hidden">
-            <button onClick={() => setIsOpen(!isOpen)} className="text-text-muted hover:text-white p-2">
-              {isOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-            </button>
-          </div>
+    <div className="w-full">
+      {/* Announcement Band */}
+      <div className="w-full bg-iris-pulse py-[10px] px-[24px] flex justify-between items-center">
+        <div className="text-canvas text-[13px] font-medium text-center w-full">
+          SIH26034 v2.0 deployed. All scans now processed via Edge OCR.
         </div>
+        <button className="btn-pill shrink-0 whitespace-nowrap">View docs →</button>
       </div>
+      
+      {/* Navigation */}
+      <nav className="w-full bg-canvas border-b border-obsidian-ink/15 h-[64px] flex items-center justify-between px-[24px]">
+        {/* Logo */}
+        <div className="flex items-center gap-2">
+          <div className="w-[8px] h-[8px] rounded-full bg-obsidian-ink"></div>
+          <span className="font-bold text-[16px] tracking-[-0.02em] text-obsidian-ink">satyalabel</span>
+        </div>
 
-      {isOpen && (
-        <div className="md:hidden bg-navy-700 px-2 pt-2 pb-3 space-y-1 sm:px-3">
-          {navLinks.map((link) => (
-            <Link
-              key={link.name}
-              href={link.path}
-              onClick={() => setIsOpen(false)}
-              className={`block px-3 py-2 rounded-sm text-base font-medium ${
-                pathname === link.path 
-                  ? 'bg-navy-900 text-white border-l-4 border-accent' 
-                  : 'text-text-muted hover:bg-navy-900 hover:text-white border-l-4 border-transparent'
-              }`}
-            >
-              {link.name}
+        {/* Center Links */}
+        <div className="hidden md:flex gap-8">
+          {links.map(l => (
+            <Link key={l.name} href={l.path} className={\	ext-[14px] \ text-obsidian-ink\}>
+              {l.name}
             </Link>
           ))}
-          <button 
-            onClick={handleLogout}
-            className="w-full text-left block px-3 py-2 rounded-sm text-base font-medium text-accent hover:bg-navy-900"
-          >
-            Logout
-          </button>
         </div>
-      )}
-    </nav>
+
+        {/* Right Nav */}
+        <div className="flex items-center gap-4">
+          <span className="text-[14px] text-fog">{email}</span>
+          <button onClick={handleLogout} className="btn-ghost !py-[8px] !px-[18px] !text-[14px]">Log out</button>
+        </div>
+      </nav>
+    </div>
   );
 }

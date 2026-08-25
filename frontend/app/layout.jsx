@@ -1,46 +1,39 @@
-import './globals.css';
-import NavBar from '@/components/NavBar';
-import PageTransition from '@/components/PageTransition';
-import { Toaster } from 'sonner';
-import Script from 'next/script';
+import { Inter, Source_Serif_4 } from 'next/font/google'
+import './globals.css'
+import { Toaster } from 'sonner'
+import Script from 'next/script'
+
+const inter = Inter({ subsets: ['latin'], variable: '--font-inter' })
+const sourceSerif = Source_Serif_4({ subsets: ['latin'], weight: ['400'], variable: '--font-display' })
 
 export const metadata = {
-  title: 'SatyaLabel — Official Verification',
-  description: 'Legal Metrology Compliance Tool',
-  manifest: '/manifest.json',
-  themeColor: '#0B1F3A',
-  viewport: 'width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0',
-};
+  title: 'SatyaLabel',
+  description: 'Legal Metrology Compliance Checker',
+}
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="en" className="dark">
+    <html lang="en">
       <head>
-        <meta name="theme-color" content="#0B1F3A" />
         <link rel="manifest" href="/manifest.json" />
-        <link rel="apple-touch-icon" href="/icon.svg" />
+        <meta name="theme-color" content="#ffffff" />
       </head>
-      <body>
-        <NavBar />
-        <main className="min-h-screen pt-24 px-4 md:px-8">
-          <PageTransition>
-            {children}
-          </PageTransition>
-        </main>
-        <Toaster position="bottom-right" richColors theme="light" />
+      <body className={\ \ font-sans bg-canvas text-obsidian-ink}>
+        {children}
+        <Toaster position="top-right" />
         <Script id="register-sw" strategy="afterInteractive">
-          {`
+          {
             if ('serviceWorker' in navigator) {
               window.addEventListener('load', function() {
                 navigator.serviceWorker.register('/sw.js').then(
                   function(registration) { console.log('SW registration successful'); },
-                  function(err) { console.log('SW registration failed', err); }
+                  function(err) { console.log('SW registration failed: ', err); }
                 );
               });
             }
-          `}
+          }
         </Script>
       </body>
     </html>
-  );
+  )
 }
