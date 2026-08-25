@@ -57,7 +57,7 @@ export default function UploadPage() {
       formData.append('image', file);
       formData.append('metadata', JSON.stringify(metadata));
 
-      const res = await fetch(`${API}/scans/upload`, {
+      const res = await fetch(`${API}/scans`, {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` },
         body: formData
