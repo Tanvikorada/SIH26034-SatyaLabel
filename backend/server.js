@@ -103,7 +103,7 @@ const startServer = async () => {
     console.log('Environment variable keys:', Object.keys(process.env));
     console.log('Is DATABASE_URL present in env?', !!process.env.DATABASE_URL);
     console.log('Is config.db.url present?', !!config.db.url);
-    await syncDatabase({ alter: config.server.nodeEnv === 'development' });
+    await syncDatabase({ alter: true });
 
     app.listen(config.server.port, () => {
       console.log('');
