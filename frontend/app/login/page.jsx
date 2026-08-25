@@ -28,11 +28,13 @@ export default function Login() {
       if (res.ok && data.token) {
         localStorage.setItem('token', data.token);
         localStorage.setItem('email', email);
+        localStorage.setItem('role', email.includes('admin') ? 'admin' : 'officer');
         toast.success('Login Successful', { id: toastId, description: 'Welcome to SatyaLabel.' });
         router.push('/dashboard');
       } else {
         localStorage.setItem('token', 'demo-token');
         localStorage.setItem('email', email);
+        localStorage.setItem('role', email.includes('admin') ? 'admin' : 'officer');
         toast.warning('Demo Mode Active', { id: toastId, description: 'Authentication failed. Falling back to offline mode.' });
         router.push('/dashboard');
       }

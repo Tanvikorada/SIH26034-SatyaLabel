@@ -6,6 +6,7 @@ import { Camera, FileImage, ShieldCheck, ScanLine, BrainCircuit, Sparkles } from
 import SplitText from '@/components/SplitText';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
+import { openDB } from 'idb';
 
 export default function UploadPage() {
   const router = useRouter();
@@ -61,6 +62,15 @@ export default function UploadPage() {
     }
   };
 
+  const saveToSyncQueue = async (file, metadata) => {
+    const db = await openDB('SatyaLabelDB', 1, {
+      upgrade(db) {
+        db.createObjectStore('sync-queue', { keyPath: 'id', autoIncrement: true });
+      },
+    });
+    await db.add('sync-queue', { file, metadata, timestamp: Date.now() });
+  };
+
   const handleUpload = async (e) => {
     e.preventDefault();
     if (!file) return toast.error('No image selected', { description: 'Please capture or upload a product label.' });
@@ -68,15 +78,17 @@ export default function UploadPage() {
     setLoading(true);
     const toastId = toast.loading('Initializing compliance scan...');
     
+    const metadata = {
+      productName: productName || 'Unknown',
+      category,
+      sourceType,
+      timestamp: new Date().toISOString()
+    };
+    
     try {
       const formData = new FormData();
       formData.append('image', file);
-      formData.append('metadata', JSON.stringify({
-        productName: productName || 'Unknown',
-        category,
-        sourceType,
-        timestamp: new Date().toISOString()
-      }));
+      formData.append('metadata', JSON.stringify(metadata));
 
       const res = await fetch(`${API}/scans/upload`, {
         method: 'POST',
@@ -93,8 +105,9 @@ export default function UploadPage() {
         setLoading(false);
       }
     } catch (err) {
-      toast.error('Network Error', { id: toastId, description: 'Backend unreachable. Using demo data fallback.' });
-      setTimeout(() => router.push('/results/DEMO-SCN-01'), 4000); // Wait longer to show off logs
+      await saveToSyncQueue(file, metadata);
+      toast.warning('Network Offline', { id: toastId, description: 'Scan queued locally. Will sync when reconnected.' });
+      setTimeout(() => router.push('/dashboard'), 4000); 
     }
   };
 

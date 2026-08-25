@@ -9,15 +9,18 @@ export default function NavBar() {
   const pathname = usePathname();
   const router = useRouter();
   const [email, setEmail] = useState('');
+  const [role, setRole] = useState('');
   const [isOpen, setIsOpen] = useState(false);
 
   useEffect(() => {
     setEmail(localStorage.getItem('email') || 'Officer');
+    setRole(localStorage.getItem('role') || '');
   }, []);
 
   const handleLogout = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('email');
+    localStorage.removeItem('role');
     router.push('/login');
   };
 
@@ -25,7 +28,7 @@ export default function NavBar() {
     { name: 'Dashboard', path: '/dashboard' },
     { name: 'Upload Scan', path: '/upload' },
     { name: 'History', path: '/history' },
-    { name: 'Rules Config', path: '/rules' }
+    ...(role === 'admin' ? [{ name: 'Rules Config', path: '/rules' }] : [])
   ];
 
   if (pathname === '/login') return null;
