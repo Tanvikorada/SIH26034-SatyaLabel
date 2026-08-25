@@ -346,13 +346,13 @@ async function runOcrPipeline(imagePath) {
       );
     }
 
-    // ── Step 4b: Decide whether to use Gemini fallback ───────────────────────
-    const needsGeminiFallback = config.gemini?.enabled && (
-      isTextEmpty ||
-      tesseractResult.confidence < OCR_CONFIDENCE_THRESHOLD
-    );
+    //  Step 4b: Decide whether to use Gemini fallback 
+    // If Gemini is enabled (API key present), ALWAYS use it.
+    // Tesseract's confidence scores are too unreliable on complex Indian packaging.
+    const needsGeminiFallback = config.gemini?.enabled;
 
     if (needsGeminiFallback) {
+      console.log(`[OCR] Gemini is enabled. Bypassing Tesseract confidence check and using Gemini Vision.`);
       console.log(
         `[OCR] Tesseract confidence ${tesseractResult.confidence.toFixed(1)}% ` +
         `(threshold: ${OCR_CONFIDENCE_THRESHOLD}%) → Gemini Vision fallback`
