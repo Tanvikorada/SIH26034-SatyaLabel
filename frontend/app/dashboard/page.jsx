@@ -1,4 +1,4 @@
-'use client';
+"use client";
 import { useEffect, useState } from 'react';
 import NavBar from '@/components/NavBar';
 import { useRouter } from 'next/navigation';
@@ -18,7 +18,7 @@ export default function Dashboard() {
 
   const fetchStats = async () => {
     try {
-      const res = await fetch(\\/dashboard/stats\);
+      const res = await fetch(${process.env.NEXT_PUBLIC_API_URL || 'https://satyalabel-backend.onrender.com/api/v1'}/dashboard/stats);
       const json = await res.json();
       const d = json.data || json;
       setStats(d);
@@ -84,7 +84,7 @@ export default function Dashboard() {
             <h3 className="text-[20px] font-bold tracking-[-0.4px] mb-6">Recent Activity</h3>
             <div className="flex flex-col gap-2">
               {(stats.recent_scans || stats.recent || []).map((scan, i) => (
-                <div key={i} className="flex justify-between items-center py-4 border-b border-ash last:border-0 cursor-pointer hover:bg-canvas/80" onClick={() => router.push(\/results/\\)}>
+                <div key={i} className="flex justify-between items-center py-4 border-b border-ash last:border-0 cursor-pointer hover:bg-canvas/80" onClick={() => router.push(/results/)}>
                   <div>
                     <div className="text-[15px] font-medium">{scan.product_name || 'Unknown Product'}</div>
                     <div className="text-[12px] text-fog">{new Date(scan.created_at).toLocaleString()}</div>

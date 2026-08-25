@@ -1,4 +1,4 @@
-'use client';
+"use client";
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
@@ -51,7 +51,7 @@ export default function NavBar() {
         {/* Center Links */}
         <div className="hidden md:flex gap-8">
           {links.map(l => (
-            <Link key={l.name} href={l.path} className={\	ext-[14px] \ text-obsidian-ink\}>
+            <Link key={l.name} href={l.path} className={	ext-[14px]  text-obsidian-ink}>
               {l.name}
             </Link>
           ))}

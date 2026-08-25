@@ -1,4 +1,4 @@
-'use client';
+"use client";
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
@@ -63,16 +63,16 @@ export default function UploadPage() {
       formData.append('image', file);
       formData.append('metadata', JSON.stringify(metadata));
 
-      const res = await fetch(\\/scans/upload\, {
+      const res = await fetch(${API}/scans/upload, {
         method: 'POST',
-        headers: { 'Authorization': \Bearer \\ },
+        headers: { 'Authorization': Bearer  },
         body: formData
       });
       
       const data = await res.json();
       if (res.ok) {
         toast.success('Scan complete', { id: toastId, description: 'Redirecting to enforcement report.' });
-        setTimeout(() => router.push(\/results/\\), 1000);
+        setTimeout(() => router.push(/results/), 1000);
       } else {
         toast.error('Scan failed', { id: toastId, description: data.error || 'Server rejected the upload.' });
         setLoading(false);
@@ -91,7 +91,7 @@ export default function UploadPage() {
       let i = 0;
       const interval = setInterval(() => {
         if (i < msgs.length) {
-          setLogs(prev => [...prev, \> \\]);
+          setLogs(prev => [...prev, > ]);
           i++;
         }
       }, 800);
