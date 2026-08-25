@@ -1,692 +1,115 @@
-@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
 @import "tailwindcss";
 
-/* ============================================================
-   SatyaLabel — Design System v3
-   Sourced from CodeFronts dark-mode + glassmorphism patterns
-   Adapted to SIH26034 saffron identity
-   ============================================================ */
-
 :root {
-  /* ── Typography ─────────────────────────────────────────── */
-  --font-display: 'Outfit', ui-sans-serif, system-ui, sans-serif;
-  --font-body:    'Inter',  ui-sans-serif, system-ui, sans-serif;
-  --font-mono:    'JetBrains Mono', ui-monospace, monospace;
+  /* Premium Government UI Tokens */
+  --bg-base: #f8fafc;
+  --bg-surface: #ffffff;
+  
+  --primary-navy: #0f172a;
+  --primary-navy-hover: #1e293b;
+  
+  --accent-emerald: #059669;
+  --accent-emerald-hover: #047857;
+  
+  --text-main: #0f172a;
+  --text-secondary: #475569;
+  --text-muted: #94a3b8;
+  
+  --border: #e2e8f0;
+  
+  /* Unambiguous Status Colors */
+  --status-pass: #059669; 
+  --status-pass-bg: #ecfdf5;
+  --status-fail: #dc2626; 
+  --status-fail-bg: #fef2f2;
+  --status-review: #d97706; 
+  --status-review-bg: #fffbeb;
+  --status-na: #64748b; 
+  --status-na-bg: #f8fafc;
+  --status-nv: #94a3b8;
+  --status-nv-bg: #f1f5f9;
 
-  /* ── Base palette (CodeFronts cdm-01 adapted) ───────────── */
-  --bg-void:    #090d16;
-  --bg-base:    #0d1117;
-  --bg-surface: #111827;
-  --bg-card:    #1a2035;
-  --bg-raised:  #1e293b;
-  --bg-hover:   #273549;
-  --bg-glass:   rgba(15, 23, 42, 0.80);
-
-  /* ── Border (CodeFronts cdm-01) ─────────────────────────── */
-  --border:        #1e293b;
-  --border-muted:  #141c2e;
-  --border-bright: #334155;
-  --border-active: #f97316;
-
-  /* ── Text (CodeFronts cdm-01) ───────────────────────────── */
-  --text-primary:   #f8fafc;
-  --text-secondary: #94a3b8;
-  --text-muted:     #64748b;
-  --text-faint:     #475569;
-  --text-inverse:   #090d16;
-
-  /* ── Accent: Saffron (India identity) ───────────────────── */
-  --accent-h:         27;
-  --accent:           #f97316;
-  --accent-hover:     #fb923c;
-  --accent-dim:       #ea6c0a;
-  --accent-glow:      rgba(249, 115, 22, 0.20);
-  --accent-subtle:    rgba(249, 115, 22, 0.08);
-  --accent-border:    rgba(249, 115, 22, 0.35);
-  --accent-shadow:    0 4px 14px 0 rgba(249, 115, 22, 0.35);
-
-  /* ── Glass (CodeFronts cgm-01) ──────────────────────────── */
-  --glass-bg:           rgba(255, 255, 255, 0.05);
-  --glass-bg-hover:     rgba(255, 255, 255, 0.09);
-  --glass-border:       rgba(255, 255, 255, 0.10);
-  --glass-border-hover: rgba(255, 255, 255, 0.22);
-  --glass-highlight:    linear-gradient(135deg, rgba(255,255,255,0.18) 0%, rgba(255,255,255,0) 60%);
-  --glass-blur:         blur(16px) saturate(180%);
-  --glass-shadow:       0 8px 32px 0 rgba(0, 0, 0, 0.45);
-  --glass-shadow-hover: 0 20px 48px 0 rgba(0, 0, 0, 0.60), 0 0 24px 0 rgba(249, 115, 22, 0.18);
-
-  /* ── Elevation shadows (CodeFronts cdm-01) ──────────────── */
-  --shadow-sm: 0 1px 3px rgba(0,0,0,0.5), 0 1px 2px rgba(0,0,0,0.4);
-  --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.6), 0 2px 4px -2px rgba(0,0,0,0.5);
-  --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.7), 0 4px 6px -4px rgba(0,0,0,0.6);
-  --shadow-xl: 0 20px 25px -5px rgba(0,0,0,0.7), 0 8px 10px -6px rgba(0,0,0,0.6);
-
-  /* ── Transitions (CodeFronts cdm-01) ────────────────────── */
-  --t-fast:   150ms cubic-bezier(0.4, 0, 0.2, 1);
-  --t-normal: 250ms cubic-bezier(0.4, 0, 0.2, 1);
-  --t-spring: 300ms cubic-bezier(0.16, 1, 0.3, 1);
-
-  /* ── Radius (CodeFronts cdm-01) ─────────────────────────── */
-  --r-sm:   6px;
-  --r-md:   10px;
-  --r-lg:   16px;
-  --r-xl:   20px;
-  --r-full: 9999px;
-
-  /* ── Compliance status (CodeFronts sbg-01 adapted) ──────── */
-  --pass:         #10b981;
-  --pass-bg:      rgba(16, 185, 129, 0.10);
-  --pass-border:  rgba(16, 185, 129, 0.25);
-  --pass-glow:    rgba(16, 185, 129, 0.20);
-
-  --fail:         #ef4444;
-  --fail-bg:      rgba(239, 68, 68, 0.10);
-  --fail-border:  rgba(239, 68, 68, 0.25);
-  --fail-glow:    rgba(239, 68, 68, 0.20);
-
-  --review:       #f59e0b;
-  --review-bg:    rgba(245, 158, 11, 0.10);
-  --review-border:rgba(245, 158, 11, 0.25);
-  --review-glow:  rgba(245, 158, 11, 0.20);
-
-  --na:           #64748b;
-  --na-bg:        rgba(100, 116, 139, 0.10);
-  --na-border:    rgba(100, 116, 139, 0.20);
-
-  --nv:           #f97316;
-  --nv-bg:        rgba(249, 115, 22, 0.10);
-  --nv-border:    rgba(249, 115, 22, 0.25);
-
-  /* ── Navbar height ──────────────────────────────────────── */
-  --nav-h: 60px;
+  --shadow-elevation: 0 1px 3px rgba(15, 23, 42, 0.1), 0 1px 2px rgba(15, 23, 42, 0.06);
+  --radius-sharp: 2px;
+  --radius-card: 4px;
 }
-
-/* ── Reset ──────────────────────────────────────────────────── */
-*, *::before, *::after { box-sizing: border-box; }
-html { scroll-behavior: smooth; }
 
 body {
-  background: var(--bg-base);
-  color: var(--text-primary);
-  font-family: var(--font-body);
+  background-color: var(--bg-base);
+  color: var(--text-main);
+  font-family: 'Inter', sans-serif;
   -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  line-height: 1.6;
-  font-size: 15px;
 }
 
-h1, h2, h3, h4, h5, h6 {
-  font-family: var(--font-display);
-  letter-spacing: -0.025em;
-  font-weight: 700;
-  line-height: 1.2;
+.font-mono {
+  font-family: 'JetBrains Mono', monospace;
 }
 
-code, pre, .font-mono, kbd { font-family: var(--font-mono); }
-
-/* ── Scrollbar ──────────────────────────────────────────────── */
-::-webkit-scrollbar { width: 5px; height: 5px; }
-::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: var(--border-bright); border-radius: 10px; }
-::-webkit-scrollbar-thumb:hover { background: #475569; }
-
-/* ── Focus ──────────────────────────────────────────────────── */
-:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
-input:focus, select:focus, textarea:focus {
-  box-shadow: 0 0 0 3px var(--accent-border);
-  outline: none;
-}
-::selection { background: var(--accent-subtle); color: var(--text-primary); }
-
-/* ============================================================
-   CARD COMPONENTS (CodeFronts ccd-01 adapted)
-   ============================================================ */
-
-/* Base card */
-.card {
-  background: var(--bg-card);
+/* Official Components */
+.gov-card {
+  background: var(--bg-surface);
   border: 1px solid var(--border);
-  border-radius: var(--r-lg);
-  box-shadow: var(--shadow-sm);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-elevation);
 }
 
-/* Interactive card with lift + glow on hover */
-.card-interactive {
-  position: relative;
-  background: linear-gradient(180deg, var(--bg-card) 0%, var(--bg-surface) 100%);
-  border: 1px solid var(--border);
-  border-radius: var(--r-lg);
-  box-shadow: var(--shadow-md);
-  overflow: hidden;
-  transition: transform var(--t-spring), box-shadow var(--t-spring), border-color var(--t-normal);
-}
-
-.card-interactive::after {
-  content: '';
-  position: absolute;
-  top: 0; left: 0; right: 0;
-  height: 2px;
-  background: linear-gradient(90deg, transparent, var(--accent), transparent);
-  opacity: 0;
-  transition: opacity var(--t-normal);
-}
-
-.card-interactive:hover {
-  transform: translateY(-6px);
-  border-color: var(--accent-border);
-  box-shadow: var(--shadow-xl), 0 0 20px -4px var(--accent-glow);
-}
-
-.card-interactive:hover::after { opacity: 1; }
-
-/* Small card */
-.card-sm {
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: var(--r-md);
-}
-
-/* Raised card */
-.card-raised {
-  background: var(--bg-raised);
-  border: 1px solid var(--border-bright);
-  border-radius: var(--r-lg);
-  box-shadow: var(--shadow-lg);
-}
-
-/* ============================================================
-   GLASS (CodeFronts cgm-01)
-   ============================================================ */
-
-.glass {
-  background: var(--glass-bg);
-  backdrop-filter: var(--glass-blur);
-  -webkit-backdrop-filter: var(--glass-blur);
-  border: 1px solid var(--glass-border);
-  box-shadow: var(--glass-shadow);
-  position: relative;
-  overflow: hidden;
-}
-
-.glass::before {
-  content: '';
-  position: absolute;
-  top: 0; left: 0; right: 0;
-  height: 1px;
-  background: var(--glass-highlight);
-  opacity: 0.7;
-}
-
-.glass:hover {
-  background: var(--glass-bg-hover);
-  border-color: var(--glass-border-hover);
-  box-shadow: var(--glass-shadow-hover);
-}
-
-/* ============================================================
-   NAVBAR (CodeFronts cnb-01 adapted)
-   ============================================================ */
-
-.navbar {
-  position: sticky;
-  top: 0;
-  width: 100%;
-  height: var(--nav-h);
-  background: rgba(13, 17, 23, 0.85);
-  backdrop-filter: blur(14px) saturate(160%);
-  -webkit-backdrop-filter: blur(14px) saturate(160%);
-  border-bottom: 1px solid var(--glass-border);
-  z-index: 1000;
-}
-
-.navbar-link {
-  position: relative;
-  color: var(--text-secondary);
-  font-size: 14px;
+.gov-btn {
+  background: var(--primary-navy);
+  color: #ffffff;
+  border-radius: var(--radius-sharp);
+  padding: 0.5rem 1rem;
   font-weight: 500;
-  text-decoration: none;
-  padding: 6px 0;
-  transition: color var(--t-fast);
-}
-
-.navbar-link:hover { color: var(--text-primary); }
-
-.navbar-link::after {
-  content: '';
-  position: absolute;
-  bottom: 0; left: 0;
-  width: 100%;
-  height: 2px;
-  background: var(--accent);
-  border-radius: 2px;
-  transform: scaleX(0);
-  transform-origin: right;
-  transition: transform var(--t-normal);
-}
-
-.navbar-link:hover::after,
-.navbar-link.active::after {
-  transform: scaleX(1);
-  transform-origin: left;
-}
-
-/* ============================================================
-   BUTTONS (CodeFronts cb-01 adapted to saffron)
-   ============================================================ */
-
-.btn {
-  position: relative;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 7px;
-  padding: 9px 20px;
-  font-family: var(--font-body);
-  font-size: 13.5px;
-  font-weight: 600;
-  line-height: 1.5;
-  border-radius: var(--r-sm);
-  border: 1px solid transparent;
+  transition: all 0.2s;
+  text-align: center;
   cursor: pointer;
-  user-select: none;
-  white-space: nowrap;
-  text-decoration: none;
-  transition: all var(--t-fast);
-  overflow: hidden;
 }
+.gov-btn:hover { background: var(--primary-navy-hover); }
 
-.btn:active { transform: scale(0.97); }
-.btn:disabled { opacity: 0.45; cursor: not-allowed; pointer-events: none; }
+.gov-btn-accent { background: var(--accent-emerald); }
+.gov-btn-accent:hover { background: var(--accent-emerald-hover); }
 
-/* Primary — saffron gradient */
-.btn-primary {
-  background: linear-gradient(135deg, var(--accent) 0%, var(--accent-dim) 100%);
-  border-color: rgba(255,255,255,0.10);
-  color: #0b0d14;
-  box-shadow: var(--accent-shadow);
-}
-
-.btn-primary:hover {
-  background: linear-gradient(135deg, var(--accent-hover) 0%, var(--accent) 100%);
-  box-shadow: 0 6px 20px rgba(249, 115, 22, 0.45);
-  transform: translateY(-1px);
-}
-
-/* Shimmer effect on primary button */
-.btn-primary::after {
-  content: '';
-  position: absolute;
-  top: -50%; left: -50%;
-  width: 200%; height: 200%;
-  background: linear-gradient(60deg, transparent 30%, rgba(255,255,255,0.18) 50%, transparent 70%);
-  transform: rotate(25deg) translateY(-100%);
-  animation: btn-shimmer 4s ease-in-out infinite;
-}
-
-@keyframes btn-shimmer {
-  0%      { transform: rotate(25deg) translateY(-100%); }
-  20%, 100% { transform: rotate(25deg) translateY(150%); }
-}
-
-/* Secondary */
-.btn-secondary {
-  background: var(--bg-raised);
-  border-color: var(--border-bright);
-  color: var(--text-primary);
-}
-
-.btn-secondary:hover {
-  background: var(--bg-hover);
-  border-color: #475569;
-  transform: translateY(-1px);
-}
-
-/* Ghost */
-.btn-ghost {
+.gov-btn-outline {
   background: transparent;
-  border-color: transparent;
-  color: var(--text-secondary);
-}
-
-.btn-ghost:hover {
-  background: var(--glass-bg);
-  color: var(--text-primary);
-}
-
-/* ============================================================
-   INPUT (CodeFronts clf-01 adapted)
-   ============================================================ */
-
-.input {
-  width: 100%;
-  height: 44px;
-  background: var(--bg-surface);
-  border: 1px solid var(--border-bright);
-  border-radius: var(--r-sm);
-  color: var(--text-primary);
-  font-size: 14px;
-  font-family: var(--font-body);
-  padding: 0 14px;
-  transition: border-color var(--t-fast), box-shadow var(--t-fast), background var(--t-fast);
-}
-
-.input::placeholder { color: var(--text-faint); }
-
-.input:hover { border-color: #475569; }
-
-.input:focus {
-  border-color: var(--accent);
-  background: var(--bg-card);
-  box-shadow: 0 0 0 3px var(--accent-subtle);
-  outline: none;
-}
-
-.input:invalid:not(:placeholder-shown) { border-color: var(--fail); }
-
-textarea.input { height: auto; padding: 12px 14px; resize: vertical; }
-
-/* ============================================================
-   BADGES (CodeFronts sbg-01 adapted to 5-status system)
-   ============================================================ */
-
-.badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 3px 10px;
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 0.03em;
-  border-radius: var(--r-full);
-  border: 1px solid transparent;
-  user-select: none;
-  white-space: nowrap;
-}
-
-/* Animated pulse dot (CodeFronts sbg-01) */
-.badge-dot {
-  position: relative;
-  display: inline-block;
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  flex-shrink: 0;
-}
-
-.badge-dot::before {
-  content: '';
-  position: absolute;
-  top: -2px; left: -2px; right: -2px; bottom: -2px;
-  border-radius: 50%;
-  border: 1.5px solid currentColor;
-  opacity: 0.8;
-  animation: badge-pulse 2s cubic-bezier(0.24, 0, 0.38, 1) infinite;
-}
-
-@keyframes badge-pulse {
-  0%        { transform: scale(0.85); opacity: 0.9; }
-  70%       { transform: scale(2.2);  opacity: 0; }
-  100%      { transform: scale(2.4);  opacity: 0; }
-}
-
-/* 5-status badge variants */
-.badge-pass     { background: var(--pass-bg);   color: var(--pass);   border-color: var(--pass-border); }
-.badge-fail     { background: var(--fail-bg);   color: var(--fail);   border-color: var(--fail-border); }
-.badge-review   { background: var(--review-bg); color: var(--review); border-color: var(--review-border); }
-.badge-na       { background: var(--na-bg);     color: var(--na);     border-color: var(--na-border); }
-.badge-nv       { background: var(--nv-bg);     color: var(--nv);     border-color: var(--nv-border); }
-.badge-neutral  { background: var(--bg-raised); color: var(--text-secondary); border-color: var(--border); }
-.badge-accent   { background: var(--accent-subtle); color: var(--accent); border-color: var(--accent-border); }
-
-/* ============================================================
-   PROGRESS / GAUGE (CodeFronts cpb-01 adapted)
-   ============================================================ */
-
-.progress-track {
-  position: relative;
-  width: 100%;
-  height: 8px;
-  background: var(--bg-raised);
-  border-radius: var(--r-full);
-  overflow: hidden;
-  box-shadow: inset 0 1px 2px rgba(0,0,0,0.5);
-}
-
-.progress-fill {
-  height: 100%;
-  border-radius: var(--r-full);
-  transition: width 600ms cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 0 10px rgba(249,115,22,0.4);
-}
-
-.progress-fill-pass   { background: linear-gradient(90deg, var(--pass), #06b6d4); }
-.progress-fill-accent { background: linear-gradient(90deg, var(--accent), #f97316cc); }
-.progress-fill-fail   { background: linear-gradient(90deg, var(--fail), #dc2626); }
-
-/* Circular gauge (conic-gradient) */
-.gauge {
-  position: relative;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: var(--shadow-lg);
-}
-
-.gauge-inner {
-  border-radius: 50%;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  background: var(--bg-card);
-}
-
-/* ============================================================
-   TABLE ROWS
-   ============================================================ */
-
-.table-row {
-  border-bottom: 1px solid var(--border-muted);
-  transition: background var(--t-fast);
-}
-
-.table-row:hover { background: var(--bg-raised); }
-.table-row:last-child { border-bottom: none; }
-
-/* ============================================================
-   DIVIDER / INDIA STRIPE
-   ============================================================ */
-
-.divider { background: var(--border-muted); height: 1px; }
-
-.india-stripe {
-  background: linear-gradient(90deg, #FF9933 33.3%, #ffffff 33.3% 66.6%, #138808 66.6%);
-  height: 2px;
-}
-
-/* ============================================================
-   STATUS DOTS
-   ============================================================ */
-
-.status-dot {
-  border-radius: 50%;
-  width: 7px; height: 7px;
-  display: inline-block;
-  flex-shrink: 0;
-}
-
-.status-dot-pass    { background: var(--pass);   box-shadow: 0 0 6px var(--pass-glow); }
-.status-dot-fail    { background: var(--fail);   box-shadow: 0 0 6px var(--fail-glow); }
-.status-dot-review  { background: var(--review); box-shadow: 0 0 6px var(--review-glow); }
-.status-dot-na      { background: var(--na); }
-.status-dot-nv      { background: var(--nv); }
-
-/* ============================================================
-   AMBIENT ORB BACKGROUNDS (CodeFronts cgm-01)
-   ============================================================ */
-
-.orb-saffron {
-  position: absolute;
-  border-radius: 50%;
-  background: radial-gradient(circle, rgba(249,115,22,0.45) 0%, transparent 70%);
-  filter: blur(60px);
-  pointer-events: none;
-  animation: orb-float 10s ease-in-out infinite alternate;
-}
-
-.orb-blue {
-  position: absolute;
-  border-radius: 50%;
-  background: radial-gradient(circle, rgba(59,130,246,0.30) 0%, transparent 70%);
-  filter: blur(70px);
-  pointer-events: none;
-  animation: orb-float 12s ease-in-out infinite alternate-reverse;
-}
-
-@keyframes orb-float {
-  0%   { transform: translate(0, 0) scale(1); }
-  100% { transform: translate(30px, -20px) scale(1.15); }
-}
-
-/* ============================================================
-   ANIMATIONS
-   ============================================================ */
-
-@keyframes fadeInUp {
-  from { opacity: 0; transform: translateY(14px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to   { opacity: 1; }
-}
-
-@keyframes scaleIn {
-  from { opacity: 0; transform: scale(0.96); }
-  to   { opacity: 1; transform: scale(1); }
-}
-
-@keyframes slideInRight {
-  from { opacity: 0; transform: translateX(16px); }
-  to   { opacity: 1; transform: translateX(0); }
-}
-
-@keyframes scanLine {
-  from { top: -2px; }
-  to   { top: 100%; }
-}
-
-@keyframes shimmer {
-  0%   { background-position: -600px 0; }
-  100% { background-position:  600px 0; }
-}
-
-.animate-fade-in-up    { animation: .3s cubic-bezier(0.16,1,.3,1) forwards fadeInUp; }
-.animate-fade-in       { animation: .25s forwards fadeIn; }
-.animate-scale-in      { animation: .25s cubic-bezier(0.16,1,.3,1) forwards scaleIn; }
-.animate-slide-in-right{ animation: .3s cubic-bezier(0.16,1,.3,1) forwards slideInRight; }
-
-.stagger-1 { animation-delay: 60ms; }
-.stagger-2 { animation-delay: 120ms; }
-.stagger-3 { animation-delay: 180ms; }
-.stagger-4 { animation-delay: 240ms; }
-
-/* Skeleton loader */
-.skeleton {
-  background: linear-gradient(90deg, var(--bg-card) 25%, var(--bg-raised) 50%, var(--bg-card) 75%);
-  background-size: 600px 100%;
-  border-radius: var(--r-sm);
-  animation: 1.6s ease-in-out infinite shimmer;
-}
-
-/* Scan line */
-.scan-line-container { position: relative; overflow: hidden; }
-.scan-line-container::after {
-  content: '';
-  background: linear-gradient(90deg, transparent, var(--accent), transparent);
-  height: 2px;
-  animation: 1.8s linear infinite scanLine;
-  position: absolute;
-  left: 0; right: 0;
-}
-
-/* ============================================================
-   SURFACE UTILITIES
-   ============================================================ */
-
-.surface-0 { background: var(--bg-base); }
-.surface-1 { background: var(--bg-surface); }
-.surface-2 { background: var(--bg-card); }
-.surface-3 { background: var(--bg-raised); }
-
-.gradient-accent {
-  background: linear-gradient(135deg, var(--accent), #f97316cc);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-.gradient-accent-bg {
-  background: linear-gradient(135deg, var(--accent), #ea6c0a);
-}
-
-.glow-accent {
-  box-shadow: 0 0 24px var(--accent-glow), 0 0 48px rgba(249,115,22,0.08);
-}
-
-/* Input group with icon */
-.input-group { position: relative; display: flex; align-items: center; }
-.input-group .input { padding-left: 40px; }
-.input-group-icon {
-  position: absolute;
-  left: 13px;
-  color: var(--text-faint);
-  pointer-events: none;
-  display: flex;
-  align-items: center;
-}
-
-/* Social / SSO button row */
-.sso-btn {
-  display: flex;
-  align-items: center;
-  justify-content: flex-start;
-  gap: 10px;
-  padding: 10px 14px;
-  background: var(--bg-surface);
-  border: 1px solid var(--border-bright);
-  border-radius: var(--r-md);
-  color: var(--text-primary);
-  font-size: 13px;
+  color: var(--primary-navy);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sharp);
+  padding: 0.5rem 1rem;
   font-weight: 500;
+  transition: all 0.2s;
+  text-align: center;
   cursor: pointer;
-  transition: background var(--t-fast), border-color var(--t-fast), transform var(--t-fast);
-  text-align: left;
+}
+.gov-btn-outline:hover {
+  background: #f1f5f9;
 }
 
-.sso-btn:hover {
-  background: var(--bg-hover);
-  border-color: #475569;
-  transform: translateY(-1px);
+/* Data Table Styles */
+.gov-table-container {
+  overflow-x: auto;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
 }
-
-/* Divider with label */
-.divider-label {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  color: var(--text-faint);
-  font-size: 11px;
+.gov-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+.gov-table th {
+  background: #f1f5f9;
+  color: var(--text-secondary);
+  font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: 0.08em;
+  font-size: 0.75rem;
+  padding: 0.75rem 1rem;
+  text-align: left;
+  border-bottom: 1px solid var(--border);
 }
-
-.divider-label::before,
-.divider-label::after {
-  content: '';
-  flex: 1;
-  height: 1px;
-  background: var(--border);
+.gov-table td {
+  padding: 1rem;
+  border-bottom: 1px solid var(--border);
+  color: var(--text-main);
+  font-size: 0.875rem;
+}
+.gov-table tr:hover td {
+  background: #f8fafc;
 }

@@ -1,0 +1,21 @@
+{
+  "name": "SatyaLabel Enforcement",
+  "short_name": "SatyaLabel",
+  "description": "Legal Metrology Compliance & Verification Tool",
+  "start_url": "/dashboard",
+  "display": "standalone",
+  "background_color": "#f8fafc",
+  "theme_color": "#0f172a",
+  "icons": [
+    {
+      "src": "/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
