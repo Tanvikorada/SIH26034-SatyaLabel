@@ -1,4 +1,4 @@
-FROM node:18-bullseye-slim
+FROM node:22-bookworm-slim
 
 # Install Tesseract OCR and its dependencies
 RUN apt-get update && \
