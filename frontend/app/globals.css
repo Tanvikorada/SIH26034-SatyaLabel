@@ -2,82 +2,225 @@
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 
+/* ── Official Palette Tokens ─────────────────────────────── */
 @theme {
-  /* Official Palette (Light Mode Only) */
-  --color-background: #F6F5F1;
-  --color-surface: #FFFFFF;
-  --color-primary: #0B1F3A;
-  --color-primary-hover: #16335C;
-  --color-accent: #B4802A;
-  --color-accent-soft: #F1E4C9;
-  --color-border: #D9D5CB;
-  --color-text-primary: #0A1628;
-  --color-text-secondary: #4A5468;
-  --color-text-muted: #7B8494;
+  /* Light mode base (default) */
+  --color-background:       #F6F5F1;
+  --color-surface:          #FFFFFF;
+  --color-primary:          #0B1F3A;
+  --color-primary-hover:    #16335C;
+  --color-accent:           #B4802A;
+  --color-accent-soft:      #F1E4C9;
+  --color-border:           #D9D5CB;
+  --color-text-primary:     #0A1628;
+  --color-text-secondary:   #4A5468;
+  --color-text-muted:       #7B8494;
 
-  /* Status System */
-  --color-pass: #1E7A46;
-  --color-pass-bg: #E7F3EC;
-  --color-noncompliant: #A32020;
-  --color-noncompliant-bg: #FBEAEA;
-  --color-review: #A15C07;
-  --color-review-bg: #FBF1DE;
-  --color-not-applicable: #5B6472;
+  /* Status — light */
+  --color-pass:              #1E7A46;
+  --color-pass-bg:           #E7F3EC;
+  --color-noncompliant:      #A32020;
+  --color-noncompliant-bg:   #FBEAEA;
+  --color-review:            #A15C07;
+  --color-review-bg:         #FBF1DE;
+  --color-not-applicable:    #5B6472;
   --color-not-applicable-bg: #ECEDEF;
-  --color-not-verified: #55606E;
-  --color-not-verified-bg: #EAEDF1;
+  --color-not-verified:      #55606E;
+  --color-not-verified-bg:   #EAEDF1;
 
   /* Typography */
   --font-sans: 'Inter', ui-sans-serif, system-ui, -apple-system, sans-serif;
   --font-mono: 'IBM Plex Mono', ui-monospace, SFMono-Regular, monospace;
 }
 
+/* ── Dark Mode Overrides ─────────────────────────────────── */
+.dark {
+  --color-background:       #070B14;
+  --color-surface:          #0F1826;
+  --color-primary:          #E9EDF5;
+  --color-primary-hover:    #CBD5E1;
+  --color-accent:           #D6A34C;
+  --color-accent-soft:      rgba(214,163,76,0.12);
+  --color-border:           #1F2A3A;
+  --color-text-primary:     #F2F4F8;
+  --color-text-secondary:   #A9B4C4;
+  --color-text-muted:       #6B7A8F;
+
+  /* Status — dark */
+  --color-pass:              #34D399;
+  --color-pass-bg:           rgba(52,211,153,0.12);
+  --color-noncompliant:      #F87171;
+  --color-noncompliant-bg:   rgba(248,113,113,0.12);
+  --color-review:            #FBBF24;
+  --color-review-bg:         rgba(251,191,36,0.12);
+  --color-not-applicable:    #94A3B8;
+  --color-not-applicable-bg: rgba(148,163,184,0.12);
+  --color-not-verified:      #7C8798;
+  --color-not-verified-bg:   rgba(124,135,152,0.12);
+}
+
 @layer base {
   body {
-    @apply bg-background text-text-primary font-sans antialiased;
+    background-color: var(--color-background);
+    color: var(--color-text-primary);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    transition: background-color 0.25s ease, color 0.25s ease;
   }
 }
 
 @layer components {
   /* Buttons */
   .mello-btn-primary {
-    @apply bg-primary text-white font-medium text-[14px] px-[18px] py-[10px] rounded-[4px] border border-transparent cursor-pointer flex items-center justify-center transition-colors duration-200 hover:bg-primary-hover active:bg-primary-hover;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--color-primary);
+    color: var(--color-background);
+    font-weight: 500;
+    font-size: 14px;
+    padding: 10px 18px;
+    border-radius: 4px;
+    border: 1px solid transparent;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    text-decoration: none;
   }
-  
+  .mello-btn-primary:hover { background-color: var(--color-primary-hover); }
+
   .mello-btn-secondary {
-    @apply bg-surface border border-border text-primary font-medium text-[14px] px-[18px] py-[10px] rounded-[4px] cursor-pointer flex items-center justify-center transition-colors duration-200 hover:bg-background active:bg-background;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--color-surface);
+    border: 1px solid var(--color-border);
+    color: var(--color-text-primary);
+    font-weight: 500;
+    font-size: 14px;
+    padding: 10px 18px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    text-decoration: none;
   }
+  .mello-btn-secondary:hover { background-color: var(--color-background); }
 
   /* Status Badges */
-  .mello-badge-pass { @apply bg-pass-bg border border-pass/20 text-pass px-[10px] py-[4px] rounded-full text-[12px] font-medium; }
-  .mello-badge-review { @apply bg-review-bg border border-review/20 text-review px-[10px] py-[4px] rounded-full text-[12px] font-medium; }
-  .mello-badge-fail { @apply bg-noncompliant-bg border border-noncompliant/20 text-noncompliant px-[10px] py-[4px] rounded-full text-[12px] font-medium; }
-  .mello-badge-na { @apply bg-not-applicable-bg border border-not-applicable/20 text-not-applicable px-[10px] py-[4px] rounded-full text-[12px] font-medium; }
+  .mello-badge-pass {
+    background-color: var(--color-pass-bg);
+    border: 1px solid color-mix(in srgb, var(--color-pass) 20%, transparent);
+    color: var(--color-pass);
+    padding: 4px 10px;
+    border-radius: 9999px;
+    font-size: 12px;
+    font-weight: 500;
+    display: inline-block;
+  }
+  .mello-badge-fail {
+    background-color: var(--color-noncompliant-bg);
+    border: 1px solid color-mix(in srgb, var(--color-noncompliant) 20%, transparent);
+    color: var(--color-noncompliant);
+    padding: 4px 10px;
+    border-radius: 9999px;
+    font-size: 12px;
+    font-weight: 500;
+    display: inline-block;
+  }
+  .mello-badge-review {
+    background-color: var(--color-review-bg);
+    border: 1px solid color-mix(in srgb, var(--color-review) 20%, transparent);
+    color: var(--color-review);
+    padding: 4px 10px;
+    border-radius: 9999px;
+    font-size: 12px;
+    font-weight: 500;
+    display: inline-block;
+  }
+  .mello-badge-na {
+    background-color: var(--color-not-applicable-bg);
+    border: 1px solid color-mix(in srgb, var(--color-not-applicable) 20%, transparent);
+    color: var(--color-not-applicable);
+    padding: 4px 10px;
+    border-radius: 9999px;
+    font-size: 12px;
+    font-weight: 500;
+    display: inline-block;
+  }
+  .mello-badge-not-verified {
+    background-color: var(--color-not-verified-bg);
+    border: 1px solid color-mix(in srgb, var(--color-not-verified) 20%, transparent);
+    color: var(--color-not-verified);
+    padding: 4px 10px;
+    border-radius: 9999px;
+    font-size: 12px;
+    font-weight: 500;
+    display: inline-block;
+  }
 
   /* Cards */
   .mello-card {
-    @apply bg-surface border border-border rounded-[8px] shadow-sm;
+    background-color: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: 8px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.06);
   }
-  
   .mello-card-flat {
-    @apply bg-surface border border-border rounded-[8px];
+    background-color: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: 8px;
   }
-  
+
   /* Inputs */
   .mello-input {
-    @apply bg-surface border border-border text-text-primary rounded-[4px] px-[14px] py-[12px] text-[14px] w-full focus:border-accent focus:ring-1 focus:ring-accent focus:outline-none transition-colors duration-200 placeholder:text-text-muted;
+    background-color: var(--color-surface);
+    border: 1px solid var(--color-border);
+    color: var(--color-text-primary);
+    border-radius: 4px;
+    padding: 12px 14px;
+    font-size: 14px;
+    width: 100%;
+    outline: none;
+    transition: border-color 0.2s ease;
   }
-  
-  /* Table Rows */
+  .mello-input:focus {
+    border-color: var(--color-accent);
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-accent) 15%, transparent);
+  }
+  .mello-input::placeholder { color: var(--color-text-muted); }
+
+  /* Table rows */
   .mello-table-row {
-    @apply border-b border-border transition-colors duration-200 hover:bg-background;
+    border-bottom: 1px solid var(--color-border);
+    transition: background-color 0.2s ease;
   }
+  .mello-table-row:hover { background-color: var(--color-background); }
 }
 
-@theme {
-  --animate-scan: scan 2.5s linear infinite;
-  @keyframes scan {
-    0% { transform: translateY(-100%); }
-    100% { transform: translateY(180px); }
-  }
+/* ── Landing-page-only animations ────────────────────────── */
+@keyframes scan {
+  0%   { transform: translateY(-100%); }
+  100% { transform: translateY(180px); }
+}
+.animate-scan { animation: scan 2.5s linear infinite; }
+
+@keyframes spin-slow {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+.animate-spin-slow { animation: spin-slow 40s linear infinite; }
+
+@keyframes spin-counter {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(-360deg); }
+}
+.animate-spin-counter { animation: spin-counter 60s linear infinite; }
+
+@keyframes conic-border {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+@keyframes typewriter-blink {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0; }
 }
