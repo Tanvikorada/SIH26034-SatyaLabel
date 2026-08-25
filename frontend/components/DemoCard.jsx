@@ -63,17 +63,17 @@ export default function DemoCard({ steps, autoPlay = true, loop = true, showCurs
 
   return (
     <div 
-      className={`mello-card-flat shadow-[inset_0_1px_0_rgba(255,255,255,0.05)] flex flex-col overflow-hidden w-full h-[320px] relative ${!autoPlay ? 'cursor-pointer hover:border-mist transition-colors group' : ''}`}
+      className={`mello-card-flat  flex flex-col overflow-hidden w-full h-[320px] relative ${!autoPlay ? 'cursor-pointer hover:border-mist transition-colors group' : ''}`}
       onClick={handleTap}
     >
-      <div className="flex justify-between items-center px-4 py-3 border-b border-graphite bg-charcoal/50 z-10">
-        <span className="text-[12px] font-medium text-mist uppercase tracking-widest">{step.label}</span>
+      <div className="flex justify-between items-center px-4 py-3 border-b border-border bg-surface/50 z-10">
+        <span className="text-[12px] font-medium text-text-secondary uppercase tracking-widest">{step.label}</span>
         {!autoPlay && (
-          <span className="text-[11px] text-fog opacity-0 group-hover:opacity-100 transition-opacity">Tap to advance &rarr;</span>
+          <span className="text-[11px] text-text-muted opacity-0 group-hover:opacity-100 transition-opacity">Tap to advance &rarr;</span>
         )}
       </div>
       
-      <div className="relative flex-1 bg-obsidian overflow-hidden p-6 flex flex-col justify-center items-center">
+      <div className="relative flex-1 bg-background overflow-hidden p-6 flex flex-col justify-center items-center">
         <AnimatePresence mode="wait">
           <motion.div
             key={currentStep}
@@ -89,7 +89,7 @@ export default function DemoCard({ steps, autoPlay = true, loop = true, showCurs
 
         {showCursor && currentStep === 0 && (
           <motion.div 
-            className="absolute z-50 w-6 h-6 rounded-full bg-white/20 backdrop-blur-md border border-white/40 shadow-lg pointer-events-none"
+            className="absolute z-50 w-6 h-6 rounded-full bg-surface  border border-border shadow-lg pointer-events-none"
             initial={{ opacity: 0, x: 20, y: 30 }}
             animate={{ 
               opacity: 1, 
@@ -106,7 +106,7 @@ export default function DemoCard({ steps, autoPlay = true, loop = true, showCurs
       </div>
       
       {/* Progress Indicator */}
-      <div className="h-1 w-full bg-charcoal flex z-10">
+      <div className="h-1 w-full bg-surface flex z-10">
          {steps.map((_, i) => (
            <div 
              key={i} 

@@ -45,17 +45,17 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen bg-midnight flex items-center justify-center p-6 text-white font-sans selection:bg-white selection:text-midnight">
+    <div className="min-h-screen bg-background flex items-center justify-center p-6 text-text-primary font-sans selection:bg-surface selection:text-background">
       <div className="w-full max-w-[440px] mello-card p-10">
         <div className="flex items-center gap-3 mb-10">
-          <div className="w-6 h-6 rounded-full bg-white flex items-center justify-center">
-            <div className="w-2 h-2 rounded-full bg-midnight"></div>
+          <div className="w-6 h-6 rounded-full bg-surface flex items-center justify-center">
+            <div className="w-2 h-2 rounded-full bg-background"></div>
           </div>
           <span className="font-medium tracking-tight text-[15px]">satyalabel</span>
         </div>
         
         <h1 className="text-[32px] font-medium tracking-tight leading-[1.1] mb-3">Sign in</h1>
-        <p className="text-[15px] text-mist mb-8">Enter your credentials to access the compliance dashboard.</p>
+        <p className="text-[15px] text-text-secondary mb-8">Enter your credentials to access the compliance dashboard.</p>
 
         <form onSubmit={handleLogin} className="flex flex-col gap-4 mb-8">
           <input 
@@ -77,8 +77,8 @@ export default function Login() {
           </button>
         </form>
 
-        <div className="border-t border-graphite pt-6">
-          <p className="text-[13px] font-medium text-mist mb-3 text-center">Quick demo access</p>
+        <div className="border-t border-border pt-6">
+          <p className="text-[13px] font-medium text-text-secondary mb-3 text-center">Quick demo access</p>
           <div className="grid grid-cols-2 gap-3">
             <button type="button" onClick={() => handleQuickLogin('officer@gov.in')} className="mello-btn-secondary !py-2">Field Officer</button>
             <button type="button" onClick={() => handleQuickLogin('admin@gov.in')} className="mello-btn-secondary !py-2">System Admin</button>

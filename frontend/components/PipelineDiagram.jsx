@@ -26,7 +26,7 @@ export default function PipelineDiagram() {
       {/* Desktop SVG Line */}
       <div className="hidden md:block absolute top-1/2 left-0 w-full h-[2px] -translate-y-1/2 z-0">
         <svg width="100%" height="2" preserveAspectRatio="none">
-          <line x1="0" y1="1" x2="100%" y2="1" stroke="rgba(255,255,255,0.1)" strokeWidth="2" />
+          <line x1="0" y1="1" x2="100%" y2="1" stroke="var(--color-border)" strokeWidth="2" />
           <motion.line 
             x1="0" y1="1" x2="100%" y2="1" 
             stroke="var(--accent, #fb923c)" 
@@ -39,7 +39,7 @@ export default function PipelineDiagram() {
       {/* Mobile SVG Line */}
       <div className="block md:hidden absolute left-8 top-0 w-[2px] h-full z-0">
         <svg width="2" height="100%" preserveAspectRatio="none">
-          <line x1="1" y1="0" x2="1" y2="100%" stroke="rgba(255,255,255,0.1)" strokeWidth="2" />
+          <line x1="1" y1="0" x2="1" y2="100%" stroke="var(--color-border)" strokeWidth="2" />
           <motion.line 
             x1="1" y1="0" x2="1" y2="100%" 
             stroke="var(--accent, #fb923c)" 
@@ -70,14 +70,14 @@ export default function PipelineDiagram() {
               style={{ opacity, y }}
               className="flex items-center md:flex-col md:justify-center gap-4 md:gap-3 group cursor-help pl-6 md:pl-0"
             >
-              <div className="w-4 h-4 rounded-full bg-obsidian border-2 border-graphite group-hover:border-accent transition-colors relative z-10 shadow-lg">
+              <div className="w-4 h-4 rounded-full bg-background border-2 border-border group-hover:border-accent transition-colors relative z-10 shadow-lg">
                 <div className="absolute inset-0 bg-accent rounded-full opacity-0 group-hover:opacity-100 scale-50 transition-all"></div>
               </div>
-              <div className="mello-card-flat bg-charcoal/80 backdrop-blur-md px-4 py-3 min-w-[140px] text-center border-graphite/50 relative">
-                <span className="text-[13px] font-medium text-pearl block">{node.label}</span>
+              <div className="mello-card-flat bg-surface  px-4 py-3 min-w-[140px] text-center border-border relative">
+                <span className="text-[13px] font-medium text-text-primary block">{node.label}</span>
                 
                 {/* Tooltip */}
-                <div className="absolute top-full md:top-auto md:bottom-full left-1/2 -translate-x-1/2 mt-2 md:mt-0 md:mb-2 w-[180px] opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity bg-obsidian border border-graphite p-2 rounded-lg text-[11px] text-mist shadow-xl z-50">
+                <div className="absolute top-full md:top-auto md:bottom-full left-1/2 -translate-x-1/2 mt-2 md:mt-0 md:mb-2 w-[180px] opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity bg-background border border-border p-2 rounded-lg text-[11px] text-text-secondary shadow-sm z-50">
                   {node.tooltip}
                 </div>
               </div>

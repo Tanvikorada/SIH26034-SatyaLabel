@@ -54,7 +54,7 @@ function FieldRow({ label, value, isPresent, isEstimated }) {
         )}
         <span
           className={`text-sm text-right break-words ${
-            isPresent ? 'text-white' : 'text-slate-600 italic'
+            isPresent ? 'text-text-primary' : 'text-slate-600 italic'
           }`}
         >
           {value || '— not found —'}

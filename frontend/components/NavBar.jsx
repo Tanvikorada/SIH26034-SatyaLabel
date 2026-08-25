@@ -31,24 +31,24 @@ export default function NavBar() {
   if (pathname === '/login') return null;
 
   return (
-    <nav className="w-full bg-midnight/80 backdrop-blur-md border-b border-graphite h-[64px] flex items-center justify-between px-6 sticky top-0 z-50">
+    <nav className="w-full bg-background  border-b border-border h-[64px] flex items-center justify-between px-6 sticky top-0 z-50">
       <div className="flex items-center gap-3">
-        <div className="w-5 h-5 rounded-full bg-white flex items-center justify-center">
-          <div className="w-1.5 h-1.5 rounded-full bg-midnight"></div>
+        <div className="w-5 h-5 rounded-full bg-surface flex items-center justify-center">
+          <div className="w-1.5 h-1.5 rounded-full bg-background"></div>
         </div>
-        <span className="font-medium tracking-tight text-[15px] text-white">satyalabel</span>
+        <span className="font-medium tracking-tight text-[15px] text-text-primary">satyalabel</span>
       </div>
 
       <div className="hidden md:flex gap-6">
         {links.map(l => (
-          <Link key={l.name} href={l.path} className={`text-[14px] transition-colors ${pathname.includes(l.path) ? 'text-white font-medium' : 'text-mist hover:text-white'}`}>
+          <Link key={l.name} href={l.path} className={`text-[14px] transition-colors ${pathname.includes(l.path) ? 'text-text-primary font-medium' : 'text-text-secondary hover:text-text-primary'}`}>
             {l.name}
           </Link>
         ))}
       </div>
 
       <div className="flex items-center gap-4">
-        <span className="text-[13px] text-fog hidden md:block">{email}</span>
+        <span className="text-[13px] text-text-muted hidden md:block">{email}</span>
         <button onClick={handleLogout} className="mello-btn-secondary !py-1.5 !px-3 !text-[13px] !rounded-full">Log out</button>
       </div>
     </nav>

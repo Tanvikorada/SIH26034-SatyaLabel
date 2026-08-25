@@ -24,14 +24,14 @@ export default function RulesPage() {
     fetchRules();
   }, [router]);
 
-  if (loading) return <div className="min-h-screen bg-midnight text-white"><NavBar/><div className="p-10 text-mist text-[14px]">Loading...</div></div>;
+  if (loading) return <div className="min-h-screen bg-background text-text-primary"><NavBar/><div className="p-10 text-text-secondary text-[14px]">Loading...</div></div>;
 
   return (
-    <div className="min-h-screen bg-midnight text-white">
+    <div className="min-h-screen bg-background text-text-primary">
       <NavBar />
       <div className="max-w-[1000px] mx-auto px-6 py-12">
         <h1 className="text-[32px] font-medium tracking-tight leading-[1.1] mb-2">Rules Config</h1>
-        <p className="text-[15px] text-mist mb-10">Manage Legal Metrology Act constraints.</p>
+        <p className="text-[15px] text-text-secondary mb-10">Manage Legal Metrology Act constraints.</p>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {rules.map((r, i) => (
@@ -39,15 +39,15 @@ export default function RulesPage() {
               <div className="flex justify-between items-center mb-4">
                 <div className="flex items-center gap-3">
                   <div className={`w-2 h-2 rounded-full ${r.active ? 'bg-[#4ade80]' : 'bg-fog'}`}></div>
-                  <span className="font-mono text-[13px] text-mist">{r.rule_id}</span>
+                  <span className="font-mono text-[13px] text-text-secondary">{r.rule_id}</span>
                 </div>
                 <span className={r.active ? 'mello-badge-pass' : 'mello-badge-na'}>{r.active ? 'Active' : 'Inactive'}</span>
               </div>
-              <h3 className="font-medium text-[16px] text-white mb-2">{r.name}</h3>
-              <p className="text-[14px] text-fog leading-relaxed mb-6 flex-1">{r.description}</p>
+              <h3 className="font-medium text-[16px] text-text-primary mb-2">{r.name}</h3>
+              <p className="text-[14px] text-text-muted leading-relaxed mb-6 flex-1">{r.description}</p>
               
-              <div className="pt-4 border-t border-graphite flex justify-between items-center">
-                <span className={`text-[12px] font-medium uppercase tracking-wider ${r.severity === 'high' ? 'text-[#f87171]' : 'text-mist'}`}>{r.severity} severity</span>
+              <div className="pt-4 border-t border-border flex justify-between items-center">
+                <span className={`text-[12px] font-medium uppercase tracking-wider ${r.severity === 'high' ? 'text-[#f87171]' : 'text-text-secondary'}`}>{r.severity} severity</span>
                 <button className="mello-btn-secondary !py-1 !px-3 !text-[12px] opacity-0 group-hover:opacity-100 transition-opacity">Edit</button>
               </div>
             </div>

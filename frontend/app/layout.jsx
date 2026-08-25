@@ -18,7 +18,7 @@ export default function RootLayout({ children }) {
         <link rel="manifest" href="/manifest.json" />
         <meta name="theme-color" content="#ffffff" />
       </head>
-      <body className={`${inter.variable} ${sourceSerif.variable} font-sans bg-canvas text-obsidian-ink`}>
+      <body className={`${inter.variable} ${sourceSerif.variable} font-sans bg-canvas text-background-ink`}>
         {children}
         <Toaster position="top-right" />
         <Script id="register-sw" strategy="afterInteractive">

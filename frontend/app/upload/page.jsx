@@ -89,25 +89,25 @@ export default function UploadPage() {
   }, [loading]);
 
   return (
-    <div className="min-h-screen bg-midnight text-white">
+    <div className="min-h-screen bg-background text-text-primary">
       <NavBar />
       <div className="max-w-[1000px] mx-auto px-6 py-12">
         <h1 className="text-[32px] font-medium tracking-tight leading-[1.1] mb-2">Upload Scan</h1>
-        <p className="text-[15px] text-mist mb-10">Submit physical or ecommerce labels for AI compliance checking.</p>
+        <p className="text-[15px] text-text-secondary mb-10">Submit physical or ecommerce labels for AI compliance checking.</p>
 
         <div className="grid grid-cols-1 md:grid-cols-5 gap-6">
           <form onSubmit={handleUpload} className="mello-card p-8 col-span-3 flex flex-col gap-6">
             <div className="flex flex-col gap-2">
-              <label className="text-[13px] font-medium text-pearl">Product Image</label>
-              <div className="relative w-full h-[240px] border border-dashed border-graphite rounded-xl flex flex-col items-center justify-center bg-charcoal overflow-hidden group hover:border-mist transition-colors">
+              <label className="text-[13px] font-medium text-text-primary">Product Image</label>
+              <div className="relative w-full h-[240px] border border-dashed border-border rounded-xl flex flex-col items-center justify-center bg-surface overflow-hidden group hover:border-mist transition-colors">
                 {preview ? (
                   <img src={preview} alt="Preview" className="w-full h-full object-cover opacity-90 group-hover:opacity-100 transition-opacity" />
                 ) : (
                   <>
-                     <div className="w-10 h-10 rounded-full bg-graphite flex items-center justify-center mb-3">
-                       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                     <div className="w-10 h-10 rounded-full bg-border flex items-center justify-center mb-3">
+                       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
                      </div>
-                     <span className="text-[14px] text-mist font-medium">Click or drag image to upload</span>
+                     <span className="text-[14px] text-text-secondary font-medium">Click or drag image to upload</span>
                   </>
                 )}
                 <input type="file" accept="image/jpeg,image/png" onChange={handleFile} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" />
@@ -116,11 +116,11 @@ export default function UploadPage() {
 
             <div className="grid grid-cols-2 gap-4">
               <div className="flex flex-col gap-2">
-                <label className="text-[13px] font-medium text-pearl">Product Name (Optional)</label>
+                <label className="text-[13px] font-medium text-text-primary">Product Name (Optional)</label>
                 <input type="text" className="mello-input" placeholder="e.g. Organic Honey" value={productName} onChange={e => setProductName(e.target.value)} />
               </div>
               <div className="flex flex-col gap-2">
-                <label className="text-[13px] font-medium text-pearl">Source Type</label>
+                <label className="text-[13px] font-medium text-text-primary">Source Type</label>
                 <select className="mello-input appearance-none" value={sourceType} onChange={e => setSourceType(e.target.value)}>
                   <option value="physical_label">Physical Label (Package)</option>
                   <option value="ecommerce_listing">E-Commerce Listing</option>
@@ -135,13 +135,13 @@ export default function UploadPage() {
 
           <div className="mello-card-flat p-6 col-span-2 flex flex-col h-[480px]">
             <h3 className="text-[14px] font-medium tracking-tight mb-4 flex items-center gap-2">
-              <div className={`w-2 h-2 rounded-full ${loading ? 'bg-[#4ade80] animate-pulse' : 'bg-graphite'}`}></div>
+              <div className={`w-2 h-2 rounded-full ${loading ? 'bg-[#4ade80] animate-pulse' : 'bg-border'}`}></div>
               System Output
             </h3>
-            <div className="flex-1 font-mono text-[12px] leading-relaxed text-ash flex flex-col gap-2 overflow-y-auto bg-midnight rounded-lg p-4 border border-graphite">
+            <div className="flex-1 font-mono text-[12px] leading-relaxed text-text-muted flex flex-col gap-2 overflow-y-auto bg-background rounded-lg p-4 border border-border">
               {!loading && logs.length === 0 && <span>Awaiting input payload...</span>}
               {logs.map((log, i) => (
-                <span key={i} className="text-pearl animate-in fade-in slide-in-from-bottom-2 duration-300">{log}</span>
+                <span key={i} className="text-text-primary animate-in fade-in slide-in-from-bottom-2 duration-300">{log}</span>
               ))}
             </div>
           </div>

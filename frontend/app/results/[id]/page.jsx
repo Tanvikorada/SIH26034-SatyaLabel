@@ -56,8 +56,8 @@ export default function Results({ params }) {
     fetchScan();
   }, [resolvedParams.id, router, API]);
 
-  if (loading) return <div className="min-h-screen bg-midnight text-white"><NavBar/><div className="p-10 text-mist text-[14px]">Loading report...</div></div>;
-  if (!report) return <div className="min-h-screen bg-midnight text-white"><NavBar/><div className="p-10 text-red-500">Not found</div></div>;
+  if (loading) return <div className="min-h-screen bg-background text-text-primary"><NavBar/><div className="p-10 text-text-secondary text-[14px]">Loading report...</div></div>;
+  if (!report) return <div className="min-h-screen bg-background text-text-primary"><NavBar/><div className="p-10 text-red-500">Not found</div></div>;
 
   const getBadge = (s) => {
     if (s === 'PASS') return 'mello-badge-pass';
@@ -67,21 +67,21 @@ export default function Results({ params }) {
   };
 
   return (
-    <div className="min-h-screen bg-midnight text-white pb-24">
+    <div className="min-h-screen bg-background text-text-primary pb-24">
       <NavBar />
       
       <div className="max-w-[1000px] mx-auto px-6 py-12" ref={reportRef}>
-        <div className="flex justify-between items-start border-b border-graphite pb-8 mb-8">
+        <div className="flex justify-between items-start border-b border-border pb-8 mb-8">
           <div>
             <div className="flex items-center gap-2 mb-4">
               <div className={getBadge(report.overallStatus || report.overall_compliance)}>{report.overallStatus || report.overall_compliance}</div>
-              <span className="text-[13px] text-fog font-mono">ID: {report.id}</span>
+              <span className="text-[13px] text-text-muted font-mono">ID: {report.id}</span>
             </div>
             <h1 className="text-[40px] font-medium tracking-tight leading-[1.1] mb-2">{report.product?.product_name || 'Unknown Product'}</h1>
-            <p className="text-[16px] text-mist">{report.product?.brand_name || 'No Brand'}</p>
+            <p className="text-[16px] text-text-secondary">{report.product?.brand_name || 'No Brand'}</p>
           </div>
           <div className="text-right mello-card-flat px-6 py-4 flex flex-col items-center">
-             <div className="text-[13px] text-fog mb-1">Compliance Score</div>
+             <div className="text-[13px] text-text-muted mb-1">Compliance Score</div>
              <div className="text-[40px] font-medium tracking-tight">{report.compliance_score || 0}%</div>
           </div>
         </div>
@@ -90,7 +90,7 @@ export default function Results({ params }) {
           <div className="md:col-span-2 flex flex-col gap-4">
             <h3 className="text-[18px] font-medium tracking-tight mb-2">Rule Checks</h3>
             {(report.violations || []).map((v, i) => (
-              <div key={i} className="mello-card-flat hover:bg-charcoal/80 transition-colors cursor-pointer" onClick={() => setExpandedRule(expandedRule === i ? null : i)}>
+              <div key={i} className="mello-card-flat hover:bg-surface/80 transition-colors cursor-pointer" onClick={() => setExpandedRule(expandedRule === i ? null : i)}>
                 <div className="flex justify-between items-center p-5">
                   <div className="flex items-center gap-4">
                     <div className="w-[6px] h-[6px] rounded-full bg-mist"></div>
@@ -99,7 +99,7 @@ export default function Results({ params }) {
                   <div className={getBadge(v.status)}>{v.status}</div>
                 </div>
                 {expandedRule === i && (
-                  <div className="px-5 pb-5 pt-2 border-t border-graphite text-[14px] text-pearl leading-relaxed bg-charcoal/30 rounded-b-[24px]">
+                  <div className="px-5 pb-5 pt-2 border-t border-border text-[14px] text-text-primary leading-relaxed bg-surface/30 rounded-b-[24px]">
                     {v.detail || v.detail_text}
                   </div>
                 )}
@@ -108,7 +108,7 @@ export default function Results({ params }) {
             
             <div className="mello-card p-6 mt-6">
               <h3 className="text-[15px] font-medium mb-4">Raw Extraction Log</h3>
-              <div className="bg-midnight border border-graphite p-4 rounded-[12px] font-mono text-[12px] text-ash whitespace-pre-wrap">
+              <div className="bg-background border border-border p-4 rounded-[12px] font-mono text-[12px] text-text-muted whitespace-pre-wrap">
                 {report.ocr_raw_text || 'No raw text available.'}
               </div>
             </div>
@@ -119,9 +119,9 @@ export default function Results({ params }) {
              <div className="mello-card p-6">
                <div className="flex flex-col">
                  {Object.entries(report.extractedFields || report.extracted_fields || {}).map(([k,v]) => (
-                   <div key={k} className="py-3 flex flex-col gap-1 border-b border-graphite last:border-0">
-                     <span className="text-[12px] text-fog uppercase tracking-wider">{k.replace(/_/g, ' ')}</span>
-                     <span className="text-[14px] font-medium text-white truncate">{String(v)}</span>
+                   <div key={k} className="py-3 flex flex-col gap-1 border-b border-border last:border-0">
+                     <span className="text-[12px] text-text-muted uppercase tracking-wider">{k.replace(/_/g, ' ')}</span>
+                     <span className="text-[14px] font-medium text-text-primary truncate">{String(v)}</span>
                    </div>
                  ))}
                </div>
