@@ -271,12 +271,19 @@ async function generateReport(scan, outputDir = './reports') {
     for (let i = 0; i < violations.length; i++) {
       const v = violations[i];
       if (vy < 120) {
-        // Would overflow — add another page (simplified: stop at 50 violations)
+        // Would overflow  add another page (simplified: stop at 50 violations)
         break;
       }
+      
+      const ruleNumStr = String(v.ruleNumber || v.rule_id || v.ruleId || 'Unknown Rule');
+      const ruleDescStr = String(v.ruleDescription || v.rule_title || v.ruleTitle || '');
+      const detailStr = String(v.violationDetail || v.detail || v.detail_text || '');
+      const sevStr = String(v.severity || 'high');
+      const isEst = v.isEstimated || v.confidence === 'low' || v.confidence === 'medium';
+      const estNote = v.estimationNote || 'Physical verification required';
 
-      const sevColor = v.severity === 'critical' ? COLORS.red :
-                       v.severity === 'major'    ? COLORS.orange : COLORS.yellow;
+      const sevColor = sevStr.toLowerCase() === 'high' || sevStr.toLowerCase() === 'critical' ? COLORS.red :
+                       sevStr.toLowerCase() === 'medium' || sevStr.toLowerCase() === 'major'    ? COLORS.orange : COLORS.yellow;
 
       // Violation card background
       drawRect(page, margin, vy - 65, contentW, 72, COLORS.lightGray);
@@ -284,18 +291,18 @@ async function generateReport(scan, outputDir = './reports') {
 
       // Rule number badge
       drawRect(page, margin + 12, vy - 10, 120, 18, sevColor);
-      page.drawText(v.ruleNumber, {
+      page.drawText(ruleNumStr, {
         x: margin + 15, y: vy - 5,
         size: 9, font: helveticaBold, color: COLORS.white,
       });
 
       // Severity label
-      page.drawText(v.severity.toUpperCase(), {
+      page.drawText(sevStr.toUpperCase(), {
         x: margin + 145, y: vy - 5,
         size: 8, font: helveticaBold, color: sevColor,
       });
 
-      if (v.isEstimated) {
+      if (isEst) {
         page.drawText('[ESTIMATED]', {
           x: margin + 210, y: vy - 5,
           size: 7, font: helveticaBold, color: COLORS.orange,
@@ -303,19 +310,19 @@ async function generateReport(scan, outputDir = './reports') {
       }
 
       // Rule description
-      page.drawText(truncate(v.ruleDescription, 85), {
+      page.drawText(truncate(ruleDescStr, 85), {
         x: margin + 12, y: vy - 25,
         size: 7.5, font: helvetica, color: COLORS.midGray,
       });
 
       // Violation finding
-      page.drawText(truncate(v.violationDetail, 90), {
+      page.drawText(truncate(detailStr, 90), {
         x: margin + 12, y: vy - 40,
         size: 8, font: helveticaBold, color: COLORS.textDark,
       });
 
-      if (v.isEstimated && v.estimationNote) {
-        page.drawText(`Note: ${truncate(v.estimationNote, 85)}`, {
+      if (isEst) {
+        page.drawText(`Note: ${truncate(estNote, 85)}`, {
           x: margin + 12, y: vy - 56,
           size: 6.5, font: helvetica, color: COLORS.orange,
         });
