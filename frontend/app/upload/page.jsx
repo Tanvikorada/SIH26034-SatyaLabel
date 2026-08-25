@@ -101,7 +101,7 @@ export default function Upload() {
         </div>
 
         {step === 1 && (
-          <div className="animate-scale-in">
+          <div className="animate-fade-in">
             <div className="glass rounded-2xl p-1 mb-8 shadow-2xl">
               <div 
                 className="bg-[var(--bg-surface)] rounded-xl border-2 border-dashed border-[var(--border-bright)] hover:border-[var(--accent-border)] p-12 text-center transition-colors cursor-pointer"
@@ -178,8 +178,11 @@ export default function Upload() {
         )}
 
         {step === 2 && (
-          <div className="animate-scale-in max-w-lg mx-auto">
-            <div className="card p-8 text-center">
+          <div className="animate-fade-in max-w-lg mx-auto">
+            <div className="card p-8 text-center relative overflow-hidden">
+              <div className="absolute top-0 left-0 w-full h-1 bg-[var(--bg-raised)]">
+                <div className="h-full bg-[var(--accent)] w-1/2 animate-scan"></div>
+              </div>
               <h2 className="text-2xl font-display font-bold mb-8 gradient-accent">Analyzing Label...</h2>
               
               {preview && (
@@ -189,7 +192,7 @@ export default function Upload() {
                 </div>
               )}
               
-              <div className="space-y-4 text-left">
+              <div className="space-y-4 text-left px-8">
                 <div className="flex items-center gap-4 text-[var(--pass)]">
                   <svg className="w-6 h-6 animate-spin" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
                   <span className="font-medium">Extracting OCR text</span>
