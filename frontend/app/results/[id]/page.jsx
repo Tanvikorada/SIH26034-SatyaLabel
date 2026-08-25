@@ -100,7 +100,7 @@ export default function Results({ params }) {
                 </div>
                 {expandedRule === i && (
                   <div className="px-5 pb-5 pt-2 border-t border-graphite text-[14px] text-pearl leading-relaxed bg-charcoal/30 rounded-b-[24px]">
-                    {v.detail_text}
+                    {v.detail || v.detail_text}
                   </div>
                 )}
               </div>
