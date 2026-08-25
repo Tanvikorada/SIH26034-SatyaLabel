@@ -4,6 +4,8 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 
+import SplitText from '@/components/SplitText';
+
 export default function Dashboard() {
   const router = useRouter();
   const [stats, setStats] = useState(null);
@@ -49,17 +51,23 @@ export default function Dashboard() {
   if (loading) return <div className="p-8 text-center font-mono text-sm uppercase text-text-muted">Loading Data...</div>;
 
   const StatCard = ({ title, value }) => (
-    <div className="gov-card p-5 border-t-2 border-t-accent bg-surface-alt">
+    <div className="gov-card p-6 shadow-sm hover:shadow-md transition-shadow bg-white rounded-xl border border-gray-100">
       <p className="text-xs font-semibold text-text-secondary uppercase tracking-wider">{title}</p>
-      <p className="text-3xl font-bold text-text-primary mt-2 font-mono">{value}</p>
+      <p className="text-4xl font-black text-navy-900 mt-3 font-sans tracking-tight">{value}</p>
     </div>
   );
 
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-2xl md:text-3xl font-semibold text-text-primary">Officer Dashboard</h1>
-        <p className="text-text-secondary text-sm md:text-base mt-1">Live inspection metrics and recent scans</p>
+        <SplitText
+          text="Officer Dashboard"
+          className="text-3xl md:text-4xl font-bold text-navy-900 tracking-tight"
+          delay={30}
+          duration={0.8}
+          tag="h1"
+        />
+        <p className="text-text-secondary text-sm md:text-base mt-2">Live inspection metrics and recent scans</p>
       </div>
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
