@@ -10,7 +10,7 @@ import {
   Shield, ScanLine, Upload,
   CheckCircle2, AlertTriangle, HelpCircle, MinusCircle, EyeOff,
   Sun, Moon, Zap, Clock, FileSearch, Scale, Layers, Image as ImageIcon
-} from 'lucide-react';
+, ChevronDown, FileText, Monitor, Server, Database, Eye } from 'lucide-react';
 import { 
   SiNextdotjs, SiReact, SiTailwindcss, SiTypescript, 
   SiPostgresql, SiFramer, SiVercel, SiRender, 
@@ -252,267 +252,135 @@ function PixelsToPenalty() {
   return (
     <section className="py-24 px-6 md:px-12 relative z-10 bg-[var(--color-surface)] border-y border-[var(--color-border)] overflow-hidden">
       <div className="max-w-[1200px] mx-auto">
-        <h2 className="text-3xl font-medium tracking-tight mb-12 text-center">From Pixels to Penalty</h2>
+        <h2 className="text-3xl font-medium tracking-tight mb-16 text-center">From Pixels to Penalty</h2>
         
-        <div ref={ref} className="relative w-full rounded-2xl border border-[var(--color-border)] bg-[var(--color-background)] p-8 overflow-hidden shadow-sm">
-          {/* Filmstrip sprocket holes (top/bottom borders) */}
-          <div className="absolute top-0 left-0 right-0 h-4 flex gap-4 px-4 overflow-hidden opacity-20">
-            {Array.from({length: 40}).map((_,i) => <div key={i} className="w-4 h-2 bg-[var(--color-border)] rounded-sm mt-1 shrink-0" />)}
+        <div ref={ref} className="grid grid-cols-1 md:grid-cols-4 gap-0 border-y border-[var(--color-border)] relative">
+          {/* Filmstrip sprocket holes top/bottom */}
+          <div className="absolute top-0 left-0 right-0 h-3 flex justify-between px-2 -mt-1.5 opacity-20">
+            {[...Array(20)].map((_, i) => <div key={i} className="w-4 h-3 bg-[var(--color-background)] rounded-sm border border-[var(--color-border)]" />)}
           </div>
-          <div className="absolute bottom-0 left-0 right-0 h-4 flex gap-4 px-4 overflow-hidden opacity-20">
-            {Array.from({length: 40}).map((_,i) => <div key={i} className="w-4 h-2 bg-[var(--color-border)] rounded-sm mb-1 mt-auto shrink-0" />)}
+          <div className="absolute bottom-0 left-0 right-0 h-3 flex justify-between px-2 -mb-1.5 opacity-20">
+            {[...Array(20)].map((_, i) => <div key={i} className="w-4 h-3 bg-[var(--color-background)] rounded-sm border border-[var(--color-border)]" />)}
           </div>
 
-          <div className="flex flex-col md:flex-row gap-8 items-center justify-between py-6">
+          {/* Frame 1: Pixels */}
+          <div className="border-r border-[var(--color-border)] p-8 flex flex-col items-center justify-center min-h-[260px] relative bg-[var(--color-background)]">
+            <div className="absolute top-3 left-3 text-[10px] font-mono text-[var(--color-text-muted)]">01_PIXELS</div>
+            <div className="w-24 h-32 bg-[var(--color-surface)] border border-[var(--color-border)] shadow-sm relative overflow-hidden flex flex-col p-2 gap-2">
+               <div className="w-full h-3 bg-[var(--color-border)] rounded-sm" />
+               <div className="w-3/4 h-2 bg-[var(--color-border)] rounded-sm opacity-50" />
+               <div className="w-1/2 h-2 bg-[var(--color-border)] rounded-sm opacity-50" />
+               <div className="w-full h-8 bg-[var(--color-border)] rounded-sm mt-auto" />
+               
+               {/* 3 sequential bounding boxes */}
+               {isInView && (
+                 <svg className="absolute inset-0 w-full h-full pointer-events-none z-10">
+                    <motion.rect x="5%" y="5%" width="90%" height="15%" fill="none" stroke="var(--color-accent)" strokeWidth="1.5"
+                       initial={{ pathLength: 0, opacity: 0 }} animate={{ pathLength: 1, opacity: 1 }} transition={{ delay: 0.3, duration: 0.15 }} />
+                    <motion.rect x="5%" y="28%" width="70%" height="8%" fill="none" stroke="var(--color-accent)" strokeWidth="1.5"
+                       initial={{ pathLength: 0, opacity: 0 }} animate={{ pathLength: 1, opacity: 1 }} transition={{ delay: 0.42, duration: 0.15 }} />
+                    <motion.rect x="5%" y="60%" width="90%" height="30%" fill="none" stroke="var(--color-accent)" strokeWidth="1.5"
+                       initial={{ pathLength: 0, opacity: 0 }} animate={{ pathLength: 1, opacity: 1 }} transition={{ delay: 0.54, duration: 0.15 }} />
+                 </svg>
+               )}
+            </div>
+          </div>
+
+          {/* Frame 2: Parsed */}
+          <div className="border-r border-[var(--color-border)] p-8 flex flex-col items-center justify-center min-h-[260px] relative bg-[var(--color-background)]">
+            <div className="absolute top-3 left-3 text-[10px] font-mono text-[var(--color-text-muted)]">02_PARSED</div>
+            <motion.div initial={{ opacity: 0, x: -10 }} animate={isInView ? { opacity: 1, x: 0 } : {}} transition={{ delay: 0.8 }}
+              className="w-full bg-[var(--color-surface)] border border-[var(--color-border)] rounded-md shadow-sm p-4 flex flex-col gap-3">
+              <div className="flex justify-between items-center pb-2 border-b border-[var(--color-border)]">
+                 <span className="text-[11px] text-[var(--color-text-secondary)]">Manufacturer</span>
+                 <span className="font-mono text-[11px] font-medium truncate max-w-[90px]">NutriBox</span>
+              </div>
+              <div className="flex justify-between items-center pb-2 border-b border-[var(--color-border)]">
+                 <span className="text-[11px] text-[var(--color-text-secondary)]">Net Qty</span>
+                 <span className="font-mono text-[11px] font-medium">250g</span>
+              </div>
+              <div className="flex justify-between items-center">
+                 <span className="text-[11px] text-[var(--color-text-secondary)]">MRP</span>
+                 <span className="font-mono text-[11px] font-medium">₹149</span>
+              </div>
+            </motion.div>
+          </div>
+
+          {/* Frame 3: Checked */}
+          <div className="border-r border-[var(--color-border)] p-8 flex flex-col items-center justify-center min-h-[260px] relative bg-[var(--color-background)]">
+            <div className="absolute top-3 left-3 text-[10px] font-mono text-[var(--color-text-muted)]">03_CHECKED</div>
+            <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={isInView ? { opacity: 1, scale: 1 } : {}} transition={{ delay: 1.2, type: 'spring', stiffness: 300, damping: 25 }}
+               className="flex flex-col items-center gap-2 w-full">
+               <div className="px-3 py-2 bg-[var(--color-surface)] border border-[var(--color-border)] rounded w-full text-center font-mono text-[11px] shadow-[0_1px_2px_rgba(11,31,58,0.04)]">
+                 MRP: ₹149
+               </div>
+               <div className="text-[10px] font-bold text-[var(--color-text-muted)] italic">vs</div>
+               <div className="px-3 py-2 bg-[var(--color-surface)] border border-[var(--color-accent)] rounded w-full text-center font-mono text-[11px] text-[var(--color-accent)] shadow-[0_4px_12px_rgba(11,31,58,0.06)] relative overflow-hidden">
+                 <motion.div className="absolute inset-0 bg-[var(--color-accent)] opacity-10"
+                    animate={isInView ? { opacity: [0.1, 0.3, 0.1] } : {}} transition={{ delay: 1.4, duration: 0.8, repeat: Infinity }} />
+                 Rule 6(1)(f)
+               </div>
+            </motion.div>
+          </div>
+          
+          {/* Frame 4: Penalty */}
+          <div className="p-8 flex flex-col items-center justify-center min-h-[260px] relative bg-[var(--color-background)] overflow-hidden">
+            <div className="absolute top-3 left-3 text-[10px] font-mono text-[var(--color-text-muted)]">04_PENALTY</div>
             
-            {/* Frame 1: Pixels */}
-            <motion.div initial={{ opacity: 0, x: -20 }} animate={isInView ? { opacity: 1, x: 0 } : {}} transition={{ delay: 0.1 }} className="flex-1 flex flex-col gap-4 items-center">
-              <div className="w-full aspect-[4/3] rounded-lg border border-[var(--color-border)] bg-white relative overflow-hidden flex items-center justify-center p-4">
-                <div className="text-center font-mono text-sm leading-relaxed opacity-40">
-                  <span className="font-bold">MRP: 50.00</span><br/>
-                  Net Wt: 100g<br/>
-                  Packed: 01/24
-                </div>
-                {/* Bounding box animation */}
-                <motion.div className="absolute border-2 border-dashed border-[var(--color-accent)] rounded" 
-                  initial={{ top: '35%', left: '30%', right: '30%', bottom: '50%', opacity: 0 }}
-                  animate={isInView ? { opacity: [0, 1, 1], scale: [1.1, 1, 1] } : {}}
-                  transition={{ delay: 0.6, duration: 2, repeat: Infinity, repeatType: 'reverse' }}
-                />
-                {/* Scanline */}
-                <motion.div className="absolute left-0 right-0 h-0.5 bg-[var(--color-primary)] shadow-[0_0_8px_var(--color-primary)] z-10"
-                  initial={{ top: 0 }} animate={isInView ? { top: '100%' } : {}}
-                  transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}
-                />
+            {/* Radial flash emphasis */}
+            {isInView && (
+              <motion.div initial={{ opacity: 0, scale: 0.5 }} animate={{ opacity: [0, 1, 0], scale: 1.5 }} transition={{ delay: 1.8, duration: 0.5, ease: "easeOut" }}
+                className="absolute inset-0 bg-[radial-gradient(circle_at_center,var(--color-accent-soft)_0%,transparent_70%)] pointer-events-none" />
+            )}
+
+            <motion.div initial={{ opacity: 0, scale: 1.5 }} animate={isInView ? { opacity: 1, scale: 1 } : {}} transition={{ delay: 1.8, duration: 0.18, ease: "easeOut" }}
+              className="flex flex-col items-center gap-3 relative z-10 shadow-[0_12px_24px_rgba(11,31,58,0.08)] bg-[var(--color-surface)] p-5 rounded-xl border border-[var(--color-border)]">
+              <div className="mello-badge-fail px-4 py-1.5 text-sm font-bold tracking-wider transform -rotate-3">
+                POTENTIAL NON-COMPLIANCE
               </div>
-              <span className="text-xs font-mono text-[var(--color-text-muted)] uppercase tracking-wider">1. Pixels</span>
-            </motion.div>
-
-            <motion.div initial={{ opacity: 0 }} animate={isInView ? { opacity: 1 } : {}} transition={{ delay: 0.4 }} className="hidden md:block text-[var(--color-border)]">→</motion.div>
-
-            {/* Frame 2: Parsed */}
-            <motion.div initial={{ opacity: 0, x: -20 }} animate={isInView ? { opacity: 1, x: 0 } : {}} transition={{ delay: 0.5 }} className="flex-1 flex flex-col gap-4 items-center w-full">
-              <div className="w-full aspect-[4/3] rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] shadow-sm flex items-center justify-center p-4">
-                <div className="w-full flex flex-col gap-2 font-mono text-xs">
-                  <div className="flex justify-between p-2 bg-[var(--color-background)] rounded border border-[var(--color-border)]">
-                    <span className="text-[var(--color-text-muted)]">field:</span>
-                    <span className="text-[var(--color-primary)] font-medium">"MRP"</span>
-                  </div>
-                  <motion.div className="flex justify-between p-2 bg-[var(--color-accent-soft)] rounded border border-[var(--color-accent)]"
-                    initial={{ scale: 0.95 }} animate={isInView ? { scale: [0.95, 1.05, 1] } : {}} transition={{ delay: 1.2, duration: 0.4 }}
-                  >
-                    <span className="text-[var(--color-text-muted)]">value:</span>
-                    <span className="text-[var(--color-accent)] font-bold">"50.00"</span>
-                  </motion.div>
-                </div>
+              <div className="font-mono text-[10px] text-[var(--color-text-secondary)] text-center max-w-[120px] leading-tight mt-1">
+                Violation of Rule 6(1)(f): Missing inclusive tax stmt
               </div>
-              <span className="text-xs font-mono text-[var(--color-text-muted)] uppercase tracking-wider">2. Parsed</span>
             </motion.div>
-
-            <motion.div initial={{ opacity: 0 }} animate={isInView ? { opacity: 1 } : {}} transition={{ delay: 0.8 }} className="hidden md:block text-[var(--color-border)]">→</motion.div>
-
-            {/* Frame 3: Checked */}
-            <motion.div initial={{ opacity: 0, x: -20 }} animate={isInView ? { opacity: 1, x: 0 } : {}} transition={{ delay: 0.9 }} className="flex-1 flex flex-col gap-4 items-center w-full">
-              <div className="w-full aspect-[4/3] rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] shadow-sm flex items-center justify-center p-4 relative">
-                <div className="flex items-center gap-2 lg:gap-3 flex-wrap justify-center">
-                  <div className="font-mono text-xs p-2 rounded bg-[var(--color-background)] text-[var(--color-text-secondary)] border border-[var(--color-border)]">
-                    "50.00"
-                  </div>
-                  <div className="text-[var(--color-text-muted)] italic text-[10px]">vs</div>
-                  <div className="font-mono text-xs p-2 rounded bg-[var(--color-primary)] text-[var(--color-surface)] border border-[var(--color-primary)]">
-                    Rule 6(1)(f)
-                  </div>
-                </div>
-              </div>
-              <span className="text-xs font-mono text-[var(--color-text-muted)] uppercase tracking-wider">3. Checked</span>
-            </motion.div>
-
-            <motion.div initial={{ opacity: 0 }} animate={isInView ? { opacity: 1 } : {}} transition={{ delay: 1.2 }} className="hidden md:block text-[var(--color-border)]">→</motion.div>
-
-            {/* Frame 4: Penalty */}
-            <motion.div initial={{ opacity: 0, x: -20 }} animate={isInView ? { opacity: 1, x: 0 } : {}} transition={{ delay: 1.3 }} className="flex-1 flex flex-col gap-4 items-center w-full">
-              <div className="w-full aspect-[4/3] rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] shadow-sm flex items-center justify-center p-2 relative overflow-hidden">
-                <motion.div 
-                  initial={{ scale: 3, opacity: 0 }} 
-                  animate={isInView ? { scale: 1, opacity: 1 } : {}} 
-                  transition={{ delay: 1.8, type: 'spring', damping: 12, stiffness: 200 }}
-                  className="z-10"
-                >
-                  <div className="mello-badge-fail font-bold text-[9px] sm:text-[10px] md:text-xs rotate-[-6deg] shadow-sm text-center">
-                    POTENTIAL<br/>NON-COMPLIANCE
-                  </div>
-                </motion.div>
-                <motion.div className="absolute inset-0 z-0 pointer-events-none" style={{ background: 'var(--color-noncompliant)' }}
-                  initial={{ opacity: 0 }} animate={isInView ? { opacity: [0, 0.15, 0] } : {}} transition={{ delay: 1.8, duration: 0.5 }}
-                />
-              </div>
-              <span className="text-xs font-mono text-[var(--color-text-muted)] uppercase tracking-wider">4. Penalty</span>
-            </motion.div>
-
           </div>
+          
         </div>
       </div>
     </section>
   );
 }
 
-// ─── PHASE 3: Pipeline Diagram (Interactive Cards) ────────────────────────
-function InteractivePipelineCard({ title, icon: Icon, children }) {
-  return (
-    <div className="mello-card p-6 flex flex-col gap-4 h-full relative">
-      <div className="flex items-center gap-3 mb-2">
-        <div className="w-8 h-8 rounded-full bg-[var(--color-background)] border border-[var(--color-border)] flex items-center justify-center text-[var(--color-primary)]">
-          <Icon size={16} />
-        </div>
-        <h3 className="font-medium text-[var(--color-text-primary)]">{title}</h3>
-      </div>
-      <div className="flex-1">
-        {children}
-      </div>
-    </div>
-  );
-}
-
-function UploadMicroApp() {
-  const [state, setState] = useState('empty'); // empty -> uploaded
-  return (
-    <div className="flex flex-col gap-4 h-full">
-      <div className="flex-1 border-2 border-dashed border-[var(--color-border)] rounded-lg bg-[var(--color-background)] flex items-center justify-center p-4 overflow-hidden relative transition-all duration-300">
-        {state === 'empty' ? (
-          <div className="flex flex-col items-center gap-2 opacity-50">
-            <ImageIcon size={24} />
-            <span className="text-xs">No image selected</span>
-          </div>
-        ) : (
-          <motion.img 
-            initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} 
-            src="https://images.unsplash.com/photo-1584916201218-f4242ceb4809?auto=format&fit=crop&q=80&w=400&h=300" 
-            className="absolute inset-0 w-full h-full object-cover" alt="Uploaded" 
-          />
-        )}
-      </div>
-      <button 
-        onClick={() => setState(s => s === 'empty' ? 'uploaded' : 'empty')}
-        className="mello-btn-secondary w-full active:scale-[0.98]"
-      >
-        {state === 'empty' ? 'Choose Photo' : 'Reset'}
-      </button>
-    </div>
-  );
-}
-
-function OCRMicroApp() {
-  const [state, setState] = useState('idle'); // idle -> scanning -> done
-  return (
-    <div className="flex flex-col gap-4 h-full">
-      <div className="flex-1 border border-[var(--color-border)] rounded-lg bg-[var(--color-surface)] p-3 relative overflow-hidden font-mono text-[10px] text-[var(--color-text-secondary)] leading-relaxed flex flex-col justify-end transition-all">
-        {state === 'idle' && <div className="opacity-50 m-auto text-center text-xs">Ready to extract</div>}
-        {state === 'scanning' && (
-          <>
-            <motion.div className="absolute top-0 left-0 right-0 h-1 bg-[var(--color-accent)] z-10 shadow-[0_0_8px_var(--color-accent)]"
-              animate={{ top: ['0%', '100%'] }} transition={{ duration: 1.5, repeat: Infinity, ease: "linear" }}
-            />
-            <div className="opacity-30 blur-[1px]">Processing pixel data...<br/>Extracting text regions...</div>
-          </>
-        )}
-        {state === 'done' && (
-          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="flex flex-col gap-1">
-            <div><span className="text-[var(--color-text-muted)]">mrp:</span> "Rs. 50"</div>
-            <div><span className="text-[var(--color-text-muted)]">net_wt:</span> "100g"</div>
-            <div><span className="text-[var(--color-text-muted)]">date:</span> "01/24"</div>
-          </motion.div>
-        )}
-      </div>
-      <button 
-        onClick={() => {
-          if (state === 'idle') {
-            setState('scanning');
-            setTimeout(() => setState('done'), 1500);
-          } else {
-            setState('idle');
-          }
-        }}
-        disabled={state === 'scanning'}
-        className="mello-btn-primary w-full active:scale-[0.98] disabled:opacity-50"
-      >
-        {state === 'idle' ? 'Run Extraction' : state === 'scanning' ? 'Extracting...' : 'Reset'}
-      </button>
-    </div>
-  );
-}
-
-function RuleMicroApp() {
-  const rules = [
-    { id: 'Rule 6(1)(f)', stat: 'POTENTIAL NON-COMPLIANCE', cls: 'mello-badge-fail' },
-    { id: 'Rule 6(1)(a)', stat: 'PASS', cls: 'mello-badge-pass' },
-    { id: 'Rule 31', stat: 'NOT APPLICABLE', cls: 'mello-badge-na' }
-  ];
-  const [idx, setIdx] = useState(0);
-
-  return (
-    <div className="flex flex-col gap-4 h-full">
-      <div className="flex-1 border border-[var(--color-border)] rounded-lg bg-[var(--color-background)] p-4 flex flex-col items-center justify-center gap-3 overflow-hidden">
-        <div className="font-mono text-xs px-2 py-1 bg-[var(--color-surface)] border border-[var(--color-border)] rounded">
-          {rules[idx].id}
-        </div>
-        <AnimatePresence mode="wait">
-          <motion.div 
-            key={idx}
-            initial={{ scale: 0.8, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.8, opacity: 0 }}
-            className={`text-[9px] font-bold text-center ${rules[idx].cls}`}
-          >
-            {rules[idx].stat}
-          </motion.div>
-        </AnimatePresence>
-      </div>
-      <button 
-        onClick={() => setIdx(i => (i + 1) % rules.length)}
-        className="mello-btn-secondary w-full active:scale-[0.98]"
-      >
-        Next Rule →
-      </button>
-    </div>
-  );
-}
-
-function PipelineSection() {
-  return (
-    <section className="py-24 px-6 md:px-12 max-w-[1200px] mx-auto relative z-10">
-      <div className="mb-12 text-center">
-        <h2 className="text-3xl font-medium tracking-tight mb-3">Interactive Pipeline</h2>
-        <p className="text-[var(--color-text-secondary)]">Experience each automated stage. Click the buttons below.</p>
-      </div>
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 auto-rows-[280px]">
-        <InteractivePipelineCard title="1. Upload" icon={Upload}><UploadMicroApp /></InteractivePipelineCard>
-        <InteractivePipelineCard title="2. OCR Engine" icon={ScanLine}><OCRMicroApp /></InteractivePipelineCard>
-        <InteractivePipelineCard title="3. Rule Engine" icon={Scale}><RuleMicroApp /></InteractivePipelineCard>
-      </div>
-    </section>
-  );
-}
-
-// ─── PHASE 4: The Case File (Transformation) ──────────────────────────────
 function TheCaseFile() {
-  const [isProcessing, setIsProcessing] = useState(false);
+  const [sliderVal, setSliderVal] = useState(5);
   const [isResolved, setIsResolved] = useState(false);
-  const [timer, setTimer] = useState(0); // seconds
+  const [timer, setTimer] = useState(0);
   const timerRef = useRef(null);
+  const containerRef = useRef(null);
 
   useEffect(() => {
-    // Start ticking immediately, stop only when resolved
     if (!isResolved) {
       timerRef.current = setInterval(() => setTimer(t => t + 1), 1000);
     }
     return () => clearInterval(timerRef.current);
   }, [isResolved]);
 
-  const handleProcess = () => {
-    if (isResolved) return;
-    setIsProcessing(true);
-    setTimeout(() => {
-      setIsProcessing(false);
+  const handleDrag = (e) => {
+    const val = parseInt(e.target.value);
+    setSliderVal(val);
+    if (val > 90 && !isResolved) {
       setIsResolved(true);
-    }, 1500); // SatyaLabel takes 1.5s
+    }
+  };
+
+  const handleToggle = () => {
+    if (sliderVal < 90) {
+      setSliderVal(100);
+      setIsResolved(true);
+    } else {
+      setSliderVal(5);
+      setIsResolved(false);
+      setTimer(0);
+    }
   };
 
   const formatTime = (secs) => {
@@ -525,51 +393,44 @@ function TheCaseFile() {
     <section className="py-24 px-6 md:px-12 max-w-[1000px] mx-auto w-full relative z-10 border-t border-[var(--color-border)]">
       <div className="mb-12 text-center">
         <h2 className="text-3xl font-medium tracking-tight mb-3">The Case File</h2>
-        <p className="text-[var(--color-text-secondary)]">The difference in time is the difference in scale.</p>
+        <p className="text-[var(--color-text-secondary)]">The difference in time is the difference in scale. Drag to process.</p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-0 rounded-2xl border border-[var(--color-border)] overflow-hidden shadow-sm relative">
+      <div ref={containerRef} className="h-[400px] w-full rounded-2xl border border-[var(--color-border)] overflow-hidden shadow-[0_4px_12px_rgba(11,31,58,0.06)] relative select-none">
         
-        {/* Left: Manual (Aged paper styling) */}
-        <div className="p-8 md:p-12 border-b md:border-b-0 md:border-r border-[var(--color-border)] relative overflow-hidden"
-             style={{ backgroundColor: '#FAF9F6' }}>
+        {/* Left: Manual (Aged paper styling) - full width underneath */}
+        <div className="absolute inset-0 p-8 md:p-12" style={{ backgroundColor: '#FAF9F6' }}>
           {/* subtle paper grain SVG overlay */}
           <div className="absolute inset-0 opacity-[0.03] pointer-events-none" style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg viewBox=%220 0 200 200%22 xmlns=%22http://www.w3.org/2000/svg%22%3E%3Cfilter id=%22noiseFilter%22%3E%3CfeTurbulence type=%22fractalNoise%22 baseFrequency=%220.65%22 numOctaves=%223%22 stitchTiles=%22stitch%22/%3E%3C/filter%3E%3Crect width=%22100%25%22 height=%22100%25%22 filter=%22url(%23noiseFilter)%22/%3E%3C/svg%3E")' }} />
           
-          <div className="relative z-10 flex flex-col h-full">
+          <div className="relative z-10 flex flex-col h-full w-[50%] max-w-[400px]">
             <h3 className="font-serif text-xl text-[#3A332A] mb-8 font-medium">Manual Inspection</h3>
             
-            <div className="flex-1 flex flex-col items-center justify-center gap-6 py-6">
+            <div className="flex-1 flex flex-col items-start justify-center gap-6 py-6">
               <div className={`text-5xl font-mono tabular-nums ${!isResolved ? 'text-[#8C3A3A]' : 'text-[#8C7A6B]'}`}>
                 {formatTime(timer)}
               </div>
               
-              <div className="relative h-16 w-full flex justify-center items-center">
-                <motion.div className={`px-4 py-2 border-[3px] border-[#8C3A3A] text-[#8C3A3A] font-bold tracking-widest uppercase text-xl transform -rotate-12 ${isResolved ? 'opacity-30' : 'opacity-80'}`}
+              <div className="relative h-16 w-full flex items-center">
+                <div className={`px-4 py-2 border-[3px] border-[#8C3A3A] text-[#8C3A3A] font-bold tracking-widest uppercase text-xl transform -rotate-[8deg] ${isResolved ? 'opacity-30' : 'opacity-80'}`}
                      style={{ borderRadius: 4, filter: 'url(#stamp-texture)' }}>
                   PENDING
-                </motion.div>
+                </div>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Right: Digital (Crisp) */}
-        <div className="p-8 md:p-12 bg-[var(--color-surface)] relative overflow-hidden">
-          <div className="relative z-10 flex flex-col h-full">
+        {/* Right: Digital (Crisp) - clipping path based on slider */}
+        <div className="absolute inset-0 bg-[var(--color-surface)] p-8 md:p-12 pointer-events-none" style={{ clipPath: `polygon(${sliderVal}% 0, 100% 0, 100% 100%, ${sliderVal}% 100%)` }}>
+          <div className="absolute inset-y-0 right-0 p-8 md:p-12 w-1/2 flex flex-col h-full items-end text-right">
             <h3 className="font-medium text-xl text-[var(--color-text-primary)] mb-8">SatyaLabel</h3>
             
-            <div className="flex-1 flex flex-col items-center justify-center gap-6 py-6">
-              {!isResolved && !isProcessing ? (
-                <button onClick={handleProcess} className="mello-btn-primary active:scale-[0.98] !text-lg !px-8 !py-3">
-                  Process Case
-                </button>
-              ) : isProcessing ? (
-                <div className="text-[var(--color-accent)] animate-pulse font-mono text-sm">Processing label...</div>
-              ) : (
+            <div className="flex-1 flex flex-col items-end justify-center gap-6 py-6">
+              {isResolved && (
                 <>
                   <div className="text-5xl font-mono tabular-nums text-[var(--color-pass)]">0:01</div>
-                  <div className="relative h-16 w-full flex justify-center items-center">
+                  <div className="relative h-16 w-full flex justify-end items-center">
                     <motion.div 
                       initial={{ scale: 3, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} 
                       transition={{ type: 'spring', damping: 15, stiffness: 200 }}
@@ -584,12 +445,24 @@ function TheCaseFile() {
           </div>
         </div>
 
+        {/* Slider Input overlay */}
+        <input 
+          type="range" min="0" max="100" value={sliderVal} onChange={handleDrag}
+          className="absolute inset-0 w-full h-full opacity-0 cursor-ew-resize z-30" 
+        />
+
+        {/* Visible Handle */}
+        <div className="absolute top-0 bottom-0 w-1 bg-[var(--color-border)] z-20 pointer-events-none transition-all duration-75" style={{ left: `${sliderVal}%` }}>
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-6 h-12 bg-[var(--color-background)] border border-[var(--color-border)] rounded-full shadow-md flex items-center justify-center pointer-events-auto cursor-pointer" onClick={handleToggle}>
+            <div className="flex gap-1">
+              <div className="w-0.5 h-4 bg-[var(--color-text-muted)] rounded-full" />
+              <div className="w-0.5 h-4 bg-[var(--color-text-muted)] rounded-full" />
+            </div>
+          </div>
+        </div>
+
       </div>
       
-      <p className="text-center mt-6 text-sm text-[var(--color-text-muted)] max-w-[600px] mx-auto">
-        You just spent more time reading this section than SatyaLabel spent verifying a label.
-      </p>
-
       {/* SVG filter for manual stamp */}
       <svg width="0" height="0" className="absolute">
         <filter id="stamp-texture">
@@ -601,18 +474,15 @@ function TheCaseFile() {
   );
 }
 
-// ─── PHASE 5: Ruling Ledger (Rules Engine) ────────────────────────────────
 const LEDGER_DATA = [
-  { id: 'pass', label: 'PASS', icon: CheckCircle2, rule: 'Rule 6(1)(c)', field: 'Net Quantity', val: '500g', exp: 'Declared correctly in standard unit.' },
-  { id: 'fail', label: 'POTENTIAL NON-COMPLIANCE', icon: AlertTriangle, rule: 'Rule 6(1)(f)', field: 'MRP', val: 'Rs.150', exp: 'MRP must state "inclusive of all taxes". Phrase absent.' },
-  { id: 'review', label: 'MANUAL REVIEW', icon: HelpCircle, rule: 'Rule 6(1)(d)', field: 'Mfg Date', val: '10/23', exp: 'Ambiguous format. Could be MM/YY or DD/MM.' },
-  { id: 'na', label: 'NOT APPLICABLE', icon: MinusCircle, rule: 'Rule 31', field: 'Category', val: 'Exempt', exp: 'Fast food packages are exempt from certain rules.' },
-  { id: 'nv', label: 'NOT VERIFIED', icon: EyeOff, rule: 'Rule 14A', field: 'FSSAI No.', val: 'null', exp: 'Field unreadable due to glare or damage.' },
+  { id: 'scan-1', product: 'Oat Milk 1L', status: 'fail', rule: 'Rule 6(1)(f)', field: 'MRP', val: 'Rs.150', exp: 'Extracted MRP value did not include the required tax-inclusive statement, violating Rule 6(1)(f).' },
+  { id: 'scan-2', product: 'Whole Wheat Atta 5kg', status: 'pass', rule: 'Rule 6(1)(c)', field: 'Net Quantity', val: '5kg', exp: 'Net quantity declared correctly in standard units according to Rule 6(1)(c).' },
+  { id: 'scan-3', product: 'Premium Basmati 1kg', status: 'review', rule: 'Rule 6(1)(d)', field: 'Mfg Date', val: '10/23', exp: 'Ambiguous format detected. Verification needed to ensure format complies with MM/YY or DD/MM/YY.' },
 ];
 
 function RulingLedger() {
-  const [activeId, setActiveId] = useState('fail');
-  const activeData = LEDGER_DATA.find(d => d.id === activeId);
+  const [expandedId, setExpandedId] = useState(null);
+  const [showTech, setShowTech] = useState(false);
 
   return (
     <section className="py-24 px-6 md:px-12 max-w-[1000px] mx-auto w-full relative z-10 border-t border-[var(--color-border)]">
@@ -621,130 +491,243 @@ function RulingLedger() {
         <p className="text-[var(--color-text-secondary)]">Rooted in the Legal Metrology Rules, 2011. Not generic AI.</p>
       </div>
 
-      {/* Tabs */}
-      <div className="flex flex-wrap gap-2 mb-6 border-b border-[var(--color-border)]">
-        {LEDGER_DATA.map(tab => (
-          <button 
-            key={tab.id} onClick={() => setActiveId(tab.id)}
-            className={`px-4 py-3 text-xs font-mono uppercase tracking-wider transition-colors relative ${activeId === tab.id ? 'text-[var(--color-primary)]' : 'text-[var(--color-text-muted)] hover:text-[var(--color-text-secondary)]'}`}
-          >
-            <div className="flex items-center gap-2">
-              <tab.icon size={14} />
-              {tab.label}
-            </div>
-            {activeId === tab.id && (
-              <motion.div layoutId="ledgerTab" className="absolute bottom-0 left-0 right-0 h-0.5 bg-[var(--color-primary)]" />
-            )}
-          </button>
-        ))}
-      </div>
-
-      {/* Ruling Slip */}
-      <div className="min-h-[250px] relative">
-        <AnimatePresence mode="wait">
-          <motion.div 
-            key={activeId}
-            initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}
-            transition={{ duration: 0.2 }}
-            className="w-full bg-[var(--color-surface)] border border-[var(--color-border)] p-8 shadow-sm"
-            style={{ borderRadius: 2 }} // Sharp official corners
-          >
-            <div className="flex justify-between items-start mb-10">
-              <div className="text-[10px] font-mono tracking-widest text-[var(--color-text-muted)]">
-                LEGAL METROLOGY (PACKAGED COMMODITIES) RULES, 2011<br/>
-                CITATION EXTRACT
-              </div>
-              <div className={`mello-badge-${activeId} transform rotate-3 origin-top-right shadow-sm text-[10px] md:text-xs`}>
-                {activeData.label}
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-              <div className="col-span-1 border-l-2 border-[var(--color-border)] pl-4">
-                <div className="text-xs text-[var(--color-text-muted)] mb-1 uppercase font-mono tracking-wider">{activeData.field}</div>
-                <div className="font-mono text-sm bg-[var(--color-background)] p-2 border border-[var(--color-border)] rounded w-fit">
-                  {activeData.val}
-                </div>
-              </div>
+      <div className="flex flex-col gap-3">
+        {LEDGER_DATA.map(row => {
+          const isExpanded = expandedId === row.id;
+          return (
+            <div key={row.id} className="border border-[var(--color-border)] rounded-xl overflow-hidden bg-[var(--color-surface)] shadow-sm transition-all duration-300">
               
-              <div className="col-span-1 md:col-span-2 flex flex-col gap-2">
-                <div className="flex items-center gap-2 text-[var(--color-primary)] font-mono font-medium">
-                  <Scale size={16} /> {activeData.rule}
+              {/* Row Header */}
+              <div className="flex items-center justify-between p-4 cursor-pointer hover:bg-[var(--color-background)] transition-colors" onClick={() => { setExpandedId(isExpanded ? null : row.id); setShowTech(false); }}>
+                <div className="flex items-center gap-4">
+                  <div className={`w-2.5 h-2.5 rounded-full ${row.status === 'pass' ? 'bg-[var(--color-pass)]' : row.status === 'fail' ? 'bg-[var(--color-fail)]' : 'bg-amber-500'}`} />
+                  <span className="font-medium text-[14px]">{row.product}</span>
                 </div>
-                <p className="text-sm text-[var(--color-text-secondary)] leading-relaxed">
-                  {activeData.exp}
-                </p>
+                <div className="flex items-center gap-3">
+                  <span className="text-[12px] font-mono text-[var(--color-text-secondary)]">{row.rule}</span>
+                  <ChevronDown size={16} className={`text-[var(--color-text-muted)] transition-transform duration-300 ${isExpanded ? 'rotate-180' : ''}`} />
+                </div>
               </div>
-            </div>
 
-            <div className="mt-10 pt-4 border-t border-dashed border-[var(--color-border)] flex gap-6 text-[10px] font-mono text-[var(--color-text-muted)] flex-wrap">
-              <span>EVIDENCE ID: 8XJ1A</span>
-              <span>OCR_CONF: {activeId === 'nv' ? '0.00' : '0.94'}</span>
-              <span>BOUNDING_BOX: [x,y,w,h]</span>
+              {/* Expanded Content */}
+              <AnimatePresence>
+                {isExpanded && (
+                  <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ type: 'spring', stiffness: 300, damping: 30 }} className="overflow-hidden">
+                    <div className="p-6 pt-2 bg-[var(--color-background)] border-t border-[var(--color-border)]">
+                      
+                      {/* Ruling Slip Document Card */}
+                      <div className="bg-white border border-gray-200 shadow-[0_1px_2px_rgba(0,0,0,0.05),0_4px_12px_rgba(0,0,0,0.02)] rounded-lg p-6 relative mb-4">
+                        <div className="text-[9px] font-bold text-gray-400 uppercase tracking-widest border-b border-gray-200 pb-3 mb-4 text-center">
+                          Legal Metrology (Packaged Commodities) Rules, 2011
+                        </div>
+                        
+                        <div className="absolute top-4 right-4">
+                          <motion.div initial={{ scale: 1.2, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={{ delay: 0.1, type: 'spring', stiffness: 200, damping: 20 }}
+                             className={`px-3 py-1 border-2 text-[10px] font-bold uppercase tracking-widest transform rotate-[4deg] rounded ${row.status === 'pass' ? 'border-green-600 text-green-600 bg-green-50' : row.status === 'fail' ? 'border-red-600 text-red-600 bg-red-50' : 'border-amber-600 text-amber-600 bg-amber-50'}`}>
+                            {row.status === 'pass' ? 'COMPLIANT' : row.status === 'fail' ? 'VIOLATION' : 'REVIEW'}
+                          </motion.div>
+                        </div>
+                        
+                        <p className="text-[14px] text-gray-800 leading-relaxed pr-24">
+                          {row.exp.replace(row.rule, '').replace(row.val, '')} 
+                          <span className="font-mono text-[12px] bg-gray-100 px-1.5 py-0.5 rounded text-gray-700 mx-1">{row.val}</span>
+                          under <span className="font-mono text-[12px] bg-gray-100 px-1.5 py-0.5 rounded text-gray-700 font-medium">{row.rule}</span>.
+                        </p>
+                      </div>
+
+                      {/* Technical Evidence Toggle */}
+                      <div className="w-full">
+                        <button className="flex items-center gap-2 text-[12px] text-[var(--color-text-secondary)] hover:text-[var(--color-primary)] transition-colors mb-2" onClick={() => setShowTech(!showTech)}>
+                          <FileText size={14} />
+                          {showTech ? 'Hide Technical Evidence' : 'View Technical Evidence'}
+                        </button>
+                        
+                        <AnimatePresence>
+                          {showTech && (
+                            <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden">
+                              <pre className="text-[10px] font-mono p-4 bg-[#0d1117] text-[#c9d1d9] rounded-md overflow-x-auto border border-[#30363d] shadow-inner mt-2">
+{`{
+  "scanId": "${row.id}-98a12",
+  "rule_evaluated": "${row.rule}",
+  "extracted_value": "${row.val}",
+  "bbox": [124, 54, 452, 98],
+  "confidence": 0.942,
+  "status": "${row.status.toUpperCase()}"
+}`}
+                              </pre>
+                            </motion.div>
+                          )}
+                        </AnimatePresence>
+                      </div>
+
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
-          </motion.div>
-        </AnimatePresence>
+          );
+        })}
       </div>
     </section>
   );
 }
 
-// ─── PHASE 6: Tech Stack Diagram ──────────────────────────────────────────
 function TechStack() {
-  const nodes = [
-    { cat: 'Frontend', name: 'Next.js', icon: SiNextdotjs },
-    { cat: 'Frontend', name: 'React', icon: SiReact },
-    { cat: 'Frontend', name: 'Tailwind', icon: SiTailwindcss },
-    { cat: 'Frontend', name: 'Framer', icon: SiFramer },
-    { cat: 'AI Core', name: 'Tesseract', icon: FileSearch }, // fallback lucide
-    { cat: 'AI Core', name: 'Gemini', icon: SiGoogle },
-    { cat: 'Backend', name: 'Express.js', icon: Layers }, // fallback
-    { cat: 'Backend', name: 'PostgreSQL', icon: SiPostgresql },
-    { cat: 'Infra', name: 'Vercel', icon: SiVercel },
-    { cat: 'Infra', name: 'Render', icon: SiRender },
-    { cat: 'Infra', name: 'GitHub', icon: SiGithub },
-  ];
-
-  const grouped = nodes.reduce((acc, n) => {
-    (acc[n.cat] = acc[n.cat] || []).push(n);
-    return acc;
-  }, {});
-
   return (
     <section className="py-24 px-6 md:px-12 max-w-[1200px] mx-auto w-full relative z-10 border-t border-[var(--color-border)] bg-[var(--color-background)]">
-      <div className="mb-12 text-center">
+      <div className="mb-16 text-center">
         <h2 className="text-3xl font-medium tracking-tight mb-3">System Architecture</h2>
-        <p className="text-[var(--color-text-secondary)]">Built entirely on free-tier infrastructure — ₹0 to run.</p>
+        <p className="text-[var(--color-text-secondary)]">Built entirely on free-tier infrastructure.</p>
       </div>
 
-      <div className="flex flex-col md:flex-row justify-center gap-8 md:gap-16 items-center md:items-stretch overflow-x-auto pb-8">
-        {Object.entries(grouped).map(([cat, items], idx) => (
-          <div key={cat} className="flex flex-col items-center gap-4 relative">
-            <div className="text-xs font-mono text-[var(--color-text-muted)] uppercase tracking-wider">{cat}</div>
-            <div className="flex flex-row md:flex-col gap-4 border border-[var(--color-border)] bg-[var(--color-surface)] p-4 rounded-xl shadow-sm relative z-10">
-              {items.map(n => (
-                <div key={n.name} className="group relative w-12 h-12 flex items-center justify-center border border-[var(--color-border)] bg-[var(--color-background)] rounded-lg hover:border-[var(--color-accent)] transition-colors cursor-help">
-                  <n.icon size={22} className="text-[var(--color-text-secondary)] group-hover:text-[var(--color-accent)] transition-colors" />
-                  <div className="absolute bottom-full mb-2 bg-[var(--color-primary)] text-[var(--color-surface)] text-[10px] py-1 px-2 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
-                    {n.name}
-                  </div>
-                </div>
-              ))}
+      <div className="flex flex-col md:flex-row justify-center items-stretch gap-6 md:gap-12 w-full max-w-[1000px] mx-auto">
+        
+        {/* Zone 1: Frontend */}
+        <div className="flex-1 border border-[var(--color-border)] rounded-xl p-5 bg-[var(--color-surface)] shadow-[0_1px_2px_rgba(11,31,58,0.04),0_4px_12px_rgba(11,31,58,0.06)] relative group">
+          <div className="absolute -top-3 left-4 bg-[var(--color-background)] px-2 text-[10px] font-mono text-[var(--color-text-muted)] uppercase tracking-wider">Frontend</div>
+          <div className="flex flex-wrap gap-4 mt-2 justify-center">
+            <div className="flex flex-col items-center gap-1 group/node cursor-help" title="Next.js Framework">
+              <div className="w-10 h-10 rounded border border-[var(--color-border)] bg-[var(--color-background)] flex items-center justify-center hover:border-[var(--color-accent)] transition-colors"><SiNextdotjs size={18} className="text-text-primary" /></div>
+              <span className="text-[10px] text-[var(--color-text-muted)] group-hover/node:text-[var(--color-primary)]">Next.js</span>
             </div>
-            {/* Visual connector (desktop) */}
-            {idx < Object.keys(grouped).length - 1 && (
-              <div className="hidden md:block absolute top-1/2 left-full w-16 h-px bg-[var(--color-border)] -translate-y-1/2 z-0">
-                <motion.div className="h-full bg-[var(--color-accent)]" initial={{ width: 0 }} animate={{ width: '100%' }} transition={{ duration: 1.5, repeat: Infinity, ease: 'linear' }} />
-              </div>
-            )}
+            <div className="flex flex-col items-center gap-1 group/node cursor-help" title="React">
+              <div className="w-10 h-10 rounded border border-[var(--color-border)] bg-[var(--color-background)] flex items-center justify-center hover:border-[var(--color-accent)] transition-colors"><SiReact size={18} className="text-[#61DAFB]" /></div>
+              <span className="text-[10px] text-[var(--color-text-muted)] group-hover/node:text-[var(--color-primary)]">React</span>
+            </div>
+            <div className="flex flex-col items-center gap-1 group/node cursor-help" title="Tailwind CSS">
+              <div className="w-10 h-10 rounded border border-[var(--color-border)] bg-[var(--color-background)] flex items-center justify-center hover:border-[var(--color-accent)] transition-colors"><SiTailwindcss size={18} className="text-[#06B6D4]" /></div>
+              <span className="text-[10px] text-[var(--color-text-muted)] group-hover/node:text-[var(--color-primary)]">Tailwind</span>
+            </div>
           </div>
-        ))}
+          
+          {/* Connector Beam Right */}
+          <div className="hidden md:block absolute top-1/2 -right-12 w-12 h-px bg-[var(--color-border)]">
+             <motion.div className="h-full bg-[var(--color-accent)] shadow-[0_0_8px_var(--color-accent)]" initial={{ width: 0 }} animate={{ width: '100%', x: '100%' }} transition={{ duration: 1.5, repeat: Infinity, ease: 'linear' }} />
+          </div>
+        </div>
+
+        {/* Zone 2: Backend & DB */}
+        <div className="flex-1 border border-[var(--color-border)] rounded-xl p-5 bg-[var(--color-surface)] shadow-[0_1px_2px_rgba(11,31,58,0.04),0_4px_12px_rgba(11,31,58,0.06)] relative group">
+          <div className="absolute -top-3 left-4 bg-[var(--color-background)] px-2 text-[10px] font-mono text-[var(--color-text-muted)] uppercase tracking-wider">Backend & DB</div>
+          <div className="flex flex-wrap gap-4 mt-2 justify-center">
+            <div className="flex flex-col items-center gap-1 group/node cursor-help" title="Express.js Server">
+              <div className="w-10 h-10 rounded border border-[var(--color-border)] bg-[var(--color-background)] flex items-center justify-center hover:border-[var(--color-accent)] transition-colors"><Server size={18} className="text-text-primary" /></div>
+              <span className="text-[10px] text-[var(--color-text-muted)] group-hover/node:text-[var(--color-primary)]">Express</span>
+            </div>
+            <div className="flex flex-col items-center gap-1 group/node cursor-help" title="PostgreSQL Database">
+              <div className="w-10 h-10 rounded border border-[var(--color-border)] bg-[var(--color-background)] flex items-center justify-center hover:border-[var(--color-accent)] transition-colors"><SiPostgresql size={18} className="text-[#4169E1]" /></div>
+              <span className="text-[10px] text-[var(--color-text-muted)] group-hover/node:text-[var(--color-primary)]">Postgres</span>
+            </div>
+          </div>
+          
+          {/* Connector Beam Right */}
+          <div className="hidden md:block absolute top-1/2 -right-12 w-12 h-px bg-[var(--color-border)]">
+             <motion.div className="h-full bg-[var(--color-accent)] shadow-[0_0_8px_var(--color-accent)]" initial={{ width: 0 }} animate={{ width: '100%', x: '100%' }} transition={{ duration: 1.5, repeat: Infinity, ease: 'linear', delay: 0.5 }} />
+          </div>
+        </div>
+
+        {/* Zone 3: AI & Extraction */}
+        <div className="flex-1 border border-[var(--color-border)] rounded-xl p-5 bg-[var(--color-surface)] shadow-[0_1px_2px_rgba(11,31,58,0.04),0_4px_12px_rgba(11,31,58,0.06)] relative group">
+          <div className="absolute -top-3 left-4 bg-[var(--color-background)] px-2 text-[10px] font-mono text-[var(--color-text-muted)] uppercase tracking-wider">AI & Extraction</div>
+          <div className="flex flex-wrap gap-4 mt-2 justify-center">
+            <div className="flex flex-col items-center gap-1 group/node cursor-help" title="Tesseract OCR">
+              <div className="w-10 h-10 rounded border border-[var(--color-border)] bg-[var(--color-background)] flex items-center justify-center hover:border-[var(--color-accent)] transition-colors"><FileSearch size={18} className="text-text-primary" /></div>
+              <span className="text-[10px] text-[var(--color-text-muted)] group-hover/node:text-[var(--color-primary)]">Tesseract</span>
+            </div>
+            <div className="flex flex-col items-center gap-1 group/node cursor-help" title="Gemini 1.5 Vision">
+              <div className="w-10 h-10 rounded border border-[var(--color-border)] bg-[var(--color-background)] flex items-center justify-center hover:border-[var(--color-accent)] transition-colors"><SiGoogle size={18} className="text-[#4285F4]" /></div>
+              <span className="text-[10px] text-[var(--color-text-muted)] group-hover/node:text-[var(--color-primary)]">Gemini</span>
+            </div>
+          </div>
+          
+          {/* Connector Beam Right */}
+          <div className="hidden md:block absolute top-1/2 -right-12 w-12 h-px bg-[var(--color-border)]">
+             <motion.div className="h-full bg-[var(--color-accent)] shadow-[0_0_8px_var(--color-accent)]" initial={{ width: 0 }} animate={{ width: '100%', x: '100%' }} transition={{ duration: 1.5, repeat: Infinity, ease: 'linear', delay: 1.0 }} />
+          </div>
+        </div>
+        
+        {/* Zone 4: Deployment */}
+        <div className="flex-1 border border-[var(--color-border)] rounded-xl p-5 bg-[var(--color-surface)] shadow-[0_1px_2px_rgba(11,31,58,0.04),0_4px_12px_rgba(11,31,58,0.06)] relative group">
+          <div className="absolute -top-3 left-4 bg-[var(--color-background)] px-2 text-[10px] font-mono text-[var(--color-text-muted)] uppercase tracking-wider">Deployment</div>
+          <div className="flex flex-wrap gap-4 mt-2 justify-center">
+            <div className="flex flex-col items-center gap-1 group/node cursor-help" title="Vercel Hosting">
+              <div className="w-10 h-10 rounded border border-[var(--color-border)] bg-[var(--color-background)] flex items-center justify-center hover:border-[var(--color-accent)] transition-colors"><SiVercel size={18} className="text-text-primary" /></div>
+              <span className="text-[10px] text-[var(--color-text-muted)] group-hover/node:text-[var(--color-primary)]">Vercel</span>
+            </div>
+            <div className="flex flex-col items-center gap-1 group/node cursor-help" title="GitHub Repo">
+              <div className="w-10 h-10 rounded border border-[var(--color-border)] bg-[var(--color-background)] flex items-center justify-center hover:border-[var(--color-accent)] transition-colors"><SiGithub size={18} className="text-text-primary" /></div>
+              <span className="text-[10px] text-[var(--color-text-muted)] group-hover/node:text-[var(--color-primary)]">GitHub</span>
+            </div>
+            <div className="flex flex-col items-center gap-1 group/node cursor-help" title="Render API">
+              <div className="w-10 h-10 rounded border border-[var(--color-border)] bg-[var(--color-background)] flex items-center justify-center hover:border-[var(--color-accent)] transition-colors"><SiRender size={18} className="text-text-primary" /></div>
+              <span className="text-[10px] text-[var(--color-text-muted)] group-hover/node:text-[var(--color-primary)]">Render</span>
+            </div>
+          </div>
+        </div>
+
       </div>
     </section>
   );
 }
 
-// ─── MAIN PAGE ────────────────────────────────────────────────────────────
+        <div className="flex-1 border border-[var(--color-border)] rounded-xl p-5 bg-[var(--color-surface)] shadow-[0_1px_2px_rgba(11,31,58,0.04),0_4px_12px_rgba(11,31,58,0.06)] relative group">
+          <div className="absolute -top-3 left-4 bg-[var(--color-background)] px-2 text-[10px] font-mono text-[var(--color-text-muted)] uppercase tracking-wider">Frontend</div>
+          <div className="flex flex-wrap gap-4 mt-2 justify-center">
+            <div className="flex flex-col items-center gap-1 group/node cursor-help" title="React Framework">
+              <div className="w-10 h-10 rounded border border-[var(--color-border)] bg-[var(--color-background)] flex items-center justify-center hover:border-[var(--color-accent)] transition-colors"><Monitor size={18} /></div>
+              <span className="text-[10px] text-[var(--color-text-muted)] group-hover/node:text-[var(--color-primary)]">Next.js</span>
+            </div>
+            <div className="flex flex-col items-center gap-1 group/node cursor-help" title="Styling">
+              <div className="w-10 h-10 rounded border border-[var(--color-border)] bg-[var(--color-background)] flex items-center justify-center hover:border-[var(--color-accent)] transition-colors"><Layers size={18} /></div>
+              <span className="text-[10px] text-[var(--color-text-muted)] group-hover/node:text-[var(--color-primary)]">Tailwind</span>
+            </div>
+          </div>
+          
+          {/* Connector Beam Right */}
+          <div className="hidden md:block absolute top-1/2 -right-12 w-12 h-px bg-[var(--color-border)]">
+             <motion.div className="h-full bg-[var(--color-accent)] shadow-[0_0_8px_var(--color-accent)]" initial={{ width: 0 }} animate={{ width: '100%', x: '100%' }} transition={{ duration: 1.5, repeat: Infinity, ease: 'linear' }} />
+          </div>
+        </div>
+
+        {/* Zone 2: AI & Extraction */}
+        <div className="flex-1 border border-[var(--color-border)] rounded-xl p-5 bg-[var(--color-surface)] shadow-[0_1px_2px_rgba(11,31,58,0.04),0_4px_12px_rgba(11,31,58,0.06)] relative group">
+          <div className="absolute -top-3 left-4 bg-[var(--color-background)] px-2 text-[10px] font-mono text-[var(--color-text-muted)] uppercase tracking-wider">AI & Extraction</div>
+          <div className="flex flex-wrap gap-4 mt-2 justify-center">
+            <div className="flex flex-col items-center gap-1 group/node cursor-help" title="Primary OCR">
+              <div className="w-10 h-10 rounded border border-[var(--color-border)] bg-[var(--color-background)] flex items-center justify-center hover:border-[var(--color-accent)] transition-colors"><FileSearch size={18} /></div>
+              <span className="text-[10px] text-[var(--color-text-muted)] group-hover/node:text-[var(--color-primary)]">Tesseract</span>
+            </div>
+            <div className="flex flex-col items-center gap-1 group/node cursor-help" title="Fallback Vision">
+              <div className="w-10 h-10 rounded border border-[var(--color-border)] bg-[var(--color-background)] flex items-center justify-center hover:border-[var(--color-accent)] transition-colors"><Eye size={18} /></div>
+              <span className="text-[10px] text-[var(--color-text-muted)] group-hover/node:text-[var(--color-primary)]">Gemini</span>
+            </div>
+          </div>
+          
+          {/* Connector Beam Right */}
+          <div className="hidden md:block absolute top-1/2 -right-12 w-12 h-px bg-[var(--color-border)]">
+             <motion.div className="h-full bg-[var(--color-accent)] shadow-[0_0_8px_var(--color-accent)]" initial={{ width: 0 }} animate={{ width: '100%', x: '100%' }} transition={{ duration: 1.5, repeat: Infinity, ease: 'linear', delay: 0.5 }} />
+          </div>
+        </div>
+
+        {/* Zone 3: Backend & DB */}
+        <div className="flex-1 border border-[var(--color-border)] rounded-xl p-5 bg-[var(--color-surface)] shadow-[0_1px_2px_rgba(11,31,58,0.04),0_4px_12px_rgba(11,31,58,0.06)] relative group">
+          <div className="absolute -top-3 left-4 bg-[var(--color-background)] px-2 text-[10px] font-mono text-[var(--color-text-muted)] uppercase tracking-wider">Backend & DB</div>
+          <div className="flex flex-wrap gap-4 mt-2 justify-center">
+            <div className="flex flex-col items-center gap-1 group/node cursor-help" title="API Server">
+              <div className="w-10 h-10 rounded border border-[var(--color-border)] bg-[var(--color-background)] flex items-center justify-center hover:border-[var(--color-accent)] transition-colors"><Server size={18} /></div>
+              <span className="text-[10px] text-[var(--color-text-muted)] group-hover/node:text-[var(--color-primary)]">Express</span>
+            </div>
+            <div className="flex flex-col items-center gap-1 group/node cursor-help" title="Database">
+              <div className="w-10 h-10 rounded border border-[var(--color-border)] bg-[var(--color-background)] flex items-center justify-center hover:border-[var(--color-accent)] transition-colors"><Database size={18} /></div>
+              <span className="text-[10px] text-[var(--color-text-muted)] group-hover/node:text-[var(--color-primary)]">Postgres</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+  );
+}
 export default function LandingPage() {
   return (
     <div className="min-h-screen flex flex-col relative overflow-hidden"
