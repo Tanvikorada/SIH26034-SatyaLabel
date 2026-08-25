@@ -63,10 +63,11 @@ export default function UploadPage() {
         body: formData
       });
       if (!res.ok) throw new Error("API Error");
-      const data = await res.json();
+      const json = await res.json();
+      const responseData = json.data || json;
       
       toast.success('Scan complete', { id: toastId });
-      setTimeout(() => router.push(`/results/${data.scanId || data.id || 'mock'}`), 1000);
+      setTimeout(() => router.push(`/results/${responseData.scan_id || responseData.id || 'mock'}`), 1000);
     } catch (err) {
       await saveToSyncQueue(file, metadata);
       toast.warning('Network Offline', { id: toastId, description: 'Scan queued locally.' });
