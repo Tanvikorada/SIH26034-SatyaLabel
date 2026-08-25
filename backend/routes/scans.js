@@ -16,6 +16,12 @@ const express = require('express');
 const router = express.Router();
 const path = require('path');
 const fs = require('fs');
+const { createClient } = require('@supabase/supabase-js');
+
+const supabase = createClient(
+  process.env.SUPABASE_URL || 'https://omkjlsjazonebqiqvqlb.supabase.co',
+  process.env.SUPABASE_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9ta2psc2phem9uZWJxaXF2cWxiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODU5MDY0MjYsImV4cCI6MjEwMTQ4MjQyNn0.kKVFlQk8EF_XMqFRaglmaPYY-lvtILB6jq2Iqu02s5Y'
+);
 
 const upload = require('../middleware/upload');
 const { optionalAuth, requireAuth, requireAdmin } = require('../middleware/auth');
@@ -185,29 +191,51 @@ router.post('/', optionalAuth, (req, res, next) => {
         'source_type must be "physical_label" or "ecommerce_listing"');
     }
 
-    try {
-      // Create scan record immediately (status = processing)
-      const scan = await Scan.create({
-        imagePath:        req.file.path,
-        originalFilename: req.file.originalname,
-        uploadedBy:       req.user?.id || null,
-        sourceType,
-        status:           'processing',
-        // Store hints for pipeline (non-schema cols, used transiently)
-      });
+      try {
+        // 1. Upload to Supabase Storage
+        const fileBuffer = fs.readFileSync(req.file.path);
+        const fileName = `${Date.now()}_${path.basename(req.file.originalname)}`;
+        
+        const { data: uploadData, error: uploadError } = await supabase
+          .storage
+          .from('uploads')
+          .upload(fileName, fileBuffer, {
+            contentType: req.file.mimetype,
+            upsert: true
+          });
 
-      // Store hints on object for pipeline (not in DB schema)
-      scan.productNameHint = productNameHint;
-      scan.brandNameHint   = brandNameHint;
+        let cloudUrl = req.file.path; // fallback
+        if (!uploadError) {
+          const { data } = supabase.storage.from('uploads').getPublicUrl(fileName);
+          cloudUrl = data.publicUrl;
+          console.log('[Supabase] Successfully uploaded to cloud:', cloudUrl);
+        } else {
+          console.error('[Supabase] Upload failed, falling back to local:', uploadError.message);
+        }
 
-      // ── Return 202 IMMEDIATELY (spec 05) ─────────────────────────────────
-      // Frontend polls GET /scans/:id every 2s until status !== "processing"
-      ok(res, { scan_id: scan.id, status: 'processing' }, 202);
+        // Create scan record immediately (status = processing)
+        const scan = await Scan.create({
+          imagePath:        cloudUrl,
+          originalFilename: req.file.originalname,
+          uploadedBy:       req.user?.id || null,
+          sourceType,
+          status:           'processing',
+        });
 
-      // ── Fire pipeline async (after response sent) ─────────────────────────
-      setImmediate(() => runScanPipeline(scan, req.file.path, sourceType));
+        // Store hints on object for pipeline (not in DB schema)
+        scan.productNameHint = productNameHint;
+        scan.brandNameHint   = brandNameHint;
 
-    } catch (err) {
+        //  Return 202 IMMEDIATELY (spec 05) 
+        // Frontend polls GET /scans/:id every 2s until status !== "processing"
+        ok(res, { scan_id: scan.id, status: 'processing' }, 202);
+
+        //  Fire pipeline async (after response sent) 
+        // We still pass req.file.path (the local file) to the OCR pipeline
+        // because Tesseract and Sharp need a local file buffer to read from.
+        setImmediate(() => runScanPipeline(scan, req.file.path, sourceType));
+
+      } catch (err) {
       return fail(res, 500, 'INTERNAL_ERROR', err.message);
     }
   });
