@@ -12,7 +12,23 @@ const sequelizeOptions = {
   pool: { max: 5, min: 0, acquire: 30000, idle: 10000 },
 };
 
-const sequelize = new Sequelize({ dialect: 'sqlite', storage: './test.sqlite', logging: false });
+const sequelize = config.db.url
+  ? new Sequelize(config.db.url, {
+      ...sequelizeOptions,
+      dialect: 'postgres',
+      dialectOptions: {
+        ssl: {
+          require: true,
+          rejectUnauthorized: false
+        }
+      }
+    })
+  : new Sequelize(config.db.name, config.db.user, config.db.password, {
+      ...sequelizeOptions,
+      host: config.db.host,
+      port: config.db.port,
+      dialect: 'postgres',
+    });
 
 // ─── TABLE: users ─────────────────────────────────────────────────────────────
 // Enforcement officers and admins
