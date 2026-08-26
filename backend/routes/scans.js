@@ -72,7 +72,7 @@ async function runScanPipeline(scan, imagePath, sourceType) {
     );
 
     // Step 3: Rules engine
-    const { violations, stats } = validateCompliance(fieldsMap, ocrResult.text, {
+    const { violations, stats } = await validateCompliance(fieldsMap, ocrResult.text, {
       source_type: sourceType,
     });
 
