@@ -11,6 +11,7 @@
 
 const sharp = require('sharp');
 const Tesseract = require('tesseract.js');
+const Groq = require('groq-sdk');
 const fs = require('fs');
 const path = require('path');
 const config = require('../config');
@@ -194,12 +195,14 @@ async function runTesseract(imagePath) {
  * @param {string} [modelName='gemini-1.5-flash-latest']
  * @returns {{ text, structuredData, confidence, engine }}
  */
-async function runGeminiVision(imagePath, attempt = 1, modelName = 'gemini-3.7-flash') {
-  if (!config.gemini?.enabled || !config.gemini?.apiKey) {
-    throw new Error('Gemini API key not configured.');
+// --- STEP 3: GROQ VISION FALLBACK ---
+
+async function runGroqVision(imagePath, attempt = 1, modelName = 'llama-3.2-90b-vision-preview') {
+  if (!config.groq?.enabled || !config.groq?.apiKey) {
+    throw new Error('Groq API key not configured.');
   }
 
-  console.log(`[OCR] Calling Gemini REST API (${modelName}) (attempt ${attempt}/3).`);
+  console.log(`[OCR] Calling Groq Vision API (${modelName}) (attempt ${attempt}/3).`);
 
   const imageBuffer = fs.readFileSync(imagePath);
   const base64Image = imageBuffer.toString('base64');
@@ -218,71 +221,30 @@ async function runGeminiVision(imagePath, attempt = 1, modelName = 'gemini-3.7-f
   "consumer_care_details": string or null
 }
 If a field is not visible or not present on the label, return null for it.
-Do not guess or hallucinate values - only extract what is actually visible in the image.
-
-EXAMPLE INPUT LABEL TEXT: "LAYS MAGIC MASALA. MRP Rs 50 (incl. of all taxes). Net Wt 50g. Mfd: 01/2026. Mfd by: Pepsico India Holdings, DLF Tower, Gurugram. Call 1800-22-4020."
-EXAMPLE OUTPUT JSON:
-{
-  "manufacturer_name": "Pepsico India Holdings",
-  "manufacturer_address": "DLF Tower, Gurugram",
-  "common_name": "MAGIC MASALA",
-  "net_quantity": "50",
-  "net_quantity_unit": "g",
-  "mrp": "Rs 50",
-  "mrp_includes_tax_statement": true,
-  "mfg_date": "01/2026",
-  "consumer_care_details": "1800-22-4020"
-}`;
-
-  const FULL_PROMPT = `${STRUCTURED_PROMPT}\n\nAdditionally include these extra fields in the same JSON object:
-{
-  "_raw_text": "<all text visible on the label, verbatim>",
-  "brand_name": string or null,
-  "best_before": string or null,
-  "batch_lot_number": string or null,
-  "fssai_license": string or null,
-  "country_of_origin": string or null,
-  "ingredients": string or null,
-  "veg_nonveg": "veg" | "non-veg" | null
-}
-Respond with ONLY the complete JSON object. No markdown, no explanation.`;
+Do not guess or hallucinate values - only extract what is actually visible in the image. Return ONLY valid JSON.`;
 
   let rawText = '';
   let structuredData = {};
 
   try {
-    const payload = {
-      contents: [{
-        parts: [
-          { text: FULL_PROMPT },
-          { inlineData: { mimeType, data: base64Image } }
-        ]
-      }],
-      generationConfig: {
-        temperature: 0.1
-      }
-    };
-
-    const controller = new AbortController();
-    // Use 60-second timeout instead of 15 seconds to allow the flash model enough time to process
-    const timeoutId = setTimeout(() => controller.abort(), 180000);
-
-    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${config.gemini.apiKey}`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload),
-      signal: controller.signal
+    const groq = new Groq({ apiKey: config.groq.apiKey });
+    
+    const completion = await groq.chat.completions.create({
+      model: modelName,
+      messages: [
+        {
+          role: "user",
+          content: [
+            { type: "text", text: STRUCTURED_PROMPT },
+            { type: "image_url", image_url: { url: `data:${mimeType};base64,${base64Image}` } }
+          ]
+        }
+      ],
+      temperature: 0.1,
+      max_tokens: 1024,
     });
 
-    clearTimeout(timeoutId);
-
-    if (!res.ok) {
-      const errText = await res.text();
-      throw new Error(`HTTP ${res.status}: ${errText}`);
-    }
-
-    const data = await res.json();
-    const responseText = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+    const responseText = completion.choices[0]?.message?.content || '';
     const cleaned = responseText.replace(/```(?:json)?\s*/g, '').replace(/```\s*$/g, '').trim();
 
     try {
@@ -298,24 +260,24 @@ Respond with ONLY the complete JSON object. No markdown, no explanation.`;
     }
 
     rawText = structuredData._raw_text || responseText;
-    console.log('[OCR] Gemini REST API extraction complete');
+    console.log('[OCR] Groq API extraction complete');
 
   } catch (err) {
-      if (attempt < 3) {
-        const nextModel = modelName === 'gemini-3.7-flash' ? 'gemini-flash-latest' : 'gemini-2.5-flash';
-        console.warn(`[OCR] Gemini REST failed with ${modelName} (${err.message}) - retrying with ${nextModel}...`);
-        await new Promise(r => setTimeout(r, 2000));
-        return runGeminiVision(imagePath, attempt + 1, nextModel);
-      }
-      throw err;
+    if (attempt < 3) {
+      const nextModel = modelName === 'llama-3.2-90b-vision-preview' ? 'llama-3.2-11b-vision-preview' : 'llama-3.2-90b-vision-preview';
+      console.warn(`[OCR] Groq failed with ${modelName} (${err.message}) - retrying with ${nextModel}...`);
+      await new Promise(r => setTimeout(r, 2000));
+      return runGroqVision(imagePath, attempt + 1, nextModel);
     }
+    throw err;
+  }
 
   return {
     text: rawText,
     structuredData,
     confidence: 85,
     words: [],
-    engine: 'gemini',
+    engine: 'groq',
     _fontMetrics: null,
   };
 }
@@ -345,18 +307,18 @@ async function runOcrPipeline(imagePath, metadata = {}) {
     
     // Fallback to Gemini if Tesseract output is too poor
     if (ocrResult.confidence < OCR_CONFIDENCE_THRESHOLD || ocrResult.text.trim().length < MIN_OCR_TEXT_LENGTH) {
-      console.log("[OCR] Tesseract confidence low (" + ocrResult.confidence.toFixed(1) + "%). Attempting Gemini fallback...");
+      console.log("[OCR] Tesseract confidence low (" + ocrResult.confidence.toFixed(1) + "%). Attempting Groq Vision fallback...");
       try {
-        const geminiResult = await runGeminiVision(processedPath);
+        const groqResult = await runGroqVision(processedPath);
         return {
-          text: geminiResult.text,
-          engine: "gemini",
-          confidenceAvg: geminiResult.confidence,
-          geminiStructuredData: geminiResult.structuredData,
+          text: groqResult.text,
+          engine: "groq",
+          confidenceAvg: groqResult.confidence,
+          geminiStructuredData: groqResult.structuredData, 
           _fontMetrics: ocrResult._fontMetrics,
         };
-      } catch (geminiErr) {
-        console.warn("[OCR] Gemini fallback failed (503/404): " + geminiErr.message + ". Proceeding safely with Tesseract result.");
+      } catch (groqErr) {
+        console.warn("[OCR] Groq fallback failed: " + groqErr.message + ". Proceeding safely with Tesseract result.");
       }
     }
     
