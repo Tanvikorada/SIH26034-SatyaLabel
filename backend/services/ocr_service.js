@@ -16,11 +16,11 @@ const config = require('../config');
 
 // ─── CONSTANTS ────────────────────────────────────────────────────────────────
 
-const MAX_DIMENSION_PX = 2000;          // Spec: resize to max 2000px on longest edge
+const MAX_DIMENSION_PX = 1024;          // Spec: resize to max 2000px on longest edge
 const MIN_DIMENSION_PX = 600;           // Spec: reject below 600px shortest edge
 const MIN_OCR_TEXT_LENGTH = 20;         // Below this = "no readable text"
 const OCR_CONFIDENCE_THRESHOLD = config.ocr?.confidenceThreshold ?? 50; // % below which Gemini kicks in
-const GEMINI_TIMEOUT_MS = 15000;        // 45s timeout for Gemini API call
+        // 45s timeout for Gemini API call
 const GEMINI_RETRY_ONCE = true;
 
 // ─── STEP 1: IMAGE VALIDATION & PREPROCESSING ────────────────────────────────
@@ -195,25 +195,15 @@ async function runTesseract(imagePath) {
  */
 async function runGeminiVision(imagePath, attempt = 1, modelName = 'gemini-flash-latest') {
   if (!config.gemini?.enabled || !config.gemini?.apiKey) {
-    throw Object.assign(
-      new Error('Gemini API key not configured. Add GEMINI_API_KEY to .env to enable Vision fallback.'),
-      { code: 'GEMINI_NOT_CONFIGURED' }
-    );
+    throw new Error('Gemini API key not configured.');
   }
 
-  const { GoogleGenerativeAI } = require('@google/generative-ai');
-  const genAI = new GoogleGenerativeAI(config.gemini.apiKey);
-
-  const model = genAI.getGenerativeModel({ model: modelName });
-
-  console.log(`[OCR] Calling Gemini Vision (${modelName}) (attempt ${attempt}/3).`);
+  console.log(`[OCR] Calling Gemini REST API (${modelName}) (attempt ${attempt}/3).`);
 
   const imageBuffer = fs.readFileSync(imagePath);
   const base64Image = imageBuffer.toString('base64');
   const mimeType = imagePath.toLowerCase().endsWith('.png') ? 'image/png' : 'image/jpeg';
 
-  // ── EXACT PROMPT FROM SPEC 04 ─────────────────────────────────────────────
-  // Structured extraction prompt — returns the 9 mandatory declaration fields
   const STRUCTURED_PROMPT = `You are extracting mandatory declarations from a packaged commodity label image for a Legal Metrology compliance check. Return ONLY valid JSON with these keys:
 {
   "manufacturer_name": string or null,
@@ -227,12 +217,9 @@ async function runGeminiVision(imagePath, attempt = 1, modelName = 'gemini-flash
   "consumer_care_details": string or null
 }
 If a field is not visible or not present on the label, return null for it.
-Do not guess or hallucinate values — only extract what is actually visible in the image.`;
+Do not guess or hallucinate values - only extract what is actually visible in the image.`;
 
-  // Also ask for raw text extraction in the same call (saves a second API call)
-  const FULL_PROMPT = `${STRUCTURED_PROMPT}
-
-Additionally include these extra fields in the same JSON object:
+  const FULL_PROMPT = `${STRUCTURED_PROMPT}\n\nAdditionally include these extra fields in the same JSON object:
 {
   "_raw_text": "<all text visible on the label, verbatim>",
   "brand_name": string or null,
@@ -245,53 +232,65 @@ Additionally include these extra fields in the same JSON object:
 }
 Respond with ONLY the complete JSON object. No markdown, no explanation.`;
 
-  // Wrap in timeout
-  const withTimeout = (promise, ms) =>
-    Promise.race([
-      promise,
-      new Promise((_, reject) =>
-        setTimeout(() => reject(Object.assign(new Error('Gemini API timeout'), { code: 'GEMINI_TIMEOUT' })), ms)
-      ),
-    ]);
-
-  let structuredData = {};
   let rawText = '';
+  let structuredData = {};
 
   try {
-    const result = await withTimeout(
-      model.generateContent([
-        { inlineData: { mimeType, data: base64Image } },
-        FULL_PROMPT,
-      ]),
-      GEMINI_TIMEOUT_MS
-    );
+    const payload = {
+      contents: [{
+        parts: [
+          { text: FULL_PROMPT },
+          { inlineData: { mimeType, data: base64Image } }
+        ]
+      }],
+      generationConfig: {
+        temperature: 0.1
+      }
+    };
 
-    const responseText = result.response.text();
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 15000);
 
-    // Strip markdown code fences if Gemini wraps in ```json ... ```
+    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${config.gemini.apiKey}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+      signal: controller.signal
+    });
+
+    clearTimeout(timeoutId);
+
+    if (!res.ok) {
+      const errText = await res.text();
+      throw new Error(`HTTP ${res.status}: ${errText}`);
+    }
+
+    const data = await res.json();
+    const responseText = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
     const cleaned = responseText.replace(/```(?:json)?\s*/g, '').replace(/```\s*$/g, '').trim();
 
     try {
       const jsonMatch = cleaned.match(/\{[\s\S]*\}/);
       if (jsonMatch) {
         structuredData = JSON.parse(jsonMatch[0]);
+      } else {
+        structuredData = { _raw_text: responseText };
       }
     } catch (parseErr) {
-      console.warn('[OCR] Gemini JSON parse failed — using raw text only:', parseErr.message);
+      console.warn('[OCR] JSON parse failed - using raw text');
       structuredData = { _raw_text: responseText };
     }
 
     rawText = structuredData._raw_text || responseText;
-    console.log('[OCR] Gemini Vision extraction complete');
+    console.log('[OCR] Gemini REST API extraction complete');
 
   } catch (err) {
     if (attempt < 3) {
-      // Fallback chain: 1.5-flash -> 1.5-pro -> 1.0-pro-vision
       const nextModel = modelName === 'gemini-flash-latest' 
             ? 'gemini-3.7-flash' 
             : (modelName === 'gemini-3.7-flash' ? 'gemini-3.6-flash' : 'gemini-2.5-flash');
       
-      console.warn(`[OCR] Gemini failed with ${modelName} (${err.message}) - retrying with ${nextModel}...`);
+      console.warn(`[OCR] Gemini REST failed with ${modelName} (${err.message}) - retrying with ${nextModel}...`);
       await new Promise(r => setTimeout(r, 1000));
       return runGeminiVision(imagePath, attempt + 1, nextModel);
     }
@@ -301,15 +300,12 @@ Respond with ONLY the complete JSON object. No markdown, no explanation.`;
   return {
     text: rawText,
     structuredData,
-    confidence: 85, // Gemini Vision: generally high-confidence on clear images
-    words: [],      // No bounding boxes from Vision API
+    confidence: 85,
+    words: [],
     engine: 'gemini',
     _fontMetrics: null,
   };
 }
-
-// ─── MAIN PIPELINE ENTRY POINT ────────────────────────────────────────────────
-
 /**
  * Full OCR pipeline (spec 04 Steps 1–4):
  *
