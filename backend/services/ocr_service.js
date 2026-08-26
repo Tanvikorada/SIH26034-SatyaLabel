@@ -20,7 +20,7 @@ const MAX_DIMENSION_PX = 2000;          // Spec: resize to max 2000px on longest
 const MIN_DIMENSION_PX = 600;           // Spec: reject below 600px shortest edge
 const MIN_OCR_TEXT_LENGTH = 20;         // Below this = "no readable text"
 const OCR_CONFIDENCE_THRESHOLD = config.ocr?.confidenceThreshold ?? 50; // % below which Gemini kicks in
-const GEMINI_TIMEOUT_MS = 45000;        // 45s timeout for Gemini API call
+const GEMINI_TIMEOUT_MS = 15000;        // 45s timeout for Gemini API call
 const GEMINI_RETRY_ONCE = true;
 
 // ─── STEP 1: IMAGE VALIDATION & PREPROCESSING ────────────────────────────────
@@ -193,7 +193,7 @@ async function runTesseract(imagePath) {
  * @param {string} [modelName='gemini-1.5-flash-latest']
  * @returns {{ text, structuredData, confidence, engine }}
  */
-async function runGeminiVision(imagePath, attempt = 1, modelName = 'gemini-3.7-flash') {
+async function runGeminiVision(imagePath, attempt = 1, modelName = 'gemini-flash-latest') {
   if (!config.gemini?.enabled || !config.gemini?.apiKey) {
     throw Object.assign(
       new Error('Gemini API key not configured. Add GEMINI_API_KEY to .env to enable Vision fallback.'),
@@ -287,9 +287,9 @@ Respond with ONLY the complete JSON object. No markdown, no explanation.`;
   } catch (err) {
     if (attempt < 3) {
       // Fallback chain: 1.5-flash -> 1.5-pro -> 1.0-pro-vision
-      const nextModel = modelName === 'gemini-3.7-flash' 
-          ? 'gemini-3.6-flash' 
-          : (modelName === 'gemini-3.6-flash' ? 'gemini-2.5-flash' : 'gemini-flash-latest');
+      const nextModel = modelName === 'gemini-flash-latest' 
+            ? 'gemini-3.7-flash' 
+            : (modelName === 'gemini-3.7-flash' ? 'gemini-3.6-flash' : 'gemini-2.5-flash');
       
       console.warn(`[OCR] Gemini failed with ${modelName} (${err.message}) - retrying with ${nextModel}...`);
       await new Promise(r => setTimeout(r, 1000));
