@@ -230,8 +230,7 @@ router.post('/', optionalAuth, (req, res, next) => {
 
         //  Fire pipeline async (after response sent) 
         // We still pass req.file.path (the local file) to the OCR pipeline
-        // because Tesseract and Sharp need a local file buffer to read from.
-        setImmediate(() => runScanPipeline(scan, req.file.path, meta));
+        setImmediate(() => runScanPipeline(scan, req.file.path, { forceEngine: req.body.forceEngine }));
 
       } catch (err) {
       return fail(res, 500, 'INTERNAL_ERROR', err.message);
