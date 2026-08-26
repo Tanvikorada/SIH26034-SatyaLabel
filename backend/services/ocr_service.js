@@ -20,7 +20,7 @@ const MAX_DIMENSION_PX = 2000;          // Spec: resize to max 2000px on longest
 const MIN_DIMENSION_PX = 600;           // Spec: reject below 600px shortest edge
 const MIN_OCR_TEXT_LENGTH = 20;         // Below this = "no readable text"
 const OCR_CONFIDENCE_THRESHOLD = config.ocr?.confidenceThreshold ?? 50; // % below which Gemini kicks in
-const GEMINI_TIMEOUT_MS = 15000;        // 15s timeout for Gemini API call
+const GEMINI_TIMEOUT_MS = 45000;        // 45s timeout for Gemini API call
 const GEMINI_RETRY_ONCE = true;
 
 // ─── STEP 1: IMAGE VALIDATION & PREPROCESSING ────────────────────────────────
@@ -372,16 +372,12 @@ async function runOcrPipeline(imagePath) {
         };
 
       } catch (geminiErr) {
-        // Gemini failed — fall back to Tesseract result even if low confidence
-        // (better than no result during demo day)
-        console.warn(`[OCR] Gemini fallback failed (${geminiErr.message}) — using Tesseract result anyway`);
-
-        if (isTextEmpty) {
-          throw Object.assign(
-            new Error('No readable text detected. Gemini Vision fallback also failed. Please rescan with better lighting.'),
-            { code: 'NO_TEXT_DETECTED', geminiError: geminiErr.message }
-          );
-        }
+        // Gemini failed. Throw the error so the frontend sees it, rather than passing gibberish to the LLM Rules Engine.
+        console.warn(`[OCR] Gemini fallback failed (${geminiErr.message})`);
+        throw Object.assign(
+          new Error(`Gemini Vision Extraction Failed: ${geminiErr.message}`),
+          { code: 'GEMINI_EXTRACTION_FAILED' }
+        );
       }
     }
 
