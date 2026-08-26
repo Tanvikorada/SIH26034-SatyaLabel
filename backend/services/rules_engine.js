@@ -767,100 +767,56 @@ const { GoogleGenerativeAI } = require('@google/generative-ai');
 const config = require('../config');
 
 async function validateCompliance(fieldsMap, rawText = '', options = {}) {
-  const prompt = `You are a strict, expert compliance auditor for the Indian Legal Metrology (Packaged Commodities) Rules, 2011.
-Evaluate the following extracted label data for compliance.
-
-EXTRACTED STRUCTURED DATA:
-${JSON.stringify(fieldsMap, null, 2)}
-
-RAW OCR TEXT (for context):
-${(rawText || '').slice(0, 2000)}
-
-RULES TO EVALUATE:
-1. Rule 6(1)(a) - Name of Commodity: Must declare generic/common name.
-2. Rule 6(1)(b) & Rule 10 - Manufacturer/Packer/Importer Name & Address: Must have complete name and address.
-3. Rule 6(1)(c) & Rule 11 - Net Quantity: Must declare numeric quantity with standard metric units (e.g. g, kg, ml, L). Cannot use vague terms like "approx".
-4. Rule 6(1)(d) - Month & Year of Manufacture: Must be present (MM/YYYY or similar).
-5. Rule 6(1)(e) - MRP: Must declare Maximum Retail Price explicitly including phrase "inclusive of all taxes" (or similar).
-6. Rule 6(1)(h) - Consumer Care Details: Must declare phone number or email for complaints.
-7. Rule 26 - Exemptions: If net weight <= 10g or 10ml, or if it's agricultural produce in packages > 50kg, some rules don't apply (return NOT APPLICABLE).
-
-Return ONLY a valid JSON object with a "results" array. Each object in the array must have:
-- rule_id: String (e.g. "Rule 6(1)(a)")
-- rule_title: String
-- status: Must be exactly one of ["PASS", "POTENTIAL NON-COMPLIANCE", "MANUAL REVIEW", "NOT APPLICABLE"]
-- field: String (the primary field associated, e.g. "net_quantity")
-- severity: String ("high", "medium", "low")
-- detail: String (Specific reasoning based on the extracted data. Why did it pass or fail? Cite the data.)
-- confidence: String ("high" or "medium")
-
-DO NOT return markdown code blocks, just raw JSON.`;
-
-  let responseText = '';
-
-  if (config.gemini?.enabled) {
-    console.log('[RulesEngine] Using Gemini LLM...');
-    const genAI = new GoogleGenerativeAI(config.gemini.apiKey);
-    let result = null;
-    let errToThrow = null;
-    const modelsToTry = ['gemini-flash-latest', 'gemini-3.7-flash', 'gemini-2.5-flash', 'gemini-pro-latest'];
-    
-    for (const modelName of modelsToTry) {
-        try {
-            console.log(`[RulesEngine] Trying model ${modelName}...`);
-            const model = genAI.getGenerativeModel({ model: modelName });
-            result = await model.generateContent(prompt);
-            responseText = result.response.text();
-            break; // Success
-        } catch (err) {
-            console.warn(`[RulesEngine] Model ${modelName} failed: ${err.message}`);
-            errToThrow = err;
-            // Always retry to handle 404s/403s across different models
-            await new Promise(r => setTimeout(r, 1500)); // sleep before retry
-        }
-    }
-    
-    if (!result) {
-        throw errToThrow || new Error("All Gemini models failed.");
-    }
-  } else {
-    throw new Error("Neither GROQ_API_KEY nor GEMINI_API_KEY is configured.");
-  }
+  // Use the programmatic rules engine instead of the LLM for perfectly deterministic, instant scoring
+  console.log('[RulesEngine] Running deterministic compliance rules...');
   
-  const cleaned = responseText.replace(/```(?:json)?\s*/g, '').replace(/```\s*$/g, '').trim();
-  let aiResults = [];
-  try {
-    const parsed = JSON.parse(cleaned);
-    aiResults = parsed.results || [];
-  } catch (err) {
-    console.error('[RulesEngine] Failed to parse LLM output:', err);
-    throw new Error('LLM Rules Engine returned invalid JSON.');
-  }
+  const rawResults = [
+    checkApplicability(fieldsMap, options),
+    checkExemption(fieldsMap, options),
+    checkManufacturerName(fieldsMap),
+    checkManufacturerAddress(fieldsMap),
+    checkCountryOfOrigin(fieldsMap, options),
+    checkGenericName(fieldsMap),
+    checkNetQuantityPresence(fieldsMap),
+    checkUnitConvention(fieldsMap),
+    checkMfgDate(fieldsMap),
+    checkBestBefore(fieldsMap, options),
+    checkMRP(fieldsMap),
+    checkConsumerCare(fieldsMap),
+    checkMisleadingQuantityWording(fieldsMap),
+    checkFontSize(fieldsMap),
+    checkPDPPlacement(fieldsMap, options),
+    checkLegibility(fieldsMap),
+    checkAdvertisementListing(fieldsMap, options),
+    checkContradictoryDeclarations(fieldsMap)
+  ];
 
-  // Map AI results to internal format
-  const mappedResults = aiResults.map(r => ({
-    rule_id: r.rule_id || 'Unknown',
-    rule_title: r.rule_title || 'Unknown Rule',
-    status: Object.values(S).includes(r.status) ? r.status : S.REVIEW,
-    field: r.field || 'unknown',
-    severity: (r.severity || 'medium').toLowerCase(),
-    detail: r.detail || 'No detail provided.',
-    confidence: r.confidence || 'medium'
+  const flatResults = rawResults.flat().filter(r => r !== null);
+  
+  // Format results to match expected schema
+  const mappedResults = flatResults.map(r => ({
+    rule_id: r.rule_id,
+    rule_title: r.rule_title,
+    status: r.status,
+    field: r.field,
+    severity: r.severity || 'low',
+    detail: r.detail || (r.status === 'PASS' ? 'Compliant with rule requirements based on extracted data.' : 'Status needs manual verification.'),
+    confidence: r.confidence || 'high'
   }));
 
-  const violations = mappedResults.filter(r => r.status === S.PNOC || r.status === S.REVIEW);
-  const passes = mappedResults.filter(r => r.status === S.PASS);
-  const naResults = mappedResults.filter(r => r.status === S.NA);
+  const violations = mappedResults.filter(r => r.status === STATUS.PNOC || r.status === STATUS.REVIEW);
   
-  const highViolations = mappedResults.filter(r => r.status === S.PNOC && r.severity === 'high').length;
-  const reviewCount = mappedResults.filter(r => r.status === S.REVIEW).length;
+  const passes = mappedResults.filter(r => r.status === STATUS.PASS);
+  const naResults = mappedResults.filter(r => r.status === STATUS.NA);
+  const highViolations = mappedResults.filter(r => r.severity === 'high' && r.status === STATUS.PNOC).length;
+  const reviewCount = mappedResults.filter(r => r.status === STATUS.REVIEW).length;
   const totalRulesChecked = mappedResults.length;
   
   const complianceScore = totalRulesChecked > 0 ? Math.round((passes.length / (totalRulesChecked - naResults.length || 1)) * 100) : 0;
   
-  let overallCompliance = S.PASS;
-  if (highViolations > 0 || mappedResults.some(r => r.status === S.PNOC)) overallCompliance = S.PNOC;
-  else if (reviewCount > 0) overallCompliance = S.REVIEW;
+  let overallCompliance = STATUS.PASS;
+  if (highViolations > 0 || mappedResults.some(r => r.status === STATUS.PNOC)) overallCompliance = STATUS.PNOC;
+  else if (reviewCount > 0) overallCompliance = STATUS.REVIEW;
   
   return {
     results: mappedResults,
