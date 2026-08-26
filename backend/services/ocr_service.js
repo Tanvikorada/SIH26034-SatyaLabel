@@ -193,7 +193,7 @@ async function runTesseract(imagePath) {
  * @param {string} [modelName='gemini-1.5-flash-latest']
  * @returns {{ text, structuredData, confidence, engine }}
  */
-async function runGeminiVision(imagePath, attempt = 1, modelName = 'gemini-1.5-flash-latest') {
+async function runGeminiVision(imagePath, attempt = 1, modelName = 'gemini-3.7-flash') {
   if (!config.gemini?.enabled || !config.gemini?.apiKey) {
     throw Object.assign(
       new Error('Gemini API key not configured. Add GEMINI_API_KEY to .env to enable Vision fallback.'),
@@ -287,9 +287,9 @@ Respond with ONLY the complete JSON object. No markdown, no explanation.`;
   } catch (err) {
     if (attempt < 3) {
       // Fallback chain: 1.5-flash -> 1.5-pro -> 1.0-pro-vision
-      const nextModel = modelName === 'gemini-1.5-flash-latest' 
-          ? 'gemini-1.5-pro-latest' 
-          : (modelName === 'gemini-1.5-pro-latest' ? 'gemini-pro-vision' : 'gemini-1.0-pro-vision-latest');
+      const nextModel = modelName === 'gemini-3.7-flash' 
+          ? 'gemini-3.6-flash' 
+          : (modelName === 'gemini-3.6-flash' ? 'gemini-2.5-flash' : 'gemini-flash-latest');
       
       console.warn(`[OCR] Gemini failed with ${modelName} (${err.message}) - retrying with ${nextModel}...`);
       await new Promise(r => setTimeout(r, 1000));

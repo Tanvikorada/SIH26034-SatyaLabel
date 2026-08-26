@@ -803,7 +803,7 @@ DO NOT return markdown code blocks, just raw JSON.`;
     const genAI = new GoogleGenerativeAI(config.gemini.apiKey);
     let result = null;
     let errToThrow = null;
-    const modelsToTry = ['gemini-1.5-flash-latest', 'gemini-1.5-pro-latest', 'gemini-pro'];
+    const modelsToTry = ['gemini-3.7-flash', 'gemini-3.6-flash', 'gemini-2.5-flash', 'gemini-flash-latest'];
     
     for (const modelName of modelsToTry) {
         try {
