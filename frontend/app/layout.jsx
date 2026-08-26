@@ -30,18 +30,21 @@ export default function RootLayout({ children }) {
           {children}
         </ThemeProvider>
         <Toaster position="top-right" />
-        <Script id="register-sw" strategy="afterInteractive">
-          {`
+        <Script
+          id="unregister-sw"
+          strategy="afterInteractive"
+          dangerouslySetInnerHTML={{
+            __html: `
             if ('serviceWorker' in navigator) {
-              window.addEventListener('load', function() {
-                navigator.serviceWorker.register('/sw.js').then(
-                  function(registration) { console.log('SW registration successful'); },
-                  function(err) { console.log('SW registration failed: ', err); }
-                );
+              navigator.serviceWorker.getRegistrations().then(function(registrations) {
+                for(let registration of registrations) {
+                  registration.unregister();
+                  console.log('SW unregistered successfully');
+                }
               });
             }
-          `}
-        </Script>
+          `}}
+        />
       </body>
     </html>
   )
