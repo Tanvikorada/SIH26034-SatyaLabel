@@ -116,7 +116,7 @@ async function runScanPipeline(scan, imagePath, metadata = {}) {
     );
 
     // Step 3: Rules engine
-    const { violations, stats } = await validateCompliance(fieldsMap, ocrResult.text, metadata);
+    const { results, violations, stats } = await validateCompliance(fieldsMap, ocrResult.text, metadata);
 
     // Step 4: Find or create Product
     const productName = fieldsMap.product_name || scan.productNameHint || null;
@@ -146,7 +146,7 @@ async function runScanPipeline(scan, imagePath, metadata = {}) {
     });
 
     // Step 6: Save all non-PASS violations (POTENTIAL NON-COMPLIANCE, MANUAL REVIEW, NOT VERIFIED)
-    const violationsToSave = violations.filter(v => v.status !== 'PASS' && v.status !== 'pass');
+    const violationsToSave = results || violations;
     if (violationsToSave.length > 0) {
       await Violation.bulkCreate(
         violationsToSave.map(v => ({

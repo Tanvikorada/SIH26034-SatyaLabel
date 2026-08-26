@@ -217,7 +217,21 @@ async function runGeminiVision(imagePath, attempt = 1, modelName = 'gemini-flash
   "consumer_care_details": string or null
 }
 If a field is not visible or not present on the label, return null for it.
-Do not guess or hallucinate values - only extract what is actually visible in the image.`;
+Do not guess or hallucinate values - only extract what is actually visible in the image.
+
+EXAMPLE INPUT LABEL TEXT: "LAYS MAGIC MASALA. MRP Rs 50 (incl. of all taxes). Net Wt 50g. Mfd: 01/2026. Mfd by: Pepsico India Holdings, DLF Tower, Gurugram. Call 1800-22-4020."
+EXAMPLE OUTPUT JSON:
+{
+  "manufacturer_name": "Pepsico India Holdings",
+  "manufacturer_address": "DLF Tower, Gurugram",
+  "common_name": "MAGIC MASALA",
+  "net_quantity": "50",
+  "net_quantity_unit": "g",
+  "mrp": "Rs 50",
+  "mrp_includes_tax_statement": true,
+  "mfg_date": "01/2026",
+  "consumer_care_details": "1800-22-4020"
+}`;
 
   const FULL_PROMPT = `${STRUCTURED_PROMPT}\n\nAdditionally include these extra fields in the same JSON object:
 {
