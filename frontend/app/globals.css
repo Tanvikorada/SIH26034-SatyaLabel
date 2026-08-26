@@ -5,8 +5,8 @@
 /* ── Official Palette Tokens ─────────────────────────────── */
 @theme {
   /* Light mode base (default) */
-  --color-background:       #F6F5F1;
-  --color-surface:          #FFFFFF;
+  --color-background: #ffffff;
+  --color-surface: #ffffff;
   --color-primary:          #0B1F3A;
   --color-primary-hover:    #16335C;
   --color-accent:           #0B1F3A;
@@ -35,8 +35,8 @@
 
 /* 🌙 Dark Mode Overrides (Mello Reference) 🌙 */
 .dark {
-  --color-background:       #09090b; /* obsidian */
-  --color-surface:          #18181b; /* charcoal */
+  --color-background: #000000; /* pure black */
+  --color-surface: #0a0a0a; /* dark grey surface */
   --color-primary:          #ffffff;
   --color-primary-hover:    #f4f4f5;
   --color-accent:           #ffffff; /* white */
