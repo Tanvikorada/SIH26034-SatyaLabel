@@ -604,11 +604,12 @@ function TechStack() {
               </div>
             </div>
             
-            <div className={`absolute -bottom-8 left-0 right-0 text-center text-[11px] font-mono transition-opacity duration-300 ${activeStage === 1 ? 'text-[var(--color-primary)] opacity-100' : 'opacity-0'}`}>Sending payload...</div>
+            <div className={`mt-2 text-center text-[11px] font-mono transition-opacity duration-300 h-4 flex items-center justify-center ${activeStage === 1 ? 'text-[var(--color-primary)] opacity-100' : 'opacity-0'}`}>Sending payload...</div>
           </div>
 
           {/* Arrow */}
           <div className={`hidden md:flex items-center shrink-0 transition-colors duration-500 ${activeStage === 1 ? 'text-[var(--color-primary)] animate-pulse' : 'text-[var(--color-border)]'}`}><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg></div>
+          <div className={`md:hidden flex justify-center py-2 shrink-0 transition-colors duration-500 ${activeStage === 1 ? 'text-[var(--color-primary)] animate-pulse' : 'text-[var(--color-border)]'}`}><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 5v14M5 12l7 7 7-7"/></svg></div>
 
           {/* Stage 2: Gateway */}
           <div 
@@ -636,11 +637,12 @@ function TechStack() {
               </div>
             </div>
 
-            <div className={`absolute -bottom-8 left-0 right-0 text-center text-[11px] font-mono transition-opacity duration-300 ${activeStage === 2 ? 'text-[var(--color-primary)] opacity-100' : 'opacity-0'}`}>Images in buffer...</div>
+            <div className={`mt-2 text-center text-[11px] font-mono transition-opacity duration-300 h-4 flex items-center justify-center ${activeStage === 2 ? 'text-[var(--color-primary)] opacity-100' : 'opacity-0'}`}>Images in buffer...</div>
           </div>
 
           {/* Arrow */}
           <div className={`hidden md:flex items-center shrink-0 transition-colors duration-500 ${activeStage === 2 ? 'text-[var(--color-primary)] animate-pulse' : 'text-[var(--color-border)]'}`}><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg></div>
+          <div className={`md:hidden flex justify-center py-2 shrink-0 transition-colors duration-500 ${activeStage === 2 ? 'text-[var(--color-primary)] animate-pulse' : 'text-[var(--color-border)]'}`}><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 5v14M5 12l7 7 7-7"/></svg></div>
 
           {/* Stage 3: AI Inference */}
           <div 
@@ -668,11 +670,12 @@ function TechStack() {
               </div>
             </div>
 
-            <div className={`absolute -bottom-8 left-0 right-0 text-center text-[11px] font-mono transition-opacity duration-300 ${activeStage === 3 ? 'text-[var(--color-primary)] opacity-100' : 'opacity-0'}`}>Parsing structure...</div>
+            <div className={`mt-2 text-center text-[11px] font-mono transition-opacity duration-300 h-4 flex items-center justify-center ${activeStage === 3 ? 'text-[var(--color-primary)] opacity-100' : 'opacity-0'}`}>Parsing structure...</div>
           </div>
 
           {/* Arrow */}
           <div className={`hidden md:flex items-center shrink-0 transition-colors duration-500 ${activeStage === 3 ? 'text-[var(--color-primary)] animate-pulse' : 'text-[var(--color-border)]'}`}><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg></div>
+          <div className={`md:hidden flex justify-center py-2 shrink-0 transition-colors duration-500 ${activeStage === 3 ? 'text-[var(--color-primary)] animate-pulse' : 'text-[var(--color-border)]'}`}><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 5v14M5 12l7 7 7-7"/></svg></div>
 
           {/* Stage 4: Logic & Ledger */}
           <div 
@@ -700,7 +703,7 @@ function TechStack() {
               </div>
             </div>
             
-            <div className={`absolute -bottom-8 left-0 right-0 text-center text-[11px] font-mono transition-opacity duration-300 ${activeStage === 4 ? 'text-[var(--color-primary)] opacity-100' : 'opacity-0'}`}>Generating PDF...</div>
+            <div className={`mt-2 text-center text-[11px] font-mono transition-opacity duration-300 h-4 flex items-center justify-center ${activeStage === 4 ? 'text-[var(--color-primary)] opacity-100' : 'opacity-0'}`}>Generating PDF...</div>
           </div>
 
         </div>
