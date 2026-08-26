@@ -3,9 +3,7 @@
   "short_name": "SatyaLabel",
   "description": "Legal Metrology Compliance AI",
   "start_url": "/",
-  "display": "standalone",
-  "background_color": "#ffffff",
-  "theme_color": "#ffffff",
+  "display": "fullscreen",
   "icons": [
     {
       "src": "/icon.svg",
