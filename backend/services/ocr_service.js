@@ -197,7 +197,7 @@ async function runTesseract(imagePath) {
  */
 // --- STEP 3: GROQ VISION FALLBACK ---
 
-async function runGroqVision(imagePath, attempt = 1, modelName = 'qwen/qwen3.8-27b', tesseractText = '') {
+async function runGroqVision(imagePath, attempt = 1, modelName = 'llama-3.2-90b-vision-preview', tesseractText = '') {
   if (!config.groq?.enabled || !config.groq?.apiKey) {
     throw new Error('Groq API key not configured.');
   }
@@ -273,7 +273,7 @@ Do not guess or hallucinate values - only extract what is actually visible in th
 
   } catch (err) {
     if (attempt < 3) {
-      const nextModel = modelName === 'qwen/qwen3.8-27b' ? 'qwen/qwen3.6-27b' : 'qwen/qwen3.8-27b';
+      const nextModel = modelName === 'llama-3.2-90b-vision-preview' ? 'llama-3.2-11b-vision-preview' : 'llama-3.2-90b-vision-preview';
       console.warn(`[OCR] Groq failed with ${modelName} (${err.message}) - retrying with ${nextModel}...`);
       await new Promise(r => setTimeout(r, 2000));
       return runGroqVision(imagePath, attempt + 1, nextModel, tesseractText);
@@ -328,7 +328,7 @@ async function runOcrPipeline(imagePath, metadata = {}) {
           const isGarbage = ocrResult.confidence < 50;
           const safeHint = isGarbage ? '' : ocrResult.text;
           if (isGarbage) console.log("[OCR] Tesseract confidence too low (" + ocrResult.confidence + "%). Hiding hint from Groq to prevent hallucinations.");
-          const groqResult = await runGroqVision(processedPath, 1, 'qwen/qwen3.8-27b', safeHint);
+          const groqResult = await runGroqVision(processedPath, 1, 'llama-3.2-90b-vision-preview', safeHint);
 
           return {
             text: ocrResult.text, // Must be Tesseract raw text so regexes don't match JSON keys!
