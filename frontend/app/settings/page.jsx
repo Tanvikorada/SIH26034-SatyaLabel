@@ -43,7 +43,7 @@ export default function SettingsPage() {
             <div className="grid grid-cols-3 gap-4">
               <button
                 onClick={() => setTheme('light')}
-                className={p-4 flex flex-col items-center justify-center gap-3 rounded-xl border transition-all }
+                className={`p-4 flex flex-col items-center justify-center gap-3 rounded-xl border transition-all ${theme === 'light' ? 'border-primary bg-primary/5 text-primary' : 'border-border bg-background text-text-secondary hover:border-text-muted'}`}
               >
                 <Sun size={24} />
                 <span className="text-sm font-medium">Light</span>
@@ -51,7 +51,7 @@ export default function SettingsPage() {
               
               <button
                 onClick={() => setTheme('dark')}
-                className={p-4 flex flex-col items-center justify-center gap-3 rounded-xl border transition-all }
+                className={`p-4 flex flex-col items-center justify-center gap-3 rounded-xl border transition-all ${theme === 'dark' ? 'border-primary bg-primary/5 text-primary' : 'border-border bg-background text-text-secondary hover:border-text-muted'}`}
               >
                 <Moon size={24} />
                 <span className="text-sm font-medium">Dark</span>
@@ -59,7 +59,7 @@ export default function SettingsPage() {
 
               <button
                 onClick={() => setTheme('system')}
-                className={p-4 flex flex-col items-center justify-center gap-3 rounded-xl border transition-all }
+                className={`p-4 flex flex-col items-center justify-center gap-3 rounded-xl border transition-all ${theme === 'system' ? 'border-primary bg-primary/5 text-primary' : 'border-border bg-background text-text-secondary hover:border-text-muted'}`}
               >
                 <Monitor size={24} />
                 <span className="text-sm font-medium">System</span>
