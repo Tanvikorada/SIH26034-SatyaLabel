@@ -54,17 +54,9 @@ export default function Results({ params }) {
           setReport(data);
           setLoading(false);
         }
-      } catch {
+      } catch (err) {
         if (!isMounted) return;
-        setReport({
-          id: resolvedParams.id, status: 'completed', overallStatus: 'POTENTIAL NON-COMPLIANCE',
-          compliance_score: 42, product: { product_name: 'Mock Product', brand_name: 'Mock Brand' },
-          extractedFields: { net_quantity: '100g', mrp: '50' }, ocr_raw_text: "NET WT 100g MRP 50",
-          violations: [
-            { rule_id: 'C02', detail_text: 'MRP not in standard format.', severity: 'high', status: 'POTENTIAL NON-COMPLIANCE' },
-            { rule_id: 'C05', detail_text: 'Veg logo missing.', severity: 'low', status: 'MANUAL REVIEW' }
-          ]
-        });
+        setReport({ error: 'Failed to fetch scan results due to Network/CORS error' });
         setLoading(false);
       }
     };
