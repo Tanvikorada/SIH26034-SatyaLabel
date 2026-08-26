@@ -321,7 +321,15 @@ async function runOcrPipeline(imagePath, metadata = {}) {
       if (true) {
         console.log("[OCR] Passing Tesseract text as a hint to Groq Vision for max accuracy...");
         try {
-          const groqResult = await runGroqVision(processedPath, 1, 'qwen/qwen3.8-27b', ocrResult.text);
+          
+          // If Tesseract confidence is extremely low (< 50), it means the text is likely heavily distorted by glare.
+          // Passing a pure garbage string as a hint causes Groq to hallucinate (e.g. guessing American Coke data).
+          // So we only pass the hint if Tesseract was somewhat confident.
+          const isGarbage = ocrResult.confidence < 50;
+          const safeHint = isGarbage ? '' : ocrResult.text;
+          if (isGarbage) console.log("[OCR] Tesseract confidence too low (" + ocrResult.confidence + "%). Hiding hint from Groq to prevent hallucinations.");
+          const groqResult = await runGroqVision(processedPath, 1, 'qwen/qwen3.8-27b', safeHint);
+
           return {
             text: ocrResult.text, // Must be Tesseract raw text so regexes don't match JSON keys!
             engine: "groq",
