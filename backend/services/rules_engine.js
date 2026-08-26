@@ -774,7 +774,7 @@ EXTRACTED STRUCTURED DATA:
 ${JSON.stringify(fieldsMap, null, 2)}
 
 RAW OCR TEXT (for context):
-${rawText.slice(0, 2000)}
+${(rawText || '').slice(0, 2000)}
 
 RULES TO EVALUATE:
 1. Rule 6(1)(a) - Name of Commodity: Must declare generic/common name.
@@ -808,7 +808,7 @@ DO NOT return markdown code blocks, just raw JSON.`;
     }, { timeout: 30000 });
     responseText = completion.choices[0]?.message?.content || '';
   } else if (config.gemini?.enabled) {
-    console.log('[RulesEngine] GROQ_API_KEY missing. Falling back to Gemini LLM (gemini-3.6-flash)...');
+    console.log('[RulesEngine] Using Gemini LLM (gemini-3.6-flash)...');
     const genAI = new GoogleGenerativeAI(config.gemini.apiKey);
     const model = genAI.getGenerativeModel({ model: 'gemini-3.6-flash' });
     const result = await model.generateContent(prompt);
