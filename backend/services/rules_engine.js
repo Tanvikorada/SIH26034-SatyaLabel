@@ -804,19 +804,19 @@ async function validateCompliance(fieldsMap, rawText = '', options = {}) {
     confidence: r.confidence || 'high'
   }));
 
-  const violations = mappedResults.filter(r => r.status === STATUS.PNOC || r.status === STATUS.REVIEW);
+  const violations = mappedResults.filter(r => r.status === S.PNOC || r.status === S.REVIEW);
   
-  const passes = mappedResults.filter(r => r.status === STATUS.PASS);
-  const naResults = mappedResults.filter(r => r.status === STATUS.NA);
-  const highViolations = mappedResults.filter(r => r.severity === 'high' && r.status === STATUS.PNOC).length;
-  const reviewCount = mappedResults.filter(r => r.status === STATUS.REVIEW).length;
+  const passes = mappedResults.filter(r => r.status === S.PASS);
+  const naResults = mappedResults.filter(r => r.status === S.NA);
+  const highViolations = mappedResults.filter(r => r.severity === 'high' && r.status === S.PNOC).length;
+  const reviewCount = mappedResults.filter(r => r.status === S.REVIEW).length;
   const totalRulesChecked = mappedResults.length;
   
   const complianceScore = totalRulesChecked > 0 ? Math.round((passes.length / (totalRulesChecked - naResults.length || 1)) * 100) : 0;
   
-  let overallCompliance = STATUS.PASS;
-  if (highViolations > 0 || mappedResults.some(r => r.status === STATUS.PNOC)) overallCompliance = STATUS.PNOC;
-  else if (reviewCount > 0) overallCompliance = STATUS.REVIEW;
+  let overallCompliance = S.PASS;
+  if (highViolations > 0 || mappedResults.some(r => r.status === S.PNOC)) overallCompliance = S.PNOC;
+  else if (reviewCount > 0) overallCompliance = S.REVIEW;
   
   return {
     results: mappedResults,
