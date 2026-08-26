@@ -20,12 +20,7 @@ const app = express();
 
 // ─── MIDDLEWARE ───────────────────────────────────────────────────────────────
 app.use(cors({
-  origin: [
-    'http://localhost:3000', 
-    'http://127.0.0.1:3000', 
-    'https://frontend-five-gilt-80.vercel.app',
-    /\.vercel\.app$/
-  ],
+  origin: true, 
   credentials: true,
 }));
 app.use(express.json({ limit: '10mb' }));
