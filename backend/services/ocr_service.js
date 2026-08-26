@@ -198,11 +198,7 @@ async function runGeminiVision(imagePath, attempt = 1, modelName = 'gemini-flash
     throw new Error('Gemini API key not configured.');
   }
 
-  const { GoogleGenerativeAI } = require('@google/generative-ai');
-  const genAI = new GoogleGenerativeAI(config.gemini.apiKey);
-  const model = genAI.getGenerativeModel({ model: modelName });
-
-  console.log(`[OCR] Calling Gemini SDK (${modelName}) (attempt ${attempt}/3).`);
+  console.log(`[OCR] Calling Gemini REST API (${modelName}) (attempt ${attempt}/3).`);
 
   const imageBuffer = fs.readFileSync(imagePath);
   const base64Image = imageBuffer.toString('base64');
@@ -240,13 +236,38 @@ Respond with ONLY the complete JSON object. No markdown, no explanation.`;
   let structuredData = {};
 
   try {
-    // DO NOT use a manual Promise.race timeout! Let the SDK handle the connection.
-    const result = await model.generateContent([
-      { inlineData: { mimeType, data: base64Image } },
-      FULL_PROMPT,
-    ]);
+    const payload = {
+      contents: [{
+        parts: [
+          { text: FULL_PROMPT },
+          { inlineData: { mimeType, data: base64Image } }
+        ]
+      }],
+      generationConfig: {
+        temperature: 0.1
+      }
+    };
 
-    const responseText = result.response.text();
+    const controller = new AbortController();
+    // Use 60-second timeout instead of 15 seconds to allow the flash model enough time to process
+    const timeoutId = setTimeout(() => controller.abort(), 60000);
+
+    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${config.gemini.apiKey}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+      signal: controller.signal
+    });
+
+    clearTimeout(timeoutId);
+
+    if (!res.ok) {
+      const errText = await res.text();
+      throw new Error(`HTTP ${res.status}: ${errText}`);
+    }
+
+    const data = await res.json();
+    const responseText = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
     const cleaned = responseText.replace(/```(?:json)?\s*/g, '').replace(/```\s*$/g, '').trim();
 
     try {
@@ -262,7 +283,7 @@ Respond with ONLY the complete JSON object. No markdown, no explanation.`;
     }
 
     rawText = structuredData._raw_text || responseText;
-    console.log('[OCR] Gemini SDK extraction complete');
+    console.log('[OCR] Gemini REST API extraction complete');
 
   } catch (err) {
     if (attempt < 3) {
@@ -270,7 +291,7 @@ Respond with ONLY the complete JSON object. No markdown, no explanation.`;
             ? 'gemini-3.7-flash' 
             : (modelName === 'gemini-3.7-flash' ? 'gemini-3.6-flash' : 'gemini-2.5-flash');
       
-      console.warn(`[OCR] Gemini SDK failed with ${modelName} (${err.message}) - retrying with ${nextModel}...`);
+      console.warn(`[OCR] Gemini REST failed with ${modelName} (${err.message}) - retrying with ${nextModel}...`);
       await new Promise(r => setTimeout(r, 1000));
       return runGeminiVision(imagePath, attempt + 1, nextModel);
     }
