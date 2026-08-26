@@ -131,7 +131,7 @@ function HeroSeal() {
         </defs>
 
         {/* Rotating Text Ring */}
-        <motion.g animate={{ rotate: 360 }} transition={{ duration: 25, repeat: Infinity, ease: 'linear' }} style={{ transformOrigin: '100px 100px' }}>
+        <motion.g animate={{ rotate: 360 }} transition={{ duration: 25, repeat: Infinity, ease: 'linear' }} style={{ transformOrigin: '50% 50%' }}>
             <text fill="var(--color-text-muted)" fontSize="11" letterSpacing="4.5" fontWeight="500" className="uppercase font-mono opacity-80">
                 <textPath href="#textCircle" startOffset="0%">
                   LEGAL METROLOGY COMPLIANCE • SATYALABEL AI • LEGAL METROLOGY COMPLIANCE • SATYALABEL AI • 
@@ -142,7 +142,7 @@ function HeroSeal() {
         {/* Outer dashed ring */}
         <motion.circle cx="100" cy="100" r="70" fill="none" stroke="var(--color-border)" strokeWidth="1.5" strokeDasharray="4 8"
           animate={{ rotate: -360 }} transition={{ duration: 80, repeat: Infinity, ease: 'linear' }}
-          style={{ transformOrigin: '100px 100px' }}
+          style={{ transformOrigin: '50% 50%' }}
         />
         
         {/* Inner solid ring */}
