@@ -14,6 +14,18 @@
 
 const express = require('express');
 const router = express.Router();
+
+// Temporary debug route to list models
+router.get('/debug-models', async (req, res) => {
+  try {
+    const response = await fetch("https://generativelanguage.googleapis.com/v1beta/models?key=" + process.env.GEMINI_API_KEY);
+    const data = await response.json();
+    res.json(data);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 const path = require('path');
 const fs = require('fs');
 const { createClient } = require('@supabase/supabase-js');
@@ -481,14 +493,7 @@ router.post('/:id/report', optionalAuth, async (req, res) => {
   }
 });
 
-// Temporary debug route to list models
-router.get('/debug-models', async (req, res) => {
-  try {
-    const response = await fetch("https://generativelanguage.googleapis.com/v1beta/models?key=" + process.env.GEMINI_API_KEY);
-    const data = await response.json();
-    res.json(data);
-  } catch (error) {
-    res.status(500).json({ error: error.message });
+
   }
 });
 
