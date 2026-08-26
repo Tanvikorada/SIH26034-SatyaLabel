@@ -121,7 +121,7 @@ async function preprocessImage(imagePath) {
 async function runTesseract(imagePath) {
   console.log('[OCR] Running Tesseract (eng+hin)…');
 
-  const result = await Tesseract.recognize(imagePath, 'eng+hin', {
+  const result = await Tesseract.recognize(imagePath, 'eng', {
     logger: (m) => {
       if (m.status === 'recognizing text') {
         process.stdout.write(`\r[Tesseract] ${Math.floor(m.progress * 100)}%`);
