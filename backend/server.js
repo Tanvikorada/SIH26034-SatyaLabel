@@ -16,6 +16,7 @@ const dashboardRouter = require('./routes/dashboard');
 const authRouter     = require('./routes/auth');
 const rulesRouter    = require('./routes/rules');
 const modelsRouter   = require('./routes/models');
+const debugRouter    = require('./routes/debug');
 
 const app = express();
 
@@ -36,6 +37,7 @@ const API = '/api/v1';
 app.use(`${API}/auth`,      authRouter);
 app.use(`${API}/scans`,     scansRouter);
 app.use(`${API}/models`,    modelsRouter);
+app.use(`${API}/debug`,     debugRouter);
 app.use(`${API}/reports`,   reportsRouter);
 app.use(`${API}/dashboard`, dashboardRouter);
 app.use(`${API}/rules`,     rulesRouter);
