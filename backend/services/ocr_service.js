@@ -249,7 +249,7 @@ Do not guess or hallucinate values - only extract what is actually visible in th
           ]
         }
       ],
-      temperature: 0.1,
+      temperature: 0.0,
       max_tokens: 1024,
     });
 
