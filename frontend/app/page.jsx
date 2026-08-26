@@ -120,44 +120,39 @@ function KineticText({ text, className }) {
 }
 
 function HeroSeal() {
-  const SIZE = 400;
-  const CX = SIZE/2;
-  const CY = SIZE/2;
-
-  // Fixed at a place, slowly rotating
   return (
-    <div className="relative w-full max-w-[400px] aspect-square flex items-center justify-center">
-      <div className="absolute inset-4 rounded-full blur-3xl" style={{ background: 'color-mix(in srgb, var(--color-accent) 15%, transparent)' }} />
-      <svg width={SIZE} height={SIZE} viewBox={`0 0 ${SIZE} ${SIZE}`} className="relative z-10 overflow-visible">
-        <circle cx={CX} cy={CY} r={180} fill="none" stroke="var(--color-border)" strokeWidth="1" />
-        <motion.g animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 60, ease: 'linear' }} style={{ transformOrigin: 'center' }}>
-          <defs>
-            <path id="textPath" d={`M ${CX},${CY - 165} A 165,165 0 1,1 ${CX - 0.1},${CY - 165}`} />
-          </defs>
-          <text fontSize="11" fill="var(--color-text-secondary)" letterSpacing="2.5" style={{ textTransform: 'uppercase', fontFamily: 'monospace' }}>
-            <textPath href="#textPath" startOffset="0%">
-              MINISTRY OF CONSUMER AFFAIRS • LEGAL METROLOGY DIVISION • SIH26034 •
-            </textPath>
+    <div className="relative w-full max-w-[400px] aspect-square flex items-center justify-center md:ml-12" style={{ perspective: '800px' }}>
+      <div className="absolute inset-4 rounded-full blur-3xl opacity-20" style={{ background: 'var(--color-primary)' }} />
+      <motion.div
+        animate={{ rotateY: 360 }}
+        transition={{ duration: 25, repeat: Infinity, ease: 'linear' }}
+        style={{ transformStyle: 'preserve-3d' }}
+        className="w-full h-full flex items-center justify-center"
+      >
+        <svg viewBox="0 0 200 200" className="absolute inset-0 w-full h-full" style={{ transform: 'translateZ(0px)' }}>
+          <motion.circle cx="100" cy="100" r="88" fill="none" stroke="var(--color-primary)" strokeWidth="1.5" strokeDasharray="6 6"
+            animate={{ rotate: 360 }} transition={{ duration: 40, repeat: Infinity, ease: 'linear' }}
+            style={{ transformOrigin: '100px 100px' }}
+          />
+          <circle cx="100" cy="100" r="78" fill="none" stroke="var(--color-primary)" strokeWidth="0.5" opacity="0.4" />
+          <path d="M100 28 L138 46 L138 92 C138 116 122 132 100 142 C78 132 62 116 62 92 L62 46 Z"
+            fill="var(--color-surface)" stroke="var(--color-primary)" strokeWidth="1.5" />
+          <path d="M93 85 L98 91 L109 78" fill="none" stroke="var(--color-primary)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+          
+          <text fontSize="7" fill="var(--color-text-secondary)" opacity="0.8" fontFamily="monospace">
+            <textPath href="#circlePath">LEGAL METROLOGY • PACKAGED COMMODITIES • 2011 • INDIA • </textPath>
           </text>
-        </motion.g>
-        <circle cx={CX} cy={CY} r={146} fill="none" stroke="var(--color-border)" strokeWidth="0.5" strokeDasharray="4 4" />
-        <motion.path 
-           d={`M ${CX} 0 L ${CX} 40 M ${CX} 360 L ${CX} 400 M 0 ${CY} L 40 ${CY} M 360 ${CY} L 400 ${CY}`}
-           stroke="var(--color-border)" strokeWidth="1"
-           initial={{ opacity: 0 }} animate={{ opacity: 0.5 }} transition={{ duration: 1, repeat: Infinity, repeatType: 'reverse' }}
-        />
-        <foreignObject x={CX - 80} y={CY - 80} width="160" height="160">
-          <div className="w-full h-full flex flex-col items-center justify-center bg-[var(--color-surface)] border border-[var(--color-border)] rounded-full shadow-[0_0_40px_rgba(11,31,58,0.1)] relative overflow-hidden">
-            <div className="absolute inset-0 opacity-20 bg-[radial-gradient(circle_at_center,var(--color-accent)_0%,transparent_70%)]" />
-            <Shield size={42} color="var(--color-primary)" className="mb-2" />
-            <div className="text-[12px] font-mono tracking-widest font-bold" style={{ color: 'var(--color-text-primary)' }}>APPROVED</div>
-          </div>
-        </foreignObject>
-      </svg>
+          <defs>
+            <path id="circlePath" d="M 100,100 m -68,0 a 68,68 0 1,1 136,0 a 68,68 0 1,1 -136,0" />
+          </defs>
+        </svg>
+
+        <motion.div className="absolute w-[180px] h-[180px] rounded-full border border-dashed border-[var(--color-primary)] opacity-30" style={{ transform: 'translateZ(40px)' }} animate={{ rotate: -360 }} transition={{ duration: 30, repeat: Infinity, ease: 'linear' }} />
+        <motion.div className="absolute w-[120px] h-[120px] rounded-full border border-[var(--color-text-muted)] opacity-20" style={{ transform: 'translateZ(-40px)' }} />
+      </motion.div>
     </div>
   );
 }
-
 function PixelsToPenalty() {
   const [loop, setLoop] = useState(0);
   
@@ -167,9 +162,9 @@ function PixelsToPenalty() {
   }, []);
 
   return (
-    <section className="py-24 px-6 md:px-12 relative z-10 bg-[var(--color-surface)] border-y border-[var(--color-border)] overflow-hidden">
+    <section className="py-32 px-6 md:px-12 relative z-10 bg-gradient-to-b from-[var(--color-surface)] to-[var(--color-background)] border-y border-[var(--color-border)] overflow-hidden">
       <div className="max-w-[1200px] mx-auto">
-        <h2 className="text-3xl font-medium tracking-tight mb-16 text-center">From Pixels to Penalty</h2>
+        <h2 className="text-4xl md:text-5xl font-semibold tracking-tight mb-20 text-center bg-clip-text text-transparent bg-gradient-to-r from-text-primary to-text-secondary">From Pixels to Penalty</h2>
         
         <div className="grid grid-cols-1 md:grid-cols-4 gap-0 border-y border-[var(--color-border)] relative">
           <div className="absolute top-0 left-0 right-0 h-3 flex justify-between px-2 -mt-1.5 opacity-20">
@@ -180,7 +175,7 @@ function PixelsToPenalty() {
           </div>
 
           {/* Frame 1: Pixels */}
-          <div className="border-r border-[var(--color-border)] p-8 flex flex-col items-center justify-center min-h-[260px] relative bg-[var(--color-background)]">
+          <div className="border-b md:border-b-0 md:border-r border-[var(--color-border)] p-8 flex flex-col items-center justify-center min-h-[260px] relative bg-[var(--color-background)]">
             <div className="absolute top-3 left-3 text-[10px] font-mono text-[var(--color-text-muted)]">01_PIXELS</div>
             <div className="w-24 h-32 bg-[var(--color-surface)] border border-[var(--color-border)] shadow-sm relative overflow-hidden flex flex-col p-2 gap-2">
                <div className="w-full h-3 bg-[var(--color-border)] rounded-sm" />
@@ -198,7 +193,7 @@ function PixelsToPenalty() {
           </div>
           
           {/* Frame 2: Extraction */}
-          <div className="border-r border-[var(--color-border)] p-8 flex flex-col items-center justify-center min-h-[260px] relative bg-[var(--color-background)]">
+          <div className="border-b md:border-b-0 md:border-r border-[var(--color-border)] p-8 flex flex-col items-center justify-center min-h-[260px] relative bg-[var(--color-background)]">
             <div className="absolute top-3 left-3 text-[10px] font-mono text-[var(--color-text-muted)]">02_EXTRACT</div>
             <div className="w-full max-w-[140px] font-mono text-[9px] text-[var(--color-primary)] bg-[var(--color-surface)] p-3 border border-[var(--color-border)] rounded-lg shadow-inner">
                <motion.div key={`f2-${loop}`} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.6, duration: 0.1 }}>
@@ -213,7 +208,7 @@ function PixelsToPenalty() {
           </div>
 
           {/* Frame 3: Verification */}
-          <div className="border-r border-[var(--color-border)] p-8 flex flex-col items-center justify-center min-h-[260px] relative bg-[var(--color-background)]">
+          <div className="border-b md:border-b-0 md:border-r border-[var(--color-border)] p-8 flex flex-col items-center justify-center min-h-[260px] relative bg-[var(--color-background)]">
             <div className="absolute top-3 left-3 text-[10px] font-mono text-[var(--color-text-muted)]">03_VERIFY</div>
             <div className="relative">
               <Scale size={32} className="text-[var(--color-text-secondary)]" />
@@ -255,7 +250,7 @@ function PixelsToPenalty() {
 
 function InteractivePipelineCard({ title, icon: Icon, children }) {
   return (
-    <div className="mello-card p-6 flex flex-col gap-4 h-full relative overflow-hidden group border border-[var(--color-border)] shadow-sm hover:shadow-md transition-shadow bg-[var(--color-surface)]">
+    <div className="mello-card p-8 flex flex-col gap-5 h-full relative overflow-hidden group border border-border/50 shadow-xl hover:shadow-2xl transition-all bg-surface/50 backdrop-blur-xl rounded-3xl hover:-translate-y-1">
       <div className="flex items-center gap-3 mb-2 relative z-10">
         <div className="w-8 h-8 rounded-full bg-[var(--color-background)] border border-[var(--color-border)] flex items-center justify-center text-[var(--color-primary)]">
           <Icon size={16} />

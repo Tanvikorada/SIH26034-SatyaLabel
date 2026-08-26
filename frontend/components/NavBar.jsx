@@ -26,7 +26,8 @@ export default function NavBar() {
     { name: 'Dashboard', path: '/dashboard' },
     { name: 'Upload Scan', path: '/upload' },
     { name: 'History', path: '/history' },
-    ...(role === 'admin' ? [{ name: 'Rules Config', path: '/rules' }] : [])
+    ...(role === 'admin' ? [{ name: 'Rules Config', path: '/rules' }] : []),
+    { name: 'Settings', path: '/settings' }
   ];
 
   if (pathname === '/login') return null;
