@@ -50,7 +50,7 @@ export default function UploadPage() {
     
     setLoading(true);
     const toastId = toast.loading('Initializing compliance scan...');
-    const metadata = { productName: productName || 'Unknown', category, sourceType, forceEngine: 'gemini', timestamp: new Date().toISOString() };
+    const metadata = { productName: productName || 'Unknown', category, sourceType, timestamp: new Date().toISOString() };
     
     try {
       const formData = new FormData();
@@ -151,3 +151,4 @@ export default function UploadPage() {
     </div>
   );
 }
+
