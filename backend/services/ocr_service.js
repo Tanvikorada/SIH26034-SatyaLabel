@@ -197,7 +197,7 @@ async function runTesseract(imagePath) {
  */
 // --- STEP 3: GROQ VISION FALLBACK ---
 
-async function runGroqVision(imagePath, attempt = 1, modelName = 'qwen/qwen3.8-27b') {
+async function runGroqVision(imagePath, attempt = 1, modelName = 'qwen/qwen3.8-27b', tesseractText = '') {
   if (!config.groq?.enabled || !config.groq?.apiKey) {
     throw new Error('Groq API key not configured.');
   }
@@ -221,7 +221,7 @@ async function runGroqVision(imagePath, attempt = 1, modelName = 'qwen/qwen3.8-2
   "consumer_care_details": string or null
 }
 If a field is not visible or not present on the label, return null for it.
-Do not guess or hallucinate values - only extract what is actually visible in the image. Return ONLY valid JSON.`;
+Do not guess or hallucinate values - only extract what is actually visible in the image. Return ONLY valid JSON.` + (tesseractText ? `\n\nHere is some raw, noisy text extracted from the image by a secondary OCR engine. Use it as a hint to locate fields:\n${tesseractText}` : '');
 
   let rawText = '';
   let structuredData = {};
@@ -267,7 +267,7 @@ Do not guess or hallucinate values - only extract what is actually visible in th
       const nextModel = modelName === 'qwen/qwen3.8-27b' ? 'qwen/qwen3.6-27b' : 'qwen/qwen3.8-27b';
       console.warn(`[OCR] Groq failed with ${modelName} (${err.message}) - retrying with ${nextModel}...`);
       await new Promise(r => setTimeout(r, 2000));
-      return runGroqVision(imagePath, attempt + 1, nextModel);
+      return runGroqVision(imagePath, attempt + 1, nextModel, tesseractText);
     }
     throw err;
   }
@@ -309,7 +309,7 @@ async function runOcrPipeline(imagePath, metadata = {}) {
     if (true) { // ALWAYS run Groq Vision for highly accurate structured data extraction
       console.log("[OCR] Tesseract confidence low (" + ocrResult.confidence.toFixed(1) + "%). Attempting Groq Vision fallback...");
       try {
-        const groqResult = await runGroqVision(processedPath);
+        const groqResult = await runGroqVision(processedPath, 1, 'qwen/qwen3.8-27b', ocrResult.text);
         return {
           text: groqResult.text,
           engine: "groq",
