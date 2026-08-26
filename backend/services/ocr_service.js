@@ -306,7 +306,7 @@ async function runOcrPipeline(imagePath, metadata = {}) {
     let ocrResult = await runTesseract(processedPath);
     
     // Fallback to Gemini if Tesseract output is too poor
-    if (ocrResult.confidence < OCR_CONFIDENCE_THRESHOLD || ocrResult.text.trim().length < MIN_OCR_TEXT_LENGTH) {
+    if (true) { // ALWAYS run Groq Vision for highly accurate structured data extraction
       console.log("[OCR] Tesseract confidence low (" + ocrResult.confidence.toFixed(1) + "%). Attempting Groq Vision fallback...");
       try {
         const groqResult = await runGroqVision(processedPath);
