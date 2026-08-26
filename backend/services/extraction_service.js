@@ -292,6 +292,8 @@ function mergeGeminiData(tier1Map, geminiData) {
     country_of_origin: 'country_of_origin',
     ingredients: 'ingredients',
     veg_nonveg: 'veg_nonveg',
+    nutrition: 'nutrition',
+    allergens_or_warnings: 'allergens_or_warnings',
   };
 
   const merged = { ...tier1Map };

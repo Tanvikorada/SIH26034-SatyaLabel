@@ -210,16 +210,25 @@ async function runGroqVision(imagePath, attempt = 1, modelName = 'qwen/qwen3.8-2
 
   const STRUCTURED_PROMPT = `You are extracting mandatory declarations from a packaged commodity label image for a Legal Metrology compliance check. Return ONLY valid JSON with these keys:
 {
-  "manufacturer_name": string or null,
-  "manufacturer_address": string or null,
-  "common_name": string or null,
-  "net_quantity": string or null,
-  "net_quantity_unit": string or null,
-  "mrp": string or null,
-  "mrp_includes_tax_statement": boolean,
-  "mfg_date": string or null,
-  "consumer_care_details": string or null
-}
+    "manufacturer_name": string or null,
+    "manufacturer_address": string or null,
+    "common_name": string or null,
+    "net_quantity": string or null,
+    "net_quantity_unit": string or null,
+    "mrp": string or null,
+    "mrp_includes_tax_statement": boolean,
+    "mfg_date": string or null,
+    "consumer_care_details": string or null,
+    "brand_name": string or null,
+    "best_before": string or null,
+    "batch_lot_number": string or null,
+    "fssai_license": string or null,
+    "country_of_origin": string or null,
+    "ingredients": string or null,
+    "nutrition": string or null,
+    "veg_nonveg": string or null,
+    "allergens_or_warnings": string or null
+  }
 If a field is not visible or not present on the label, return null for it.
 Do not guess or hallucinate values - only extract what is actually visible in the image. Return ONLY valid JSON.` + (tesseractText ? `\n\nHere is some raw, noisy text extracted from the image by a secondary OCR engine. Use it as a hint to locate fields:\n${tesseractText}` : '');
 
