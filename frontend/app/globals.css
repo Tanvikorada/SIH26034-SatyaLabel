@@ -33,30 +33,30 @@
   --font-mono: 'IBM Plex Mono', ui-monospace, SFMono-Regular, monospace;
 }
 
-/* ── Dark Mode Overrides ─────────────────────────────────── */
+/* 🌙 Dark Mode Overrides (Mello Reference) 🌙 */
 .dark {
-  --color-background:       #070B14;
-  --color-surface:          #0F1826;
-  --color-primary:          #E9EDF5;
-  --color-primary-hover:    #CBD5E1;
-  --color-accent:           #D6A34C;
-  --color-accent-soft:      rgba(214,163,76,0.12);
-  --color-border:           #1F2A3A;
-  --color-text-primary:     #F2F4F8;
-  --color-text-secondary:   #A9B4C4;
-  --color-text-muted:       #6B7A8F;
+  --color-background:       #09090b; /* obsidian */
+  --color-surface:          #18181b; /* charcoal */
+  --color-primary:          #ffffff;
+  --color-primary-hover:    #f4f4f5;
+  --color-accent:           #f97316; /* saffron/orange */
+  --color-accent-soft:      rgba(249,115,22,0.12);
+  --color-border:           #27272a; /* graphite */
+  --color-text-primary:     #fafafa; /* white */
+  --color-text-secondary:   #a1a1aa; /* mist */
+  --color-text-muted:       #71717a; /* fog */
 
-  /* Status — dark */
-  --color-pass:              #34D399;
-  --color-pass-bg:           rgba(52,211,153,0.12);
-  --color-noncompliant:      #F87171;
-  --color-noncompliant-bg:   rgba(248,113,113,0.12);
-  --color-review:            #FBBF24;
-  --color-review-bg:         rgba(251,191,36,0.12);
-  --color-not-applicable:    #94A3B8;
-  --color-not-applicable-bg: rgba(148,163,184,0.12);
-  --color-not-verified:      #7C8798;
-  --color-not-verified-bg:   rgba(124,135,152,0.12);
+  /* Status - dark */
+  --color-pass:              #10b981;
+  --color-pass-bg:           rgba(16,185,129,0.15);
+  --color-noncompliant:      #ef4444;
+  --color-noncompliant-bg:   rgba(239,68,68,0.15);
+  --color-review:            #f59e0b;
+  --color-review-bg:         rgba(245,158,11,0.15);
+  --color-not-applicable:    #71717a;
+  --color-not-applicable-bg: rgba(113,113,122,0.15);
+  --color-not-verified:      #d946ef;
+  --color-not-verified-bg:   rgba(217,70,239,0.15);
 }
 
 @layer base {

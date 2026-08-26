@@ -121,35 +121,41 @@ function KineticText({ text, className }) {
 
 function HeroSeal() {
   return (
-    <div className="relative w-full max-w-[400px] aspect-square flex items-center justify-center md:ml-12" style={{ perspective: '800px' }}>
-      <div className="absolute inset-4 rounded-full blur-3xl opacity-20" style={{ background: 'var(--color-primary)' }} />
-      <motion.div
-        animate={{ rotateY: 360 }}
-        transition={{ duration: 25, repeat: Infinity, ease: 'linear' }}
-        style={{ transformStyle: 'preserve-3d' }}
-        className="w-full h-full flex items-center justify-center"
-      >
-        <svg viewBox="0 0 200 200" className="absolute inset-0 w-full h-full" style={{ transform: 'translateZ(0px)' }}>
-          <motion.circle cx="100" cy="100" r="88" fill="none" stroke="var(--color-primary)" strokeWidth="1.5" strokeDasharray="6 6"
-            animate={{ rotate: 360 }} transition={{ duration: 40, repeat: Infinity, ease: 'linear' }}
-            style={{ transformOrigin: '100px 100px' }}
-          />
-          <circle cx="100" cy="100" r="78" fill="none" stroke="var(--color-primary)" strokeWidth="0.5" opacity="0.4" />
-          <path d="M100 28 L138 46 L138 92 C138 116 122 132 100 142 C78 132 62 116 62 92 L62 46 Z"
-            fill="var(--color-surface)" stroke="var(--color-primary)" strokeWidth="1.5" />
-          <path d="M93 85 L98 91 L109 78" fill="none" stroke="var(--color-primary)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
-          
-          <text fontSize="7" fill="var(--color-text-secondary)" opacity="0.8" fontFamily="monospace">
-            <textPath href="#circlePath">LEGAL METROLOGY • PACKAGED COMMODITIES • 2011 • INDIA • </textPath>
-          </text>
-          <defs>
-            <path id="circlePath" d="M 100,100 m -68,0 a 68,68 0 1,1 136,0 a 68,68 0 1,1 -136,0" />
-          </defs>
-        </svg>
-
-        <motion.div className="absolute w-[180px] h-[180px] rounded-full border border-dashed border-[var(--color-primary)] opacity-30" style={{ transform: 'translateZ(40px)' }} animate={{ rotate: -360 }} transition={{ duration: 30, repeat: Infinity, ease: 'linear' }} />
-        <motion.div className="absolute w-[120px] h-[120px] rounded-full border border-[var(--color-text-muted)] opacity-20" style={{ transform: 'translateZ(-40px)' }} />
-      </motion.div>
+    <div className="relative w-full max-w-[320px] aspect-square flex items-center justify-center md:ml-12 group">
+      {/* Glow effect behind */}
+      <div className="absolute inset-8 rounded-full blur-[60px] opacity-30" style={{ background: 'var(--color-accent)' }} />
+      
+      {/* The main logo container */}
+      <svg viewBox="0 0 200 200" className="relative z-10 w-full h-full overflow-visible">
+        {/* Outer dashed ring */}
+        <motion.circle cx="100" cy="100" r="80" fill="none" stroke="var(--color-border)" strokeWidth="2" strokeDasharray="4 8"
+          animate={{ rotate: 360 }} transition={{ duration: 60, repeat: Infinity, ease: 'linear' }}
+          style={{ transformOrigin: '100px 100px' }}
+        />
+        
+        {/* Inner solid ring */}
+        <circle cx="100" cy="100" r="64" fill="var(--color-surface)" stroke="var(--color-border)" strokeWidth="1" />
+        
+        {/* Center Shield */}
+        <motion.path 
+          d="M100 45 L130 58 L130 92 C130 116 118 132 100 142 C82 132 70 116 70 92 L70 58 Z"
+          fill="var(--color-background)" stroke="var(--color-primary)" strokeWidth="2"
+          initial={{ opacity: 0.8, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 2, repeat: Infinity, repeatType: 'reverse', ease: 'easeInOut' }}
+        />
+        
+        {/* Checkmark inside shield */}
+        <path d="M88 95 L96 103 L114 84" fill="none" stroke="var(--color-accent)" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
+        
+        {/* Scanning laser line moving down the shield */}
+        <motion.line 
+          x1="60" y1="40" x2="140" y2="40" 
+          stroke="var(--color-accent)" strokeWidth="1.5" opacity="0.6"
+          animate={{ y: [0, 100, 0] }}
+          transition={{ duration: 3, repeat: Infinity, ease: 'linear' }}
+        />
+      </svg>
     </div>
   );
 }
@@ -162,22 +168,22 @@ function PixelsToPenalty() {
   }, []);
 
   return (
-    <section className="py-32 px-6 md:px-12 relative z-10 bg-gradient-to-b from-[var(--color-surface)] to-[var(--color-background)] border-y border-[var(--color-border)] overflow-hidden">
+    <section className="py-32 px-6 md:px-12 relative z-10 bg-transparent border-y border-[var(--color-border)] overflow-hidden">
       <div className="max-w-[1200px] mx-auto">
         <h2 className="text-4xl md:text-5xl font-semibold tracking-tight mb-20 text-center bg-clip-text text-transparent bg-gradient-to-r from-text-primary to-text-secondary">From Pixels to Penalty</h2>
         
         <div className="grid grid-cols-1 md:grid-cols-4 gap-0 border-y border-[var(--color-border)] relative">
           <div className="absolute top-0 left-0 right-0 h-3 flex justify-between px-2 -mt-1.5 opacity-20">
-            {[...Array(20)].map((_, i) => <div key={i} className="w-4 h-3 bg-[var(--color-background)] rounded-sm border border-[var(--color-border)]" />)}
+            {[...Array(20)].map((_, i) => <div key={i} className="w-4 h-3 bg-transparent rounded-sm border border-[var(--color-border)]" />)}
           </div>
           <div className="absolute bottom-0 left-0 right-0 h-3 flex justify-between px-2 -mb-1.5 opacity-20">
-            {[...Array(20)].map((_, i) => <div key={i} className="w-4 h-3 bg-[var(--color-background)] rounded-sm border border-[var(--color-border)]" />)}
+            {[...Array(20)].map((_, i) => <div key={i} className="w-4 h-3 bg-transparent rounded-sm border border-[var(--color-border)]" />)}
           </div>
 
           {/* Frame 1: Pixels */}
-          <div className="border-b md:border-b-0 md:border-r border-[var(--color-border)] p-8 flex flex-col items-center justify-center min-h-[260px] relative bg-[var(--color-background)]">
+          <div className="border-b md:border-b-0 md:border-r border-[var(--color-border)] p-8 flex flex-col items-center justify-center min-h-[260px] relative bg-transparent">
             <div className="absolute top-3 left-3 text-[10px] font-mono text-[var(--color-text-muted)]">01_PIXELS</div>
-            <div className="w-24 h-32 bg-[var(--color-surface)] border border-[var(--color-border)] shadow-sm relative overflow-hidden flex flex-col p-2 gap-2">
+            <div className="w-24 h-32 bg-transparent border border-[var(--color-border)] shadow-sm relative overflow-hidden flex flex-col p-2 gap-2">
                <div className="w-full h-3 bg-[var(--color-border)] rounded-sm" />
                <div className="w-3/4 h-2 bg-[var(--color-border)] rounded-sm opacity-50" />
                <div className="w-1/2 h-2 bg-[var(--color-border)] rounded-sm opacity-50" />
@@ -193,9 +199,9 @@ function PixelsToPenalty() {
           </div>
           
           {/* Frame 2: Extraction */}
-          <div className="border-b md:border-b-0 md:border-r border-[var(--color-border)] p-8 flex flex-col items-center justify-center min-h-[260px] relative bg-[var(--color-background)]">
+          <div className="border-b md:border-b-0 md:border-r border-[var(--color-border)] p-8 flex flex-col items-center justify-center min-h-[260px] relative bg-transparent">
             <div className="absolute top-3 left-3 text-[10px] font-mono text-[var(--color-text-muted)]">02_EXTRACT</div>
-            <div className="w-full max-w-[140px] font-mono text-[9px] text-[var(--color-primary)] bg-[var(--color-surface)] p-3 border border-[var(--color-border)] rounded-lg shadow-inner">
+            <div className="w-full max-w-[140px] font-mono text-[9px] text-[var(--color-primary)] bg-transparent p-3 border border-[var(--color-border)] rounded-lg shadow-inner">
                <motion.div key={`f2-${loop}`} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.6, duration: 0.1 }}>
                  {"{"}<br/>
                  &nbsp;&nbsp;"mrp": "Rs. 250",<br/>
@@ -208,7 +214,7 @@ function PixelsToPenalty() {
           </div>
 
           {/* Frame 3: Verification */}
-          <div className="border-b md:border-b-0 md:border-r border-[var(--color-border)] p-8 flex flex-col items-center justify-center min-h-[260px] relative bg-[var(--color-background)]">
+          <div className="border-b md:border-b-0 md:border-r border-[var(--color-border)] p-8 flex flex-col items-center justify-center min-h-[260px] relative bg-transparent">
             <div className="absolute top-3 left-3 text-[10px] font-mono text-[var(--color-text-muted)]">03_VERIFY</div>
             <div className="relative">
               <Scale size={32} className="text-[var(--color-text-secondary)]" />
@@ -221,7 +227,7 @@ function PixelsToPenalty() {
           </div>
           
           {/* Frame 4: Penalty */}
-          <div className="p-8 flex flex-col items-center justify-center min-h-[260px] relative bg-[var(--color-background)] overflow-hidden">
+          <div className="p-8 flex flex-col items-center justify-center min-h-[260px] relative bg-transparent overflow-hidden">
             <div className="absolute top-3 left-3 text-[10px] font-mono text-[var(--color-text-muted)]">04_PENALTY</div>
             
             <motion.div key={`f4-${loop}`} initial={{ opacity: 0, scale: 0.5 }} animate={{ opacity: [0, 1, 0], scale: 1.5 }} transition={{ delay: 1.4, duration: 0.6, ease: "easeOut" }}
@@ -229,7 +235,7 @@ function PixelsToPenalty() {
 
             {/* Premium Penalty Card */}
             <motion.div key={`f4c-${loop}`} initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 1.5, duration: 0.3 }}
-              className="flex flex-col relative z-10 bg-[var(--color-surface)] p-4 rounded-xl border border-red-500/20 shadow-lg w-full max-w-[200px] overflow-hidden">
+              className="flex flex-col relative z-10 bg-transparent p-4 rounded-xl border border-red-500/20 shadow-lg w-full max-w-[200px] overflow-hidden">
               <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-red-500 to-orange-500" />
               <div className="flex items-center justify-between mb-3 mt-1">
                  <AlertTriangle size={14} className="text-red-500" />
@@ -250,9 +256,9 @@ function PixelsToPenalty() {
 
 function InteractivePipelineCard({ title, icon: Icon, children }) {
   return (
-    <div className="mello-card p-8 flex flex-col gap-5 h-full relative overflow-hidden group border border-border/50 shadow-xl hover:shadow-2xl transition-all bg-surface/50 backdrop-blur-xl rounded-3xl hover:-translate-y-1">
+    <div className="mello-card p-8 flex flex-col gap-5 h-full relative overflow-hidden group border border-[var(--color-border)] hover:border-[var(--color-text-muted)] transition-colors bg-[var(--color-surface)] rounded-xl">
       <div className="flex items-center gap-3 mb-2 relative z-10">
-        <div className="w-8 h-8 rounded-full bg-[var(--color-background)] border border-[var(--color-border)] flex items-center justify-center text-[var(--color-primary)]">
+        <div className="w-8 h-8 rounded-full bg-transparent border border-[var(--color-border)] flex items-center justify-center text-[var(--color-primary)]">
           <Icon size={16} />
         </div>
         <h3 className="font-medium text-[var(--color-text-primary)] tracking-tight">{title}</h3>
@@ -274,7 +280,7 @@ function UploadMicroApp() {
 
   return (
     <div className="flex flex-col gap-4 h-full cursor-pointer" onClick={() => setState(s => s === 'empty' ? 'uploaded' : 'empty')}>
-      <div className="flex-1 border-2 border-dashed border-[var(--color-border)] rounded-lg bg-[var(--color-background)] flex items-center justify-center p-4 overflow-hidden relative transition-all duration-300 group-hover:border-[var(--color-primary)]">
+      <div className="flex-1 border-2 border-dashed border-[var(--color-border)] rounded-lg bg-transparent flex items-center justify-center p-4 overflow-hidden relative transition-all duration-300 group-hover:border-[var(--color-primary)]">
         <AnimatePresence mode="wait">
           {state === 'empty' ? (
             <motion.div key="e" exit={{opacity: 0, scale: 0.9}} className="flex flex-col items-center gap-2 opacity-50">
@@ -282,10 +288,10 @@ function UploadMicroApp() {
               <span className="text-xs font-medium">Drop label image here</span>
             </motion.div>
           ) : (
-            <motion.div key="u" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="absolute inset-2 rounded bg-[var(--color-surface)] border border-[var(--color-border)] overflow-hidden shadow-inner flex items-center justify-center">
+            <motion.div key="u" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="absolute inset-2 rounded bg-transparent border border-[var(--color-border)] overflow-hidden shadow-inner flex items-center justify-center">
               <img src="https://images.unsplash.com/photo-1622483767028-3f66f32aef97?auto=format&fit=crop&q=80&w=300&h=300" className="opacity-80 object-cover w-full h-full mix-blend-luminosity" alt="Label" />
               <div className="absolute inset-0 border-2 border-[var(--color-primary)] opacity-50 rounded" />
-              <CheckCircle2 size={32} className="absolute text-[var(--color-pass)] bg-[var(--color-surface)] rounded-full p-1 shadow-lg" />
+              <CheckCircle2 size={32} className="absolute text-[var(--color-pass)] bg-transparent rounded-full p-1 shadow-lg" />
             </motion.div>
           )}
         </AnimatePresence>
@@ -311,7 +317,7 @@ function OCRMicroApp() {
 
   return (
     <div className="flex flex-col gap-4 h-full cursor-pointer" onClick={() => setState('scanning')}>
-      <div className="flex-1 border border-[var(--color-border)] rounded-lg bg-[var(--color-surface)] p-3 relative overflow-hidden flex flex-col justify-end transition-all">
+      <div className="flex-1 border border-[var(--color-border)] rounded-lg bg-transparent p-3 relative overflow-hidden flex flex-col justify-end transition-all">
         {state === 'idle' && <div className="opacity-50 m-auto text-center text-xs font-mono">Awaiting Image...</div>}
         {state === 'scanning' && (
           <div className="absolute inset-0 flex flex-col">
@@ -348,10 +354,10 @@ function RuleMicroApp() {
 
   return (
     <div className="flex flex-col gap-4 h-full cursor-pointer" onClick={() => setActive(a => (a+1)%3)}>
-      <div className="flex-1 border border-[var(--color-border)] rounded-lg bg-[var(--color-background)] p-4 flex items-center justify-center relative overflow-hidden">
+      <div className="flex-1 border border-[var(--color-border)] rounded-lg bg-transparent p-4 flex items-center justify-center relative overflow-hidden">
          <AnimatePresence mode="wait">
            <motion.div key={active} initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -10 }}
-             className="w-full h-full flex flex-col justify-between border border-[var(--color-border)] rounded bg-[var(--color-surface)] p-3">
+             className="w-full h-full flex flex-col justify-between border border-[var(--color-border)] rounded bg-transparent p-3">
              <div className="flex justify-between items-start">
                <div className="font-mono text-[10px] text-[var(--color-text-muted)]">{rules[active].rule}</div>
                <div className="w-2 h-2 rounded-full" style={{ backgroundColor: rules[active].color, boxShadow: `0 0 8px ${rules[active].color}` }} />
@@ -400,13 +406,13 @@ function TheCaseFile() {
         <p className="text-[var(--color-text-secondary)]">The difference in time is the difference in scale.</p>
       </div>
 
-      <div className="h-[420px] w-full rounded-2xl border border-[var(--color-border)] overflow-hidden shadow-lg flex flex-col bg-[var(--color-surface)]">
+      <div className="h-[420px] w-full rounded-2xl border border-[var(--color-border)] overflow-hidden shadow-lg flex flex-col bg-transparent">
         {/* Header Tabs */}
-        <div className="flex border-b border-[var(--color-border)] bg-[var(--color-background)]">
-          <button onClick={() => setMode('manual')} className={`flex-1 py-4 text-[13px] font-medium transition-colors ${mode === 'manual' ? 'text-[var(--color-primary)] border-b-2 border-[var(--color-primary)] bg-[var(--color-surface)]' : 'text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)]'}`}>
+        <div className="flex border-b border-[var(--color-border)] bg-transparent">
+          <button onClick={() => setMode('manual')} className={`flex-1 py-4 text-[13px] font-medium transition-colors ${mode === 'manual' ? 'text-[var(--color-primary)] border-b-2 border-[var(--color-primary)] bg-transparent' : 'text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)]'}`}>
             Manual Inspection
           </button>
-          <button onClick={() => setMode('ai')} className={`flex-1 py-4 text-[13px] font-medium transition-colors ${mode === 'ai' ? 'text-[var(--color-accent)] border-b-2 border-[var(--color-accent)] bg-[var(--color-surface)]' : 'text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)]'}`}>
+          <button onClick={() => setMode('ai')} className={`flex-1 py-4 text-[13px] font-medium transition-colors ${mode === 'ai' ? 'text-[var(--color-accent)] border-b-2 border-[var(--color-accent)] bg-transparent' : 'text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)]'}`}>
             SatyaLabel AI
           </button>
         </div>
@@ -428,7 +434,7 @@ function TheCaseFile() {
                 </div>
               </motion.div>
             ) : (
-              <motion.div key="ai" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="absolute inset-0 p-8 flex flex-col md:flex-row gap-8 items-center justify-center bg-[var(--color-background)]">
+              <motion.div key="ai" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="absolute inset-0 p-8 flex flex-col md:flex-row gap-8 items-center justify-center bg-transparent">
                 <div className="flex-1 space-y-4">
                   <div className="flex items-center gap-3 text-[var(--color-text-primary)]"><ScanLine size={20} className="text-[var(--color-accent)]" /> <span>Instant deterministic OCR</span></div>
                   <div className="flex items-center gap-3 text-[var(--color-text-primary)]"><Cpu size={20} className="text-[var(--color-accent)]" /> <span>Automated Rule Engine</span></div>
@@ -474,7 +480,7 @@ function RulingLedger() {
         <p className="text-[var(--color-text-secondary)]">Rooted directly in the Legal Metrology Rules, 2011.</p>
       </div>
 
-      <div className="border border-[var(--color-border)] rounded-2xl overflow-hidden bg-[var(--color-surface)] shadow-lg max-w-[800px] mx-auto relative">
+      <div className="border border-[var(--color-border)] rounded-2xl overflow-hidden bg-transparent shadow-lg max-w-[800px] mx-auto relative">
         <div className="absolute top-0 left-0 right-0 h-16 bg-gradient-to-b from-[var(--color-surface)] to-transparent z-10 pointer-events-none" />
         <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-[var(--color-surface)] to-transparent z-10 pointer-events-none" />
         
@@ -482,7 +488,7 @@ function RulingLedger() {
           <AnimatePresence>
             {items.map((row, i) => (
               <motion.div key={row.id} layout initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1 - (i * 0.25), y: 0, scale: 1 - (i * 0.05) }} exit={{ opacity: 0, scale: 0.9 }} transition={{ duration: 0.4 }}
-                className="flex items-center justify-between p-4 bg-[var(--color-background)] border border-[var(--color-border)] rounded-xl"
+                className="flex items-center justify-between p-4 bg-transparent border border-[var(--color-border)] rounded-xl"
                 style={{ zIndex: items.length - i }}
               >
                 <div className="flex items-center gap-4">
@@ -506,7 +512,7 @@ function RulingLedger() {
 
 function TechStack() {
   return (
-    <section className="py-24 px-6 md:px-12 max-w-[1200px] mx-auto w-full relative z-10 border-t border-[var(--color-border)] bg-[var(--color-background)] overflow-hidden">
+    <section className="py-24 px-6 md:px-12 max-w-[1200px] mx-auto w-full relative z-10 border-t border-[var(--color-border)] bg-transparent overflow-hidden">
       <div className="mb-20 text-center relative z-20">
         <h2 className="text-3xl font-medium tracking-tight mb-3">System Architecture</h2>
         <p className="text-[var(--color-text-secondary)]">Modern stack. Deterministic engine. Highly scalable.</p>
@@ -520,7 +526,7 @@ function TechStack() {
          </div>
 
          {/* Center Core Node */}
-         <div className="relative z-20 w-24 h-24 bg-[var(--color-surface)] border border-[var(--color-accent)] rounded-full shadow-[0_0_30px_rgba(11,31,58,0.2)] flex flex-col items-center justify-center group cursor-pointer hover:scale-110 transition-transform duration-300">
+         <div className="relative z-20 w-24 h-24 bg-transparent border border-[var(--color-accent)] rounded-full shadow-[0_0_30px_rgba(11,31,58,0.2)] flex flex-col items-center justify-center group cursor-pointer hover:scale-110 transition-transform duration-300">
            <div className="absolute inset-0 bg-[var(--color-accent)] opacity-10 rounded-full animate-ping" style={{ animationDuration: '3s' }} />
            <Shield size={28} className="text-[var(--color-accent)] mb-1" />
            <span className="text-[10px] font-bold tracking-widest text-[var(--color-text-primary)]">CORE</span>
@@ -530,38 +536,38 @@ function TechStack() {
          <div className="absolute inset-0 flex items-center justify-center z-10">
             {/* Frontend */}
             <div className="absolute -top-12 flex flex-col items-center gap-2 group cursor-help">
-              <div className="w-14 h-14 bg-[var(--color-surface)] border border-[var(--color-border)] rounded-2xl flex items-center justify-center shadow-lg group-hover:border-[var(--color-primary)] transition-colors"><SiNextdotjs size={24} className="text-[var(--color-text-primary)]" /></div>
-              <span className="text-[10px] font-medium text-[var(--color-text-secondary)] bg-[var(--color-background)] px-2 py-0.5 rounded border border-[var(--color-border)]">Next.js 15</span>
+              <div className="w-14 h-14 bg-[var(--color-surface)] border border-[var(--color-border)] rounded-2xl flex items-center justify-center group-hover:border-[var(--color-primary)] transition-colors"><SiNextdotjs size={24} className="text-[var(--color-text-primary)]" /></div>
+              <span className="text-[10px] font-medium text-[var(--color-text-secondary)] bg-[var(--color-surface)] px-2 py-0.5 rounded border border-[var(--color-border)]">Next.js 15</span>
             </div>
             
             {/* UI/Design */}
             <div className="absolute top-16 right-12 flex flex-col items-center gap-2 group cursor-help">
-              <div className="w-14 h-14 bg-[var(--color-surface)] border border-[var(--color-border)] rounded-2xl flex items-center justify-center shadow-lg group-hover:border-[var(--color-primary)] transition-colors"><SiTailwindcss size={24} className="text-[#06B6D4]" /></div>
-              <span className="text-[10px] font-medium text-[var(--color-text-secondary)] bg-[var(--color-background)] px-2 py-0.5 rounded border border-[var(--color-border)]">Tailwind</span>
+              <div className="w-14 h-14 bg-[var(--color-surface)] border border-[var(--color-border)] rounded-2xl flex items-center justify-center group-hover:border-[var(--color-primary)] transition-colors"><SiTailwindcss size={24} className="text-[#06B6D4]" /></div>
+              <span className="text-[10px] font-medium text-[var(--color-text-secondary)] bg-[var(--color-surface)] px-2 py-0.5 rounded border border-[var(--color-border)]">Tailwind</span>
             </div>
 
             {/* OCR/AI */}
             <div className="absolute bottom-12 right-12 flex flex-col items-center gap-2 group cursor-help">
-              <div className="w-14 h-14 bg-[var(--color-surface)] border border-[var(--color-border)] rounded-2xl flex items-center justify-center shadow-lg group-hover:border-[var(--color-primary)] transition-colors"><Cpu size={24} className="text-[#10a37f]" /></div>
-              <span className="text-[10px] font-medium text-[var(--color-text-secondary)] bg-[var(--color-background)] px-2 py-0.5 rounded border border-[var(--color-border)]">Vision AI</span>
+              <div className="w-14 h-14 bg-[var(--color-surface)] border border-[var(--color-border)] rounded-2xl flex items-center justify-center group-hover:border-[var(--color-primary)] transition-colors"><Cpu size={24} className="text-[#10a37f]" /></div>
+              <span className="text-[10px] font-medium text-[var(--color-text-secondary)] bg-[var(--color-surface)] px-2 py-0.5 rounded border border-[var(--color-border)]">Vision AI</span>
             </div>
 
             {/* Backend */}
             <div className="absolute -bottom-12 flex flex-col items-center gap-2 group cursor-help">
-              <div className="w-14 h-14 bg-[var(--color-surface)] border border-[var(--color-border)] rounded-2xl flex items-center justify-center shadow-lg group-hover:border-[var(--color-primary)] transition-colors"><SiPostgresql size={24} className="text-[#336791]" /></div>
-              <span className="text-[10px] font-medium text-[var(--color-text-secondary)] bg-[var(--color-background)] px-2 py-0.5 rounded border border-[var(--color-border)]">PostgreSQL</span>
+              <div className="w-14 h-14 bg-[var(--color-surface)] border border-[var(--color-border)] rounded-2xl flex items-center justify-center group-hover:border-[var(--color-primary)] transition-colors"><SiPostgresql size={24} className="text-[#336791]" /></div>
+              <span className="text-[10px] font-medium text-[var(--color-text-secondary)] bg-[var(--color-surface)] px-2 py-0.5 rounded border border-[var(--color-border)]">PostgreSQL</span>
             </div>
 
             {/* Hosting */}
             <div className="absolute bottom-12 left-12 flex flex-col items-center gap-2 group cursor-help">
-              <div className="w-14 h-14 bg-[var(--color-surface)] border border-[var(--color-border)] rounded-2xl flex items-center justify-center shadow-lg group-hover:border-[var(--color-primary)] transition-colors"><SiRender size={24} className="text-[var(--color-text-primary)]" /></div>
-              <span className="text-[10px] font-medium text-[var(--color-text-secondary)] bg-[var(--color-background)] px-2 py-0.5 rounded border border-[var(--color-border)]">Render & Vercel</span>
+              <div className="w-14 h-14 bg-[var(--color-surface)] border border-[var(--color-border)] rounded-2xl flex items-center justify-center group-hover:border-[var(--color-primary)] transition-colors"><SiRender size={24} className="text-[var(--color-text-primary)]" /></div>
+              <span className="text-[10px] font-medium text-[var(--color-text-secondary)] bg-[var(--color-surface)] px-2 py-0.5 rounded border border-[var(--color-border)]">Render & Vercel</span>
             </div>
 
             {/* CV/Backend Logic */}
             <div className="absolute top-16 left-12 flex flex-col items-center gap-2 group cursor-help">
-              <div className="w-14 h-14 bg-[var(--color-surface)] border border-[var(--color-border)] rounded-2xl flex items-center justify-center shadow-lg group-hover:border-[var(--color-primary)] transition-colors"><Cpu size={24} className="text-[var(--color-text-primary)]" /></div>
-              <span className="text-[10px] font-medium text-[var(--color-text-secondary)] bg-[var(--color-background)] px-2 py-0.5 rounded border border-[var(--color-border)]">Node.js Engine</span>
+              <div className="w-14 h-14 bg-[var(--color-surface)] border border-[var(--color-border)] rounded-2xl flex items-center justify-center group-hover:border-[var(--color-primary)] transition-colors"><Cpu size={24} className="text-[var(--color-text-primary)]" /></div>
+              <span className="text-[10px] font-medium text-[var(--color-text-secondary)] bg-[var(--color-surface)] px-2 py-0.5 rounded border border-[var(--color-border)]">Node.js Engine</span>
             </div>
          </div>
       </div>
@@ -636,7 +642,7 @@ export default function LandingPage() {
       <TechStack />
 
       {/* FINAL CTA */}
-      <section className="py-32 px-6 text-center flex flex-col items-center relative z-10 border-t border-[var(--color-border)] bg-[var(--color-surface)]">
+      <section className="py-32 px-6 text-center flex flex-col items-center relative z-10 border-t border-[var(--color-border)] bg-transparent">
         <h2 className="text-4xl md:text-5xl font-medium tracking-tight mb-4">
           Your label. The law. One scan.
         </h2>
