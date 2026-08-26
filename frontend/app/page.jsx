@@ -585,7 +585,7 @@ export default function LandingPage() {
         </div>
         <div className="flex items-center gap-3">
           <ThemeToggle />
-          <Link href="/login" className="mello-btn-primary !px-5 !py-2 !text-[14px]">Enter App</Link>
+          <Link href="/login" className="mello-btn-primary !px-5 !py-2 !text-[14px]">Go to Dashboard</Link>
         </div>
       </nav>
 
@@ -615,7 +615,7 @@ export default function LandingPage() {
 
             <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.7 }}
               className="flex items-center gap-4 flex-wrap">
-              <Link href="/login" className="mello-btn-primary !px-7 !py-3 !text-[15px] shadow-lg">Enter App</Link>
+              <Link href="/login" className="mello-btn-primary !px-7 !py-3 !text-[15px] shadow-lg">Start Scanning</Link>
             </motion.div>
           </div>
 
@@ -642,7 +642,7 @@ export default function LandingPage() {
           No manual cross-referencing. No ambiguity. A deterministic answer with the rule cited.
         </p>
         <Link href="/login" className="mello-btn-primary !px-10 !py-4 !text-[16px] !rounded-lg inline-flex items-center gap-2 shadow-lg">
-          Enter App
+          Launch App
         </Link>
       </section>
 
