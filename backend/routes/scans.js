@@ -59,10 +59,11 @@ function inferCategory(fieldsMap) {
 // Runs AFTER the HTTP response has been sent (fire-and-forget from route handler).
 // Updates the scan record with results when complete.
 
-async function runScanPipeline(scan, imagePath, sourceType) {
+async function runScanPipeline(scan, imagePath, metadata = {}) {
   try {
+    
     // Step 1: OCR
-    const ocrResult = await runOcrPipeline(path.resolve(imagePath));
+    const ocrResult = await runOcrPipeline(path.resolve(imagePath), metadata);
 
     // Step 2: Extract fields (two-tier: regex → Gemini)
     const fieldsMap = extractFields(
@@ -72,7 +73,7 @@ async function runScanPipeline(scan, imagePath, sourceType) {
     );
 
     // Step 3: Rules engine
-    const { violations, stats } = await validateCompliance(fieldsMap, ocrResult.text, {
+    const { violations, stats } = await validateCompliance(fieldsMap, ocrResult.text, metadata); //
       source_type: sourceType,
     });
 
@@ -232,7 +233,7 @@ router.post('/', optionalAuth, (req, res, next) => {
         //  Fire pipeline async (after response sent) 
         // We still pass req.file.path (the local file) to the OCR pipeline
         // because Tesseract and Sharp need a local file buffer to read from.
-        setImmediate(() => runScanPipeline(scan, req.file.path, sourceType));
+        setImmediate(() => runScanPipeline(scan, req.file.path, meta));
 
       } catch (err) {
       return fail(res, 500, 'INTERNAL_ERROR', err.message);

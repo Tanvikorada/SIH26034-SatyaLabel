@@ -50,7 +50,8 @@ export default function UploadPage() {
     
     setLoading(true);
     const toastId = toast.loading('Initializing compliance scan...');
-    const metadata = { productName: productName || 'Unknown', category, sourceType, timestamp: new Date().toISOString() };
+    const engine = document.getElementById('forceEngine')?.value || 'gemini';
+    const metadata = { productName: productName || 'Unknown', category, sourceType, forceEngine: engine, timestamp: new Date().toISOString() };
     
     try {
       const formData = new FormData();
@@ -127,6 +128,14 @@ export default function UploadPage() {
                   <option value="ecommerce_listing">E-Commerce Listing</option>
                 </select>
               </div>
+            </div>
+
+            <div className="flex flex-col gap-2">
+                <label className="text-[13px] font-medium text-text-primary">OCR / AI Extraction Engine</label>
+                <select className="mello-input appearance-none" id="forceEngine">
+                  <option value="gemini">Gemini Vision (High Accuracy, Slower)</option>
+                  <option value="tesseract">Tesseract (Local, Fast, Basic text only)</option>
+                </select>
             </div>
 
             <button type="submit" className="mello-btn-primary w-full mt-2" disabled={loading}>

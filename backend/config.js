@@ -23,6 +23,10 @@ const config = {
     apiKey: process.env.GEMINI_API_KEY || null,
     enabled: !!process.env.GEMINI_API_KEY,
   },
+  groq: {
+    apiKey: process.env.GROQ_API_KEY || null,
+    enabled: !!process.env.GROQ_API_KEY,
+  },
   ocr: {
     confidenceThreshold: parseInt(process.env.OCR_CONFIDENCE_THRESHOLD) || 60,
   },

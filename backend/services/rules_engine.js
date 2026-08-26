@@ -762,40 +762,19 @@ function checkContradictoryDeclarations(fields) {
 
 // ─── MAIN RUNNER ─────────────────────────────────────────────────────────────
 
-/**
- * Run all P1 compliance checks in pipeline order per the blueprint.
- *
- * @param {object} fieldsMap  - { fieldName → fieldValue } from extraction_service
- * @param {string} rawText    - Full raw OCR text (for context-sensitive checks)
- * @param {object} options    - {
- *   source_type,             // 'physical_label' | 'ecommerce_listing' | 'advertisement'
- *   is_not_applicable,       // true → Rule 3 gate kicks in
- *   not_applicable_reason,   // string
- *   applicability_confirmed, // true → skip Rule 3 review
- *   is_exempt,               // true → Rule 26 gate kicks in
- *   exempt_category,         // string
- *   is_imported,             // true → require country_of_origin
- *   pdp_confirmed,           // true|false → officer toggle
- *   category,                // product category string
- * }
- * @returns {{ results, violations, stats, ruleVersion }}
- */
 const { GoogleGenerativeAI } = require('@google/generative-ai');
+const Groq = require('groq-sdk');
 const config = require('../config');
 
-
-
+const S = {
+  PASS: 'PASS',
+  PNOC: 'POTENTIAL NON-COMPLIANCE',
+  REVIEW: 'MANUAL REVIEW',
+  NA: 'NOT APPLICABLE',
+  NV: 'NOT VERIFIED'
+};
 
 async function validateCompliance(fieldsMap, rawText = '', options = {}) {
-  // If no Gemini key, fallback to a basic pass/fail or legacy logic
-  if (!config.gemini?.apiKey) {
-    throw new Error("GEMINI_API_KEY is required for the real AI Rules Engine.");
-  }
-
-  const genAI = new GoogleGenerativeAI(config.gemini.apiKey);
-  // Use flash model for speed and intelligence
-  const model = genAI.getGenerativeModel({ model: 'gemini-3.6-flash' });
-
   const prompt = `You are a strict, expert compliance auditor for the Indian Legal Metrology (Packaged Commodities) Rules, 2011.
 Evaluate the following extracted label data for compliance.
 
@@ -825,9 +804,26 @@ Return ONLY a valid JSON object with a "results" array. Each object in the array
 
 DO NOT return markdown code blocks, just raw JSON.`;
 
-  console.log('[RulesEngine] Calling LLM Rules Engine...');
-  const result = await model.generateContent(prompt);
-  const responseText = result.response.text();
+  let responseText = '';
+
+  if (config.groq?.enabled) {
+    console.log('[RulesEngine] Calling Groq LLM (llama-3.3-70b-versatile)...');
+    const groq = new Groq({ apiKey: config.groq.apiKey });
+    const completion = await groq.chat.completions.create({
+      messages: [{ role: 'user', content: prompt }],
+      model: 'llama-3.3-70b-versatile',
+      response_format: { type: 'json_object' }
+    });
+    responseText = completion.choices[0]?.message?.content || '';
+  } else if (config.gemini?.enabled) {
+    console.log('[RulesEngine] GROQ_API_KEY missing. Falling back to Gemini LLM (gemini-3.6-flash)...');
+    const genAI = new GoogleGenerativeAI(config.gemini.apiKey);
+    const model = genAI.getGenerativeModel({ model: 'gemini-3.6-flash' });
+    const result = await model.generateContent(prompt);
+    responseText = result.response.text();
+  } else {
+    throw new Error("Neither GROQ_API_KEY nor GEMINI_API_KEY is configured.");
+  }
   
   const cleaned = responseText.replace(/```(?:json)?\s*/g, '').replace(/```\s*$/g, '').trim();
   let aiResults = [];
