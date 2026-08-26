@@ -104,7 +104,7 @@ async function runScanPipeline(scan, imagePath, metadata = {}) {
       // Check if cancelled before proceeding
       await scan.reload();
       if (scan.status === 'failed' && scan.errorMessage === 'Scan cancelled by user.') {
-        console.log([Pipeline] Scan  was cancelled by user. Aborting pipeline.);
+        console.log(`[Pipeline] Scan ${scan.id} was cancelled by user. Aborting pipeline.`);
         return;
       }
 

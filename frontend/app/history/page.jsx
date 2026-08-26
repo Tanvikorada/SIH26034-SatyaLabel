@@ -45,7 +45,7 @@ export default function HistoryPage() {
           </div>
           <div className="flex flex-col gap-4 md:gap-0">
             {scans.map((s, i) => (
-              <div key={i} className="flex flex-col md:flex-row w-full p-5 md:px-6 md:py-5 items-start md:items-center bg-background md:bg-transparent border border-border md:border-b md:border-x-0 md:border-t-0 last:border-0 rounded-xl md:rounded-none hover:border-[var(--color-primary)] md:hover:bg-surface/50 transition-colors cursor-pointer" onClick={() => router.push(/results/)}>
+              <div key={i} className="flex flex-col md:flex-row w-full p-5 md:px-6 md:py-5 items-start md:items-center bg-background md:bg-transparent border border-border md:border-b md:border-x-0 md:border-t-0 last:border-0 rounded-xl md:rounded-none hover:border-[var(--color-primary)] md:hover:bg-surface/50 transition-colors cursor-pointer" onClick={() => router.push(`/results/${s.id}`)}>
                 
                 {/* Mobile: Header with status */}
                 <div className="flex md:hidden items-center justify-between w-full mb-3">
