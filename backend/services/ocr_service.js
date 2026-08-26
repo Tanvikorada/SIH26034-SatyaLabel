@@ -291,7 +291,7 @@ Respond with ONLY the complete JSON object. No markdown, no explanation.`;
           ? 'gemini-1.5-pro-latest' 
           : (modelName === 'gemini-1.5-pro-latest' ? 'gemini-pro-vision' : 'gemini-1.0-pro-vision-latest');
       
-      console.warn([OCR] Gemini failed with  () - retrying with ...);
+      console.warn(`[OCR] Gemini failed with ${modelName} (${err.message}) - retrying with ${nextModel}...`);
       await new Promise(r => setTimeout(r, 1000));
       return runGeminiVision(imagePath, attempt + 1, nextModel);
     }

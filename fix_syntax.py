@@ -1,25 +1,10 @@
-with open('backend/services/rules_engine.js', 'r', encoding='utf-8') as f:
-    text = f.read()
+with open("backend/services/ocr_service.js", "r", encoding="utf-8") as f:
+    ocr = f.read()
 
-# I injected:
-# const S = {
-#   PASS: 'PASS',
-#   PNOC: 'POTENTIAL NON-COMPLIANCE',
-#   REVIEW: 'MANUAL REVIEW',
-#   NA: 'NOT APPLICABLE',
-#   NV: 'NOT VERIFIED'
-# };
+bad_str = "console.warn([OCR] Gemini failed with  () - retrying with ...);"
+good_str = "console.warn(`[OCR] Gemini failed with ${modelName} (${err.message}) - retrying with ${nextModel}...`);"
 
-# Since S was already declared at the top, let's remove my declaration.
-injected = """const S = {
-  PASS: 'PASS',
-  PNOC: 'POTENTIAL NON-COMPLIANCE',
-  REVIEW: 'MANUAL REVIEW',
-  NA: 'NOT APPLICABLE',
-  NV: 'NOT VERIFIED'
-};"""
-text = text.replace(injected, '')
+ocr = ocr.replace(bad_str, good_str)
 
-with open('backend/services/rules_engine.js', 'w', encoding='utf-8') as f:
-    f.write(text)
-print("Done")
+with open("backend/services/ocr_service.js", "w", encoding="utf-8") as f:
+    f.write(ocr)
