@@ -204,7 +204,7 @@ async function runGeminiVision(imagePath, attempt = 1) {
   const genAI = new GoogleGenerativeAI(config.gemini.apiKey);
 
   // Use flash model — free tier, sufficient for structured extraction
-  const model = genAI.getGenerativeModel({ model: 'gemini-pro-vision' });
+  const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' });
 
   console.log(`[OCR] Calling Gemini Vision (attempt ${attempt}/2)…`);
 
