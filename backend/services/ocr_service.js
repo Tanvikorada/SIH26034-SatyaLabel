@@ -323,12 +323,12 @@ async function runOcrPipeline(imagePath, metadata = {}) {
         try {
           const groqResult = await runGroqVision(processedPath, 1, 'qwen/qwen3.8-27b', ocrResult.text);
           return {
-            text: groqResult.text,
+            text: ocrResult.text, // Must be Tesseract raw text so regexes don't match JSON keys!
             engine: "groq",
             confidenceAvg: groqResult.confidence,
             geminiStructuredData: groqResult.structuredData, 
             _fontMetrics: ocrResult._fontMetrics || [],
-            _rawText: ocrResult.text // Pass original raw text to rules engine
+            _jsonText: groqResult.text
           };
         } catch (groqErr) {
           console.warn("[OCR] Groq fallback failed: " + groqErr.message);
