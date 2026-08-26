@@ -285,11 +285,14 @@ Respond with ONLY the complete JSON object. No markdown, no explanation.`;
     console.log('[OCR] Gemini Vision extraction complete');
 
   } catch (err) {
-    const is503 = err.message && (err.message.includes('503') || err.message.includes('overloaded') || err.message.includes('high demand'));
-    if ((err.code === 'GEMINI_TIMEOUT' || is503) && attempt < 3) {
-      const nextModel = modelName === 'gemini-1.5-flash-latest' ? 'gemini-1.5-pro-latest' : 'gemini-1.0-pro-vision-latest';
-      console.warn(`[OCR] Gemini ${is503 ? '503 High Demand' : 'Timeout'} - retrying with ${nextModel}...`);
-      await new Promise(r => setTimeout(r, 2000));
+    if (attempt < 3) {
+      // Fallback chain: 1.5-flash -> 1.5-pro -> 1.0-pro-vision
+      const nextModel = modelName === 'gemini-1.5-flash-latest' 
+          ? 'gemini-1.5-pro-latest' 
+          : (modelName === 'gemini-1.5-pro-latest' ? 'gemini-pro-vision' : 'gemini-1.0-pro-vision-latest');
+      
+      console.warn([OCR] Gemini failed with  () - retrying with ...);
+      await new Promise(r => setTimeout(r, 1000));
       return runGeminiVision(imagePath, attempt + 1, nextModel);
     }
     throw err;

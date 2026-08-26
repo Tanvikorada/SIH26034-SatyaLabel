@@ -803,7 +803,7 @@ DO NOT return markdown code blocks, just raw JSON.`;
     const genAI = new GoogleGenerativeAI(config.gemini.apiKey);
     let result = null;
     let errToThrow = null;
-    const modelsToTry = ['gemini-1.5-flash-latest', 'gemini-1.5-pro-latest', 'gemini-1.0-pro-vision-latest'];
+    const modelsToTry = ['gemini-1.5-flash-latest', 'gemini-1.5-pro-latest', 'gemini-pro'];
     
     for (const modelName of modelsToTry) {
         try {
@@ -815,9 +815,7 @@ DO NOT return markdown code blocks, just raw JSON.`;
         } catch (err) {
             console.warn(`[RulesEngine] Model ${modelName} failed: ${err.message}`);
             errToThrow = err;
-            if (!err.message.includes('503') && !err.message.includes('429') && !err.message.includes('overloaded') && !err.message.includes('high demand')) {
-                break; // Don't retry if it's a structural error
-            }
+            // Always retry to handle 404s/403s across different models
             await new Promise(r => setTimeout(r, 1500)); // sleep before retry
         }
     }
