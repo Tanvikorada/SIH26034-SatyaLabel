@@ -477,7 +477,7 @@ function checkMRP(fields) {
 
   // Check "inclusive of all taxes" phrase
   const inField   = INCL_TAX.test(mrpStr);
-  const inContext = INCL_TAX.test(rawText);
+  const inContext = INCL_TAX.test(rawText) || fields.mrp_includes_tax_statement === true || fields.mrp_includes_tax_statement === 'true';
   if (!inField && !inContext) {
     return review(R, T, f, 'low',
       'The phrase "inclusive of all taxes" was not detected near the MRP declaration. ' +

@@ -311,29 +311,28 @@ async function runOcrPipeline(imagePath, metadata = {}) {
       await validateResolution(imagePath);
       processedPath = await preprocessImage(imagePath);
       
-      console.log("[OCR] Running Tesseract and Groq Vision in PARALLEL for maximum speed...");
-      
-      // We run them simultaneously. Tesseract is kept strictly for font-metrics bounding boxes.
-      // Groq does the heavy lifting of structured data extraction.
-      const [ocrResult, groqResult] = await Promise.all([
-        runTesseract(processedPath).catch(err => {
-          console.warn("[OCR] Tesseract failed, skipping metrics: " + err.message);
+      console.log("[OCR] Running primary Tesseract extraction...");
+      let ocrResult = await runTesseract(processedPath).catch(err => {
+          console.warn("[OCR] Tesseract failed: " + err.message);
           return { text: '', confidence: 0, engine: 'tesseract', _fontMetrics: [] };
-        }),
-        runGroqVision(processedPath, 1, 'qwen/qwen3.8-27b', '').catch(err => {
-          console.warn("[OCR] Groq API failed: " + err.message);
-          return null;
-        })
-      ]);
-
-      if (groqResult) {
+      });
+      
+      // Fallback to Gemini/Groq
+      if (true) {
+        console.log("[OCR] Passing Tesseract text as a hint to Groq Vision for max accuracy...");
+        try {
+          const groqResult = await runGroqVision(processedPath, 1, 'qwen/qwen3.8-27b', ocrResult.text);
           return {
             text: groqResult.text,
             engine: "groq",
             confidenceAvg: groqResult.confidence,
             geminiStructuredData: groqResult.structuredData, 
             _fontMetrics: ocrResult._fontMetrics || [],
+            _rawText: ocrResult.text // Pass original raw text to rules engine
           };
+        } catch (groqErr) {
+          console.warn("[OCR] Groq fallback failed: " + groqErr.message);
+        }
       }
       
       return ocrResult;
