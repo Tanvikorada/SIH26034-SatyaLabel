@@ -162,7 +162,7 @@ export default function Results({ params }) {
         </div>
 
         
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          <div ref={reportRef} className="grid grid-cols-1 lg:grid-cols-3 gap-8 p-4 bg-background">
             <div className="lg:col-span-2 flex flex-col gap-6">
               
               <div className="flex items-center justify-between">
