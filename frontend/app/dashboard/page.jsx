@@ -12,7 +12,9 @@ export default function Dashboard() {
     if (!localStorage.getItem('token')) return router.push('/login');
     const fetchStats = async () => {
       try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'https://satyalabel-backend.onrender.com/api/v1'}/dashboard/stats`);
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'https://satyalabel-backend.onrender.com/api/v1'}/dashboard/stats`, {
+          headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+        });
         if (!res.ok) throw new Error("API Error");
         const json = await res.json();
         setStats(json.data || json);

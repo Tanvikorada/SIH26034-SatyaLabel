@@ -12,7 +12,9 @@ export default function RulesPage() {
     if (!localStorage.getItem('token') || localStorage.getItem('role') !== 'admin') return router.push('/dashboard');
     const fetchRules = async () => {
       try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'https://satyalabel-backend.onrender.com/api/v1'}/rules`);
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'https://satyalabel-backend.onrender.com/api/v1'}/rules`, {
+          headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+        });
         if (!res.ok) throw new Error("API Error");
         const json = await res.json();
         const d = json.data || json;
