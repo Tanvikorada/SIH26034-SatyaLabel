@@ -32,7 +32,23 @@ export default function Results({ params }) {
     }
   };
 
-const downloadPDF = async () => {
+
+  const cancelScan = async () => {
+    try {
+      const res = await fetch(${API}/scans//cancel, {
+        method: 'POST',
+        headers: { 'Authorization': Bearer  }
+      });
+      if (res.ok) {
+        toast.success('Scan cancelled.');
+        router.push('/dashboard');
+      }
+    } catch(err) {
+      toast.error('Could not cancel scan');
+    }
+  };
+
+  const downloadPDF = async () => {
     const toastId = toast.loading('Generating PDF...');
     try {
       const canvas = await html2canvas(reportRef.current, { scale: 2, useCORS: true, backgroundColor: '#000000' });
