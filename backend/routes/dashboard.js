@@ -100,7 +100,7 @@ router.get('/stats', optionalAuth, async (req, res) => {
       daily_scans:          dailyScans,
       recent_scans:         recentScans.map(s => ({
         id:                 s.id,
-        product_name:       s.product?.productName || 'Unknown',
+        product_name:       s.product?.productName || (s.extractedData ? s.extractedData.product_name : null) || 'Unknown',
         brand_name:         s.product?.brandName || null,
         overall_compliance: s.overallCompliance,
         overallStatus:      s.overallCompliance,  // compat alias

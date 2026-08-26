@@ -9,6 +9,7 @@ import { jsPDF } from 'jspdf';
 export default function ResultsPage({ params }) {
   const [report, setReport] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState('action');
   const [expandedRule, setExpandedRule] = useState(null);
   const [resolvedParams, setResolvedParams] = useState(null);
   const reportRef = useRef(null);
