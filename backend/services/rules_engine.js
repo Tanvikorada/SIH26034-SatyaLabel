@@ -216,8 +216,8 @@ function checkManufacturerName(fields) {
   const val = fields.manufacturer_name || fields.packer_name || fields.importer_name;
 
   if (!isPresent(val)) {
-    return review(R, T, f, 'high',
-        'Name of the manufacturer, packer, or importer was not detected in the scanned images. It may be on another side of the product. Please verify manually. ' +
+    return pnoc(R, T, f, 'high',
+      'Name of the manufacturer, packer, or importer is not declared on the label. ' +
       'This is a mandatory declaration under Rule 6 read with Rule 10.');
   }
   return pass(R, T, f);
@@ -232,8 +232,8 @@ function checkManufacturerAddress(fields) {
   const val = fields.manufacturer_address || fields.packer_address || fields.importer_address;
 
   if (!isPresent(val)) {
-    return review(R, T, f, 'high',
-        'Complete address of the manufacturer was not detected in the scanned images. It may be on another side. Please verify manually. ' +
+    return pnoc(R, T, f, 'high',
+      'Complete address of the manufacturer, packer, or importer is absent. ' +
       'A complete address is mandatory under Rule 6 read with Rule 10.');
   }
 
@@ -266,8 +266,8 @@ function checkCountryOfOrigin(fields, options) {
   }
 
   if (!isPresent(fields.country_of_origin)) {
-    return review(R, T, f, 'high',
-        'Country of origin was not detected on this imported product. It may be on another side. Please verify manually. ' +
+    return pnoc(R, T, f, 'high',
+      'Country of origin is not declared on this imported product label. ' +
       'This is mandatory for imported products under Rule 6.');
   }
   return pass(R, T, f);
@@ -280,8 +280,8 @@ function checkGenericName(fields) {
   const f = 'product_name';
 
   if (!isPresent(fields.product_name)) {
-    return review(R, T, f, 'high',
-        'The common or generic name was not detected in the scanned images. Please verify manually. ' +
+    return pnoc(R, T, f, 'high',
+      'The common or generic name of the commodity is not declared on the label. ' +
       'This is mandatory under Rule 6. Note: a brand name alone is not sufficient — a common/generic name is required.');
   }
   return pass(R, T, f);
@@ -294,8 +294,8 @@ function checkNetQuantityPresence(fields) {
   const f = 'net_quantity';
 
   if (!isPresent(fields.net_quantity)) {
-    return review(R, T, f, 'high',
-        'No net quantity declaration detected in the scanned images. It may be on another side. Please verify manually. ' +
+    return pnoc(R, T, f, 'high',
+      'No net quantity declaration detected on the label. ' +
       'Every packaged commodity must declare its net weight, volume, or count under Rules 6 and 11.');
   }
   return pass(R, T, f);
@@ -351,8 +351,8 @@ function checkMfgDate(fields) {
         'Month/year of manufacture was not detected, but OCR confidence is low. ' +
         'Cannot confirm absence of this declaration from a low-quality image — physical inspection required.');
     }
-    return review(R, T, f, 'high',
-        'Month and year of manufacture was not detected in the scanned images. It may be on the bottom or another side. Please verify manually. ' +
+    return pnoc(R, T, f, 'high',
+      'Month and year of manufacture/packing/import is not declared. ' +
       'This is mandatory under Rule 6. Required format: MM/YYYY (e.g. 03/2025) or Month YYYY (e.g. Mar 2025).');
   }
 
@@ -462,8 +462,8 @@ function checkMRP(fields) {
         'MRP was not detected, but OCR confidence is low. ' +
         'Cannot confirm absence from a low-quality image — physical inspection required.');
     }
-    return review(R, T, f, 'high',
-        'MRP was not detected in the scanned images. It may be on the bottom or another side. Please verify manually. ' +
+    return pnoc(R, T, f, 'high',
+      'MRP (Maximum Retail Price inclusive of all taxes) is not declared on the label. ' +
       'This is mandatory under Rule 6 read with Rule 2.');
   }
 
@@ -495,8 +495,8 @@ function checkConsumerCare(fields) {
   const f = 'customer_care';
 
   if (!isPresent(fields.customer_care)) {
-    return review(R, T, f, 'medium',
-        'Consumer care contact details were not detected in the scanned images. They may be on another side. Please verify manually. ' +
+    return pnoc(R, T, f, 'medium',
+      'Consumer care contact details (helpline phone number or email address) are not declared on the label. ' +
       'This is mandatory under Rule 6.');
   }
 
@@ -812,9 +812,7 @@ async function validateCompliance(fieldsMap, rawText = '', options = {}) {
   const reviewCount = mappedResults.filter(r => r.status === S.REVIEW).length;
   const totalRulesChecked = mappedResults.length;
   
-  const notVerifiedCount = mappedResults.filter(r => r.status === S.NV).length;
-    const applicableRules = totalRulesChecked - naResults.length - reviewCount - notVerifiedCount;
-    const complianceScore = applicableRules > 0 ? Math.round((passes.length / applicableRules) * 100) : 100;
+  const complianceScore = totalRulesChecked > 0 ? Math.round((passes.length / (totalRulesChecked - naResults.length || 1)) * 100) : 0;
   
   let overallCompliance = S.PASS;
   if (highViolations > 0 || mappedResults.some(r => r.status === S.PNOC)) overallCompliance = S.PNOC;
