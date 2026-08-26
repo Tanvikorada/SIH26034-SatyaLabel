@@ -10,6 +10,7 @@
 
 
 const sharp = require('sharp');
+const Tesseract = require('tesseract.js');
 const fs = require('fs');
 const path = require('path');
 const config = require('../config');
@@ -338,23 +339,28 @@ async function runOcrPipeline(imagePath, metadata = {}) {
   try {
     await validateResolution(imagePath);
     processedPath = await preprocessImage(imagePath);
-    console.log("[OCR] Using Gemini Vision for highly accurate extraction.");
-    try {
-      const geminiResult = await runGeminiVision(processedPath);
-      return {
-        text: geminiResult.text,
-        engine: "gemini",
-        confidenceAvg: geminiResult.confidence,
-        geminiStructuredData: geminiResult.structuredData,
-        _fontMetrics: null,
-      };
-    } catch (geminiErr) {
-      console.warn("Gemini execution failed (" + geminiErr.message + ")");
-      throw Object.assign(
-        new Error("Gemini Vision Extraction Failed: " + geminiErr.message),
-        { code: "GEMINI_EXTRACTION_FAILED" }
-      );
+    
+    console.log("[OCR] Running primary Tesseract extraction...");
+    let ocrResult = await runTesseract(processedPath);
+    
+    // Fallback to Gemini if Tesseract output is too poor
+    if (ocrResult.confidence < OCR_CONFIDENCE_THRESHOLD || ocrResult.text.trim().length < MIN_OCR_TEXT_LENGTH) {
+      console.log("[OCR] Tesseract confidence low (" + ocrResult.confidence.toFixed(1) + "%). Attempting Gemini fallback...");
+      try {
+        const geminiResult = await runGeminiVision(processedPath);
+        return {
+          text: geminiResult.text,
+          engine: "gemini",
+          confidenceAvg: geminiResult.confidence,
+          geminiStructuredData: geminiResult.structuredData,
+          _fontMetrics: ocrResult._fontMetrics,
+        };
+      } catch (geminiErr) {
+        console.warn("[OCR] Gemini fallback failed (503/404): " + geminiErr.message + ". Proceeding safely with Tesseract result.");
+      }
     }
+    
+    return ocrResult;
   } finally {
     if (processedPath && fs.existsSync(processedPath)) {
       try { fs.unlinkSync(processedPath); } catch (_) {}
