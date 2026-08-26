@@ -319,20 +319,41 @@ Respond with ONLY the complete JSON object. No markdown, no explanation.`;
  * @returns {OcrPipelineResult}
  * @throws {Error} with .code for known failure cases (IMAGE_TOO_LOW_RES, NO_TEXT_DETECTED)
  */
-async function runOcrPipeline(imagePath) {
+async function runOcrPipeline(imagePath, metadata = {}) {
   let processedPath = null;
 
   try {
-    // ── Step 1: Validate resolution ───────────────────────────────────────────
+    //  Step 1: Validate resolution 
     await validateResolution(imagePath);
 
-    // ── Step 2: Preprocess ────────────────────────────────────────────────────
+    //  Step 2: Preprocess 
     processedPath = await preprocessImage(imagePath);
 
-    // ── Step 3: Tesseract (primary OCR) ──────────────────────────────────────
+    // If user forced Gemini from the UI toggle, skip Tesseract entirely to save memory on Render
+    if (metadata.forceEngine === 'gemini' && config.gemini?.enabled) {
+      console.log('[OCR] User forced Gemini engine via UI toggle. Bypassing Tesseract.');
+      try {
+        const geminiResult = await runGeminiVision(processedPath);
+        return {
+          text: geminiResult.text,
+          engineUsed: 'gemini',
+          confidenceAvg: geminiResult.confidence,
+          geminiStructuredData: geminiResult.structuredData,
+          _fontMetrics: null,
+        };
+      } catch (geminiErr) {
+        console.warn(`[OCR] Gemini forced execution failed (${geminiErr.message})`);
+        throw Object.assign(
+          new Error(`Gemini Vision Extraction Failed: ${geminiErr.message}`),
+          { code: 'GEMINI_EXTRACTION_FAILED' }
+        );
+      }
+    }
+
+    //  Step 3: Tesseract (primary OCR) 
     const tesseractResult = await runTesseract(processedPath);
 
-    // ── Step 4a: Check for empty/unreadable result ────────────────────────────
+    //  Step 4a: Check for empty/unreadable result 
     const isTextEmpty = !tesseractResult.text || tesseractResult.text.trim().length < MIN_OCR_TEXT_LENGTH;
 
     if (isTextEmpty && !config.gemini?.enabled) {

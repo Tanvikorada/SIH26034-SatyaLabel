@@ -805,7 +805,7 @@ DO NOT return markdown code blocks, just raw JSON.`;
       messages: [{ role: 'user', content: prompt }],
       model: 'llama-3.3-70b-versatile',
       response_format: { type: 'json_object' }
-    });
+    }, { timeout: 30000 });
     responseText = completion.choices[0]?.message?.content || '';
   } else if (config.gemini?.enabled) {
     console.log('[RulesEngine] GROQ_API_KEY missing. Falling back to Gemini LLM (gemini-3.6-flash)...');
