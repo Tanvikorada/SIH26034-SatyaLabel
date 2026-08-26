@@ -16,7 +16,23 @@ export default function Results({ params }) {
 
   const API = process.env.NEXT_PUBLIC_API_URL || 'https://satyalabel-backend.onrender.com/api/v1';
 
-  const downloadPDF = async () => {
+  
+    const handleDelete = async () => {
+    if(!confirm('Are you sure you want to delete this scan?')) return;
+    try {
+      const res = await fetch(`${API}/scans/${report.id}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+      });
+      if (!res.ok) throw new Error('Failed to delete');
+      toast.success('Scan deleted');
+      router.push('/dashboard');
+    } catch(err) {
+      toast.error('Delete failed: ' + err.message);
+    }
+  };
+
+const downloadPDF = async () => {
     const toastId = toast.loading('Generating PDF...');
     try {
       const canvas = await html2canvas(reportRef.current, { scale: 2, useCORS: true, backgroundColor: '#000000' });
@@ -169,11 +185,12 @@ export default function Results({ params }) {
                  ))}
                </div>
              </div>
-             
-             <button onClick={downloadPDF} className="mello-btn-secondary w-full mt-2">Download PDF Notice</button>
-             {localStorage.getItem('role') === 'admin' && (
-                <button className="mello-btn-secondary w-full text-[#f87171] border-[#521c1c] hover:bg-[#260e0e]">Delete Record</button>
-             )}
+             <div className="col-span-1">
+               <button onClick={downloadPDF} className="mello-btn-primary w-full mb-3">Download PDF Notice</button>
+               {localStorage.getItem('role') === 'admin' && (
+                  <button onClick={handleDelete} className="mello-btn-secondary w-full text-[#f87171] border-[#521c1c] hover:bg-[#260e0e]">Delete Record</button>
+               )}
+             </div>
           </div>
         </div>
       </div>
