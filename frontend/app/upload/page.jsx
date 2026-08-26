@@ -63,16 +63,16 @@ export default function UploadPage() {
 
     const imgs = await Promise.all(imageFiles.map(loadImg));
     
-    // Calculate original sizes
-    const origTotalWidth = imgs.reduce((sum, img) => sum + img.width, 0);
-    const origMaxHeight = Math.max(...imgs.map(img => img.height));
+    // Intelligently pack images to avoid extreme aspect ratios.
+    // Extreme aspect ratios (like 3:1 horizontal) cause Vision LLMs to squish the image into illegible mush.
+    let COLS = 1;
+    if (imgs.length > 1) COLS = 2;
+    const ROWS = Math.ceil(imgs.length / COLS);
 
-    // Calculate scaling factor to prevent massive files (max 1500px height)
-    const MAX_HEIGHT = 1500;
-    const scale = origMaxHeight > MAX_HEIGHT ? MAX_HEIGHT / origMaxHeight : 1;
+    const BOX_SIZE = 1200; // 1200px per box gives incredible detail
     
-    const finalWidth = Math.floor(origTotalWidth * scale);
-    const finalHeight = Math.floor(origMaxHeight * scale);
+    const finalWidth = COLS * BOX_SIZE;
+    const finalHeight = ROWS * BOX_SIZE;
 
     const canvas = document.createElement('canvas');
     canvas.width = finalWidth;
@@ -82,12 +82,23 @@ export default function UploadPage() {
     ctx.fillStyle = '#ffffff';
     ctx.fillRect(0, 0, finalWidth, finalHeight);
 
-    let currentX = 0;
-    imgs.forEach(img => {
+    imgs.forEach((img, i) => {
+      const col = i % COLS;
+      const row = Math.floor(i / COLS);
+      
+      const targetX = col * BOX_SIZE;
+      const targetY = row * BOX_SIZE;
+      
+      // Calculate scaling to fit the image inside the BOX_SIZE while maintaining aspect ratio
+      const scale = Math.min(BOX_SIZE / img.width, BOX_SIZE / img.height);
       const drawWidth = Math.floor(img.width * scale);
       const drawHeight = Math.floor(img.height * scale);
-      ctx.drawImage(img, currentX, 0, drawWidth, drawHeight);
-      currentX += drawWidth;
+      
+      // Center it in the box
+      const offsetX = targetX + (BOX_SIZE - drawWidth) / 2;
+      const offsetY = targetY + (BOX_SIZE - drawHeight) / 2;
+      
+      ctx.drawImage(img, offsetX, offsetY, drawWidth, drawHeight);
     });
 
     return new Promise((resolve) => {
