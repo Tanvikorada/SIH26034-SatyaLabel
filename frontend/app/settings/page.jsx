@@ -11,6 +11,34 @@ export default function SettingsPage() {
   const { theme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
 
+  
+  useEffect(() => {
+    let deferredPrompt;
+    
+    const handleBeforeInstallPrompt = (e) => {
+      e.preventDefault();
+      deferredPrompt = e;
+      const installBtn = document.getElementById('install-pwa-btn');
+      if (installBtn) {
+        installBtn.style.display = 'flex';
+        installBtn.onclick = async () => {
+          deferredPrompt.prompt();
+          const { outcome } = await deferredPrompt.userChoice;
+          if (outcome === 'accepted') {
+            console.log('User accepted the install prompt');
+          }
+          deferredPrompt = null;
+        };
+      }
+    };
+
+    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+    
+    return () => {
+      window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+    };
+  }, []);
+
   useEffect(() => {
     setMounted(true);
     if (!localStorage.getItem('token')) {
@@ -65,6 +93,21 @@ export default function SettingsPage() {
                 <span className="text-sm font-medium">System</span>
               </button>
             </div>
+          </section>
+
+          
+          <section className="p-6 rounded-2xl bg-surface border border-border shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+            <div>
+              <h2 className="text-xl font-medium mb-1">Install SatyaLabel</h2>
+              <p className="text-sm text-text-secondary">Install the app on your device for offline capabilities and faster access.</p>
+            </div>
+            <button 
+              id="install-pwa-btn"
+              className="px-5 py-2.5 bg-primary text-background hover:opacity-90 font-medium rounded-xl transition-opacity flex items-center gap-2 whitespace-nowrap"
+            >
+              <Monitor size={16} />
+              Install as App
+            </button>
           </section>
 
           <section className="p-6 rounded-2xl bg-surface border border-border shadow-sm flex items-center justify-between">
