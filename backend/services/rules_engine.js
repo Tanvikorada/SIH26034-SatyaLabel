@@ -794,7 +794,7 @@ async function validateCompliance(fieldsMap, rawText = '', options = {}) {
 
   const genAI = new GoogleGenerativeAI(config.gemini.apiKey);
   // Use flash model for speed and intelligence
-  const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash-latest' });
+  const model = genAI.getGenerativeModel({ model: 'gemini-pro' });
 
   const prompt = `You are a strict, expert compliance auditor for the Indian Legal Metrology (Packaged Commodities) Rules, 2011.
 Evaluate the following extracted label data for compliance.
