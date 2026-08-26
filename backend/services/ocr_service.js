@@ -193,7 +193,7 @@ async function runTesseract(imagePath) {
  * @param {string} [modelName='gemini-1.5-flash-latest']
  * @returns {{ text, structuredData, confidence, engine }}
  */
-async function runGeminiVision(imagePath, attempt = 1, modelName = 'gemini-1.5-flash') {
+async function runGeminiVision(imagePath, attempt = 1, modelName = 'gemini-2.5-flash') {
   if (!config.gemini?.enabled || !config.gemini?.apiKey) {
     throw new Error('Gemini API key not configured.');
   }
@@ -300,10 +300,11 @@ Respond with ONLY the complete JSON object. No markdown, no explanation.`;
     console.log('[OCR] Gemini REST API extraction complete');
 
   } catch (err) {
-      if (attempt < 2) {
-        console.warn(`[OCR] Gemini REST failed with ${modelName} (${err.message}) - retrying once...`);
+      if (attempt < 3) {
+        const nextModel = modelName === 'gemini-2.5-flash' ? 'gemini-2.0-flash' : 'gemini-flash';
+        console.warn(`[OCR] Gemini REST failed with ${modelName} (${err.message}) - retrying with ${nextModel}...`);
         await new Promise(r => setTimeout(r, 2000));
-        return runGeminiVision(imagePath, attempt + 1, modelName);
+        return runGeminiVision(imagePath, attempt + 1, nextModel);
       }
       throw err;
     }
