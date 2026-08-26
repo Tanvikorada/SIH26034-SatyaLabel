@@ -11,7 +11,7 @@ import {
   CheckCircle2, AlertTriangle, HelpCircle, MinusCircle, EyeOff,
   Sun, Moon, Zap, Clock, FileSearch, Scale, Layers, Image as ImageIcon,
   ChevronDown, FileText, Monitor, Server, Database, Eye, Check, X,
-  FileCheck, Cpu, Code
+  FileCheck, Cpu, Code, Scan
 } from 'lucide-react';
 import { 
   SiNextdotjs, SiReact, SiTailwindcss, SiTypescript, 
@@ -121,44 +121,57 @@ function KineticText({ text, className }) {
 
 function HeroSeal() {
   return (
-    <div className="relative w-full max-w-[320px] aspect-square flex items-center justify-center md:ml-12 group">
+    <div className="relative w-full max-w-[320px] aspect-square flex items-center justify-center md:ml-12 group cursor-default">
       {/* Glow effect behind */}
-      <div className="absolute inset-8 rounded-full blur-[60px] opacity-30" style={{ background: 'var(--color-accent)' }} />
+      <div className="absolute inset-8 rounded-full blur-[60px] opacity-10" style={{ background: 'var(--color-text-primary)' }} />
       
-      {/* The main logo container */}
       <svg viewBox="0 0 200 200" className="relative z-10 w-full h-full overflow-visible">
+        <defs>
+          <path id="textCircle" d="M 100, 100 m -85, 0 a 85,85 0 1,1 170,0 a 85,85 0 1,1 -170,0" />
+        </defs>
+
+        {/* Rotating Text Ring */}
+        <motion.g animate={{ rotate: 360 }} transition={{ duration: 25, repeat: Infinity, ease: 'linear' }} style={{ transformOrigin: '100px 100px' }}>
+            <text fill="var(--color-text-muted)" fontSize="11" letterSpacing="4.5" fontWeight="500" className="uppercase font-mono opacity-80">
+                <textPath href="#textCircle" startOffset="0%">
+                  LEGAL METROLOGY COMPLIANCE • SATYALABEL AI • LEGAL METROLOGY COMPLIANCE • SATYALABEL AI • 
+                </textPath>
+            </text>
+        </motion.g>
+
         {/* Outer dashed ring */}
-        <motion.circle cx="100" cy="100" r="80" fill="none" stroke="var(--color-border)" strokeWidth="2" strokeDasharray="4 8"
-          animate={{ rotate: 360 }} transition={{ duration: 60, repeat: Infinity, ease: 'linear' }}
+        <motion.circle cx="100" cy="100" r="70" fill="none" stroke="var(--color-border)" strokeWidth="1.5" strokeDasharray="4 8"
+          animate={{ rotate: -360 }} transition={{ duration: 80, repeat: Infinity, ease: 'linear' }}
           style={{ transformOrigin: '100px 100px' }}
         />
         
         {/* Inner solid ring */}
-        <circle cx="100" cy="100" r="64" fill="var(--color-surface)" stroke="var(--color-border)" strokeWidth="1" />
+        <circle cx="100" cy="100" r="58" fill="var(--color-surface)" stroke="var(--color-border)" strokeWidth="1" />
         
         {/* Center Shield */}
         <motion.path 
-          d="M100 45 L130 58 L130 92 C130 116 118 132 100 142 C82 132 70 116 70 92 L70 58 Z"
-          fill="var(--color-background)" stroke="var(--color-primary)" strokeWidth="2"
+          d="M100 55 L124 65 L124 92 C124 112 114 125 100 133 C86 125 76 112 76 92 L76 65 Z"
+          fill="var(--color-background)" stroke="var(--color-text-primary)" strokeWidth="2"
           initial={{ opacity: 0.8, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 2, repeat: Infinity, repeatType: 'reverse', ease: 'easeInOut' }}
         />
         
         {/* Checkmark inside shield */}
-        <path d="M88 95 L96 103 L114 84" fill="none" stroke="var(--color-accent)" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
+        <path d="M90 95 L97 102 L111 87" fill="none" stroke="var(--color-text-primary)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
         
         {/* Scanning laser line moving down the shield */}
         <motion.line 
-          x1="60" y1="40" x2="140" y2="40" 
-          stroke="var(--color-accent)" strokeWidth="1.5" opacity="0.6"
-          animate={{ y: [0, 100, 0] }}
+          x1="65" y1="50" x2="135" y2="50" 
+          stroke="var(--color-text-primary)" strokeWidth="1.5" opacity="0.6"
+          animate={{ y: [0, 80, 0] }}
           transition={{ duration: 3, repeat: Infinity, ease: 'linear' }}
         />
       </svg>
     </div>
   );
 }
+
 function PixelsToPenalty() {
   const [loop, setLoop] = useState(0);
   
@@ -512,66 +525,41 @@ function RulingLedger() {
 
 function TechStack() {
   return (
-    <section className="py-24 px-6 md:px-12 max-w-[1200px] mx-auto w-full relative z-10 border-t border-[var(--color-border)] bg-transparent overflow-hidden">
-      <div className="mb-20 text-center relative z-20">
-        <h2 className="text-3xl font-medium tracking-tight mb-3">System Architecture</h2>
-        <p className="text-[var(--color-text-secondary)]">Modern stack. Deterministic engine. Highly scalable.</p>
+    <section className="py-32 px-6 md:px-12 max-w-[1200px] mx-auto w-full relative z-10 border-t border-[var(--color-border)] bg-transparent overflow-hidden">
+      <div className="mb-24 text-center relative z-20">
+        <h2 className="text-3xl font-medium tracking-tight mb-3">The Analysis Pipeline</h2>
+        <p className="text-[var(--color-text-secondary)]">How raw pixels become deterministic legal rulings.</p>
       </div>
 
-      <div className="relative w-full max-w-[800px] mx-auto h-[400px] flex items-center justify-center">
-         {/* Background orbital rings */}
-         <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-           <div className="w-[300px] h-[300px] rounded-full border border-[var(--color-border)] opacity-50" />
-           <div className="w-[500px] h-[500px] rounded-full border border-[var(--color-border)] opacity-30 absolute" />
+      <div className="relative w-full max-w-[1000px] mx-auto flex flex-col md:flex-row items-center justify-between gap-6 md:gap-2">
+         {/* Animated connector line behind on desktop */}
+         <div className="hidden md:block absolute top-1/2 left-[5%] right-[5%] h-[1px] bg-[var(--color-border)] -translate-y-1/2 z-0 overflow-hidden">
+             <motion.div className="h-full bg-[var(--color-text-primary)] opacity-40 w-1/3" animate={{ x: ['-100%', '300%'] }} transition={{ duration: 2.5, repeat: Infinity, ease: 'linear' }} />
          </div>
 
-         {/* Center Core Node */}
-         <div className="relative z-20 w-24 h-24 bg-transparent border border-[var(--color-accent)] rounded-full shadow-[0_0_30px_rgba(11,31,58,0.2)] flex flex-col items-center justify-center group cursor-pointer hover:scale-110 transition-transform duration-300">
-           <div className="absolute inset-0 bg-[var(--color-accent)] opacity-10 rounded-full animate-ping" style={{ animationDuration: '3s' }} />
-           <Shield size={28} className="text-[var(--color-accent)] mb-1" />
-           <span className="text-[10px] font-bold tracking-widest text-[var(--color-text-primary)]">CORE</span>
-         </div>
-
-         {/* Orbiting Tech Nodes */}
-         <div className="absolute inset-0 flex items-center justify-center z-10">
-            {/* Frontend */}
-            <div className="absolute -top-12 flex flex-col items-center gap-2 group cursor-help">
-              <div className="w-14 h-14 bg-[var(--color-surface)] border border-[var(--color-border)] rounded-2xl flex items-center justify-center group-hover:border-[var(--color-primary)] transition-colors"><SiNextdotjs size={24} className="text-[var(--color-text-primary)]" /></div>
-              <span className="text-[10px] font-medium text-[var(--color-text-secondary)] bg-[var(--color-surface)] px-2 py-0.5 rounded border border-[var(--color-border)]">Next.js 15</span>
-            </div>
-            
-            {/* UI/Design */}
-            <div className="absolute top-16 right-12 flex flex-col items-center gap-2 group cursor-help">
-              <div className="w-14 h-14 bg-[var(--color-surface)] border border-[var(--color-border)] rounded-2xl flex items-center justify-center group-hover:border-[var(--color-primary)] transition-colors"><SiTailwindcss size={24} className="text-[#06B6D4]" /></div>
-              <span className="text-[10px] font-medium text-[var(--color-text-secondary)] bg-[var(--color-surface)] px-2 py-0.5 rounded border border-[var(--color-border)]">Tailwind</span>
-            </div>
-
-            {/* OCR/AI */}
-            <div className="absolute bottom-12 right-12 flex flex-col items-center gap-2 group cursor-help">
-              <div className="w-14 h-14 bg-[var(--color-surface)] border border-[var(--color-border)] rounded-2xl flex items-center justify-center group-hover:border-[var(--color-primary)] transition-colors"><Cpu size={24} className="text-[#10a37f]" /></div>
-              <span className="text-[10px] font-medium text-[var(--color-text-secondary)] bg-[var(--color-surface)] px-2 py-0.5 rounded border border-[var(--color-border)]">Vision AI</span>
-            </div>
-
-            {/* Backend */}
-            <div className="absolute -bottom-12 flex flex-col items-center gap-2 group cursor-help">
-              <div className="w-14 h-14 bg-[var(--color-surface)] border border-[var(--color-border)] rounded-2xl flex items-center justify-center group-hover:border-[var(--color-primary)] transition-colors"><SiPostgresql size={24} className="text-[#336791]" /></div>
-              <span className="text-[10px] font-medium text-[var(--color-text-secondary)] bg-[var(--color-surface)] px-2 py-0.5 rounded border border-[var(--color-border)]">PostgreSQL</span>
-            </div>
-
-            {/* Hosting */}
-            <div className="absolute bottom-12 left-12 flex flex-col items-center gap-2 group cursor-help">
-              <div className="w-14 h-14 bg-[var(--color-surface)] border border-[var(--color-border)] rounded-2xl flex items-center justify-center group-hover:border-[var(--color-primary)] transition-colors"><SiRender size={24} className="text-[var(--color-text-primary)]" /></div>
-              <span className="text-[10px] font-medium text-[var(--color-text-secondary)] bg-[var(--color-surface)] px-2 py-0.5 rounded border border-[var(--color-border)]">Render & Vercel</span>
-            </div>
-
-            {/* CV/Backend Logic */}
-            <div className="absolute top-16 left-12 flex flex-col items-center gap-2 group cursor-help">
-              <div className="w-14 h-14 bg-[var(--color-surface)] border border-[var(--color-border)] rounded-2xl flex items-center justify-center group-hover:border-[var(--color-primary)] transition-colors"><Cpu size={24} className="text-[var(--color-text-primary)]" /></div>
-              <span className="text-[10px] font-medium text-[var(--color-text-secondary)] bg-[var(--color-surface)] px-2 py-0.5 rounded border border-[var(--color-border)]">Node.js Engine</span>
-            </div>
-         </div>
+         {/* Nodes */}
+         <TechNode icon={<Scan size={24}/>} title="1. Capture" subtitle="Mobile Web/Edge" delay={0} />
+         <TechNode icon={<Cpu size={24}/>} title="2. Engine" subtitle="Node.js (Render)" delay={0.2} />
+         <TechNode icon={<Zap size={24}/>} title="3. Vision AI" subtitle="Gemini 1.5 Pro" delay={0.4} />
+         <TechNode icon={<FileText size={24}/>} title="4. Rules" subtitle="Deterministic Logic" delay={0.6} />
+         <TechNode icon={<Database size={24}/>} title="5. Ledger" subtitle="Supabase (PG)" delay={0.8} />
       </div>
     </section>
+  );
+}
+
+function TechNode({ icon, title, subtitle, delay }) {
+  return (
+     <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} transition={{ delay }} viewport={{ once: true }}
+       className="relative z-10 flex flex-col items-center gap-4 p-6 bg-transparent border border-[var(--color-border)] rounded-2xl w-full md:w-[170px] shadow-sm hover:border-[var(--color-text-primary)] hover:bg-[var(--color-surface)] hover:-translate-y-1 transition-all group backdrop-blur-sm">
+         <div className="w-14 h-14 rounded-full bg-[var(--color-surface)] border border-[var(--color-border)] flex items-center justify-center text-[var(--color-text-primary)] group-hover:scale-110 transition-transform shadow-md">
+           {icon}
+         </div>
+         <div className="text-center">
+            <div className="text-[14px] font-medium text-[var(--color-text-primary)] mb-1">{title}</div>
+            <div className="text-[12px] text-[var(--color-text-muted)]">{subtitle}</div>
+         </div>
+     </motion.div>
   );
 }
 

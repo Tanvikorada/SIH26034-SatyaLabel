@@ -39,8 +39,8 @@
   --color-surface:          #18181b; /* charcoal */
   --color-primary:          #ffffff;
   --color-primary-hover:    #f4f4f5;
-  --color-accent:           #f97316; /* saffron/orange */
-  --color-accent-soft:      rgba(249,115,22,0.12);
+  --color-accent:           #ffffff; /* white */
+  --color-accent-soft:      rgba(255,255,255,0.08);
   --color-border:           #27272a; /* graphite */
   --color-text-primary:     #fafafa; /* white */
   --color-text-secondary:   #a1a1aa; /* mist */
@@ -167,15 +167,40 @@
 
   /* Cards */
   .mello-card {
-    background-color: var(--color-surface);
+    background-color: color-mix(in srgb, var(--color-surface) 80%, transparent);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
     border: 1px solid var(--color-border);
-    border-radius: 8px;
-    box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+    border-radius: 20px;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.08);
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   }
+  .mello-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 15px 50px rgba(0,0,0,0.12);
+    border-color: var(--color-text-muted);
+  }
+  .mello-card:active {
+    transform: translateY(0) scale(0.98);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+  }
+
   .mello-card-flat {
-    background-color: var(--color-surface);
+    background-color: color-mix(in srgb, var(--color-surface) 60%, transparent);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
     border: 1px solid var(--color-border);
-    border-radius: 8px;
+    border-radius: 16px;
+    transition: all 0.2s ease-out;
+  }
+  .mello-card-flat:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 30px rgba(0,0,0,0.08);
+    border-color: var(--color-text-muted);
+  }
+  .mello-card-flat:active {
+    transform: translateY(0) scale(0.98);
+    box-shadow: none;
   }
 
   /* Inputs */

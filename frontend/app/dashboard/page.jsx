@@ -49,26 +49,30 @@ export default function Dashboard() {
         <p className="text-[15px] text-text-secondary mb-10">System status and scan metrics across all zones.</p>
 
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-10">
-          <div className="mello-card-flat p-6">
+          <div className="relative p-6 rounded-2xl bg-[var(--color-surface)]/80 backdrop-blur-xl border border-[var(--color-border)] shadow-sm hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98] transition-all duration-200 cursor-pointer overflow-hidden group">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-[var(--color-text-primary)]/5 rounded-full blur-3xl -mr-10 -mt-10 group-hover:bg-[var(--color-text-primary)]/10 transition-colors" />
             <div className="text-[13px] text-text-muted mb-2">Total Scans</div>
             <div className="text-[32px] font-medium tracking-tight text-text-primary">{stats.total_scans || 0}</div>
           </div>
-          <div className="mello-card-flat p-6">
+          <div className="relative p-6 rounded-2xl bg-[var(--color-surface)]/80 backdrop-blur-xl border border-[var(--color-border)] shadow-sm hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98] transition-all duration-200 cursor-pointer overflow-hidden group">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-[var(--color-text-primary)]/5 rounded-full blur-3xl -mr-10 -mt-10 group-hover:bg-[var(--color-text-primary)]/10 transition-colors" />
             <div className="text-[13px] text-text-muted mb-2">Compliant</div>
             <div className="text-[32px] font-medium tracking-tight text-text-primary">{stats.compliant_count ?? stats.compliant ?? 0}</div>
           </div>
-          <div className="mello-card-flat p-6 border-t-2 border-t-[#f87171]">
+          <div className="relative p-6 rounded-2xl bg-[var(--color-surface)]/80 backdrop-blur-xl border border-[var(--color-border)] shadow-sm hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98] transition-all duration-200 cursor-pointer overflow-hidden group border-t-2 border-t-[#f87171]">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-[var(--color-text-primary)]/5 rounded-full blur-3xl -mr-10 -mt-10 group-hover:bg-[var(--color-text-primary)]/10 transition-colors" />
             <div className="text-[13px] text-text-muted mb-2">Violations</div>
             <div className="text-[32px] font-medium tracking-tight text-[#f87171]">{stats.non_compliant_count ?? stats.violations ?? 0}</div>
           </div>
-          <div className="mello-card-flat p-6 border-t-2 border-t-[#fbbf24]">
+          <div className="relative p-6 rounded-2xl bg-[var(--color-surface)]/80 backdrop-blur-xl border border-[var(--color-border)] shadow-sm hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98] transition-all duration-200 cursor-pointer overflow-hidden group border-t-2 border-t-[#fbbf24]">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-[var(--color-text-primary)]/5 rounded-full blur-3xl -mr-10 -mt-10 group-hover:bg-[var(--color-text-primary)]/10 transition-colors" />
             <div className="text-[13px] text-text-muted mb-2">Manual Review</div>
             <div className="text-[32px] font-medium tracking-tight text-[#fbbf24]">{stats.needs_review_count ?? stats.manual_review ?? 0}</div>
           </div>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-          <div className="mello-card p-8">
+          <div className="p-8 rounded-3xl bg-[var(--color-surface)]/70 backdrop-blur-2xl border border-[var(--color-border)] shadow-md">
             <h3 className="text-[16px] font-medium tracking-tight mb-6 flex items-center justify-between">
               Recent Activity
               <button className="text-[13px] text-text-secondary hover:text-text-primary transition-colors" onClick={() => router.push('/history')}>View all</button>
@@ -86,7 +90,7 @@ export default function Dashboard() {
             </div>
           </div>
 
-          <div className="mello-card p-8">
+          <div className="p-8 rounded-3xl bg-[var(--color-surface)]/70 backdrop-blur-2xl border border-[var(--color-border)] shadow-md">
             <h3 className="text-[16px] font-medium tracking-tight mb-6">Top Violated Rules</h3>
             <div className="h-[300px]">
               <ResponsiveContainer width="100%" height="100%">
