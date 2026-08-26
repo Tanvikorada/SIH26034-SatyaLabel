@@ -3,6 +3,7 @@ import './globals.css'
 import { Toaster } from 'sonner'
 import Script from 'next/script'
 import { ThemeProvider } from 'next-themes'
+import ThemeColorMeta from '../components/ThemeColorMeta'
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' })
 const sourceSerif = Source_Serif_4({ subsets: ['latin'], weight: ['400'], variable: '--font-display' })
@@ -35,6 +36,7 @@ export default function RootLayout({ children }) {
     <html lang="en" suppressHydrationWarning>
       <head></head>
       <body className={`${inter.variable} ${sourceSerif.variable} font-sans`}>
+        <ThemeColorMeta />
         <ThemeProvider
           attribute="class"
           defaultTheme="system"

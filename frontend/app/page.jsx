@@ -797,7 +797,10 @@ export default function LandingPage() {
         <div className="flex items-center gap-6">
           <span className="font-medium" style={{ color: 'var(--color-text-primary)' }}>SatyaLabel</span>
         </div>
-        <div>Smart India Hackathon 2026 Ministry of Consumer Affairs</div>
+        <div className="text-right">
+            <div>Smart India Hackathon 2026</div>
+            <div className="mt-1 font-medium text-[12px]">Made with <span className="text-red-500 animate-pulse inline-block">❤️</span> by Tanvi</div>
+          </div>
       </footer>
     </div>
   );

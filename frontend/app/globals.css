@@ -113,57 +113,62 @@
     border-color: color-mix(in srgb, var(--color-border) 80%, var(--color-primary));
   }
 
-  /* Status Badges */
+  /* Premium Status Badges */
+  .mello-badge-pass, .mello-badge-fail, .mello-badge-review, .mello-badge-na, .mello-badge-not-verified {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 3px 10px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 600;
+    font-family: var(--font-inter), monospace;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    border: 1px solid transparent;
+  }
+  .mello-badge-pass::before, .mello-badge-fail::before, .mello-badge-review::before, .mello-badge-na::before, .mello-badge-not-verified::before {
+    content: "";
+    display: block;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+  }
+
   .mello-badge-pass {
-    background-color: var(--color-pass-bg);
-    border: 1px solid color-mix(in srgb, var(--color-pass) 20%, transparent);
     color: var(--color-pass);
-    padding: 4px 10px;
-    border-radius: 9999px;
-    font-size: 12px;
-    font-weight: 500;
-    display: inline-block;
+    background-color: color-mix(in srgb, var(--color-pass) 10%, transparent);
+    border-color: color-mix(in srgb, var(--color-pass) 20%, transparent);
   }
+  .mello-badge-pass::before { background-color: var(--color-pass); box-shadow: 0 0 8px var(--color-pass); }
+
   .mello-badge-fail {
-    background-color: var(--color-noncompliant-bg);
-    border: 1px solid color-mix(in srgb, var(--color-noncompliant) 20%, transparent);
     color: var(--color-noncompliant);
-    padding: 4px 10px;
-    border-radius: 9999px;
-    font-size: 12px;
-    font-weight: 500;
-    display: inline-block;
+    background-color: color-mix(in srgb, var(--color-noncompliant) 10%, transparent);
+    border-color: color-mix(in srgb, var(--color-noncompliant) 20%, transparent);
   }
+  .mello-badge-fail::before { background-color: var(--color-noncompliant); box-shadow: 0 0 8px var(--color-noncompliant); }
+
   .mello-badge-review {
-    background-color: var(--color-review-bg);
-    border: 1px solid color-mix(in srgb, var(--color-review) 20%, transparent);
     color: var(--color-review);
-    padding: 4px 10px;
-    border-radius: 9999px;
-    font-size: 12px;
-    font-weight: 500;
-    display: inline-block;
+    background-color: color-mix(in srgb, var(--color-review) 10%, transparent);
+    border-color: color-mix(in srgb, var(--color-review) 20%, transparent);
   }
+  .mello-badge-review::before { background-color: var(--color-review); box-shadow: 0 0 8px var(--color-review); }
+
   .mello-badge-na {
-    background-color: var(--color-not-applicable-bg);
-    border: 1px solid color-mix(in srgb, var(--color-not-applicable) 20%, transparent);
     color: var(--color-not-applicable);
-    padding: 4px 10px;
-    border-radius: 9999px;
-    font-size: 12px;
-    font-weight: 500;
-    display: inline-block;
+    background-color: color-mix(in srgb, var(--color-not-applicable) 10%, transparent);
+    border-color: color-mix(in srgb, var(--color-not-applicable) 20%, transparent);
   }
+  .mello-badge-na::before { background-color: var(--color-not-applicable); box-shadow: 0 0 8px var(--color-not-applicable); }
+
   .mello-badge-not-verified {
-    background-color: var(--color-not-verified-bg);
-    border: 1px solid color-mix(in srgb, var(--color-not-verified) 20%, transparent);
     color: var(--color-not-verified);
-    padding: 4px 10px;
-    border-radius: 9999px;
-    font-size: 12px;
-    font-weight: 500;
-    display: inline-block;
+    background-color: color-mix(in srgb, var(--color-not-verified) 10%, transparent);
+    border-color: color-mix(in srgb, var(--color-not-verified) 20%, transparent);
   }
+  .mello-badge-not-verified::before { background-color: var(--color-not-verified); box-shadow: 0 0 8px var(--color-not-verified); }
 
   /* Cards */
   .mello-card {
