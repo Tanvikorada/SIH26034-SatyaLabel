@@ -68,25 +68,9 @@ export default function ResultsPage({ params }) {
     }
   };
 
-  const downloadPDF = async () => {
-    const toastId = toast.loading('Generating PDF Notice...');
-    try {
-      const canvas = await html2canvas(reportRef.current, { 
-        scale: 2, 
-        useCORS: true, 
-        allowTaint: false,
-        backgroundColor: '#000000' 
-      });
-      const pdf = new jsPDF('p', 'mm', 'a4');
-      const pdfWidth = pdf.internal.pageSize.getWidth();
-      const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
-      pdf.addImage(canvas.toDataURL('image/png', 0.9), 'PNG', 0, 0, pdfWidth, pdfHeight);
-      pdf.save(`Notice_${report.id}.pdf`);
-      toast.success('Official Notice Downloaded', { id: toastId });
-    } catch (err) {
-      console.error('PDF Gen Error:', err);
-      toast.error(`PDF Failed: ${err.message || 'Check console'}`, { id: toastId });
-    }
+  const downloadPDF = () => {
+    toast.info('Opening Print Dialog. Save as PDF.');
+    setTimeout(() => window.print(), 500);
   };
 
   const handleDelete = async () => {
@@ -110,7 +94,7 @@ export default function ResultsPage({ params }) {
   if (loading) {
     return (
       <div className="min-h-screen bg-background text-text-primary flex flex-col">
-        <NavBar />
+        <div className="print:hidden"><NavBar /></div>
         <div className="flex-1 flex flex-col items-center justify-center gap-6 pb-32">
           <div className="w-12 h-12 rounded-full border-4 border-border border-t-[var(--color-primary)] animate-spin"></div>
           <div className="flex flex-col items-center gap-2">
@@ -128,7 +112,7 @@ export default function ResultsPage({ params }) {
   if (report.status === 'failed') {
     return (
       <div className="min-h-screen bg-background text-text-primary flex flex-col">
-        <NavBar />
+        <div className="print:hidden"><NavBar /></div>
         <div className="flex-1 flex items-center justify-center p-6 pb-32">
           <div className="mello-card p-8 max-w-md w-full flex flex-col items-center text-center gap-4 border-red-900/50">
             <div className="w-16 h-16 rounded-full bg-red-500/10 flex items-center justify-center mb-2">
@@ -152,7 +136,7 @@ export default function ResultsPage({ params }) {
 
   return (
     <div className="min-h-screen bg-background text-text-primary pb-24">
-      <NavBar />
+      <div className="print:hidden"><NavBar /></div>
       
       <div className="max-w-[1200px] mx-auto px-6 py-12">
         <div ref={reportRef} className="bg-background p-2 md:p-6 rounded-2xl">
@@ -294,7 +278,7 @@ export default function ResultsPage({ params }) {
           </div>
         </div>
 
-        <div className="mt-8 flex flex-col md:flex-row gap-3 max-w-[400px] ml-auto">
+        <div className="mt-8 flex flex-col md:flex-row gap-3 max-w-[400px] ml-auto print:hidden">
           <button onClick={downloadPDF} className="mello-btn-primary flex-1 shadow-lg">Download Official Notice PDF</button>
           {localStorage.getItem('role') === 'admin' && (
             <button onClick={handleDelete} className="mello-btn-secondary flex-1 text-red-500 border-red-900/30 hover:bg-red-500/10">Delete Record</button>
