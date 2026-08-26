@@ -193,7 +193,7 @@ async function runTesseract(imagePath) {
  * @param {string} [modelName='gemini-1.5-flash-latest']
  * @returns {{ text, structuredData, confidence, engine }}
  */
-async function runGeminiVision(imagePath, attempt = 1, modelName = 'gemini-flash-latest') {
+async function runGeminiVision(imagePath, attempt = 1, modelName = 'gemini-1.5-flash') {
   if (!config.gemini?.enabled || !config.gemini?.apiKey) {
     throw new Error('Gemini API key not configured.');
   }
@@ -264,7 +264,7 @@ Respond with ONLY the complete JSON object. No markdown, no explanation.`;
 
     const controller = new AbortController();
     // Use 60-second timeout instead of 15 seconds to allow the flash model enough time to process
-    const timeoutId = setTimeout(() => controller.abort(), 60000);
+    const timeoutId = setTimeout(() => controller.abort(), 120000);
 
     const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${config.gemini.apiKey}`, {
       method: 'POST',
@@ -301,9 +301,9 @@ Respond with ONLY the complete JSON object. No markdown, no explanation.`;
 
   } catch (err) {
     if (attempt < 3) {
-      const nextModel = modelName === 'gemini-flash-latest' 
-            ? 'gemini-3.7-flash' 
-            : (modelName === 'gemini-3.7-flash' ? 'gemini-3.6-flash' : 'gemini-2.5-flash');
+      const nextModel = modelName === 'gemini-1.5-flash' 
+            ? 'gemini-1.5-pro' 
+            : (modelName === 'gemini-1.5-pro' ? 'gemini-1.0-pro-vision-latest' : 'gemini-pro-vision');
       
       console.warn(`[OCR] Gemini REST failed with ${modelName} (${err.message}) - retrying with ${nextModel}...`);
       await new Promise(r => setTimeout(r, 1000));
