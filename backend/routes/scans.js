@@ -15,6 +15,29 @@
 const express = require('express');
 const router = express.Router();
 
+
+// Temporary debug route to test OCR natively
+router.get('/debug-ocr', async (req, res) => {
+  try {
+    const { runOcrPipeline } = require('../services/ocr_service');
+    // Create a tiny 1x1 image to test just the API connection
+    const fs = require('fs');
+    const tinyImagePath = './tiny.jpg';
+    // 1x1 white pixel in base64
+    const tinyBase64 = '/9j/4AAQSkZJRgABAQEASABIAAD/2wBDAP//////////////////////////////////////////////////////////////////////////////////////wgALCAABAAEBAREA/8QAFBABAAAAAAAAAAAAAAAAAAAAAP/aAAgBAQABPxA=';
+    fs.writeFileSync(tinyImagePath, Buffer.from(tinyBase64, 'base64'));
+    
+    const start = Date.now();
+    const result = await runOcrPipeline(tinyImagePath, {});
+    const elapsed = Date.now() - start;
+    
+    res.json({ success: true, elapsed, result });
+  } catch (error) {
+    res.status(500).json({ error: error.message, stack: error.stack });
+  }
+});
+
+
 // Temporary debug route to list models
 router.get('/debug-models', async (req, res) => {
   try {
@@ -77,7 +100,15 @@ async function runScanPipeline(scan, imagePath, metadata = {}) {
     // Step 1: OCR
     const ocrResult = await runOcrPipeline(path.resolve(imagePath), metadata);
 
-    // Step 2: Extract fields (two-tier: regex → Gemini)
+    
+      // Check if cancelled before proceeding
+      await scan.reload();
+      if (scan.status === 'failed' && scan.errorMessage === 'Scan cancelled by user.') {
+        console.log([Pipeline] Scan  was cancelled by user. Aborting pipeline.);
+        return;
+      }
+
+      // Step 2: Extract fields (two-tier: regex → Gemini)
     const fieldsMap = extractFields(
       ocrResult.text,
       ocrResult.geminiStructuredData || null,
@@ -501,6 +532,24 @@ router.get('/debug-models', async (req, res) => {
     res.json(data);
   } catch (error) {
     res.status(500).json({ error: error.message });
+  }
+});
+
+
+// POST /api/v1/scans/:id/cancel
+router.post('/:id/cancel', optionalAuth, async (req, res) => {
+  try {
+    const scan = await Scan.findByPk(req.params.id);
+    if (!scan) return fail(res, 404, 'SCAN_NOT_FOUND', 'Scan not found');
+    
+    if (scan.status === 'processing') {
+      await scan.update({ status: 'failed', errorMessage: 'Scan cancelled by user.' });
+      return ok(res, { message: 'Scan cancelled successfully' });
+    }
+    
+    return ok(res, { message: 'Scan already finished' });
+  } catch (err) {
+    return fail(res, 500, 'INTERNAL_ERROR', err.message);
   }
 });
 
