@@ -190,9 +190,10 @@ async function runTesseract(imagePath) {
  *
  * @param {string} imagePath
  * @param {number} [attempt=1]
+ * @param {string} [modelName='gemini-1.5-flash']
  * @returns {{ text, structuredData, confidence, engine }}
  */
-async function runGeminiVision(imagePath, attempt = 1) {
+async function runGeminiVision(imagePath, attempt = 1, modelName = 'gemini-1.5-flash') {
   if (!config.gemini?.enabled || !config.gemini?.apiKey) {
     throw Object.assign(
       new Error('Gemini API key not configured. Add GEMINI_API_KEY to .env to enable Vision fallback.'),
@@ -203,10 +204,9 @@ async function runGeminiVision(imagePath, attempt = 1) {
   const { GoogleGenerativeAI } = require('@google/generative-ai');
   const genAI = new GoogleGenerativeAI(config.gemini.apiKey);
 
-  // Use flash model — free tier, sufficient for structured extraction
-  const model = genAI.getGenerativeModel({ model: 'gemini-3.6-flash' });
+  const model = genAI.getGenerativeModel({ model: modelName });
 
-  console.log(`[OCR] Calling Gemini Vision (attempt ${attempt}/2)…`);
+  console.log(`[OCR] Calling Gemini Vision (${modelName}) (attempt ${attempt}/3).`);
 
   const imageBuffer = fs.readFileSync(imagePath);
   const base64Image = imageBuffer.toString('base64');
@@ -285,9 +285,12 @@ Respond with ONLY the complete JSON object. No markdown, no explanation.`;
     console.log('[OCR] Gemini Vision extraction complete');
 
   } catch (err) {
-    if (err.code === 'GEMINI_TIMEOUT' && GEMINI_RETRY_ONCE && attempt < 2) {
-      console.warn('[OCR] Gemini timeout — retrying once…');
-      return runGeminiVision(imagePath, 2);
+    const is503 = err.message && (err.message.includes('503') || err.message.includes('overloaded') || err.message.includes('high demand'));
+    if ((err.code === 'GEMINI_TIMEOUT' || is503) && attempt < 3) {
+      const nextModel = modelName === 'gemini-1.5-flash' ? 'gemini-1.5-pro' : 'gemini-1.5-flash-8b';
+      console.warn(`[OCR] Gemini ${is503 ? '503 High Demand' : 'Timeout'} - retrying with ${nextModel}...`);
+      await new Promise(r => setTimeout(r, 2000));
+      return runGeminiVision(imagePath, attempt + 1, nextModel);
     }
     throw err;
   }

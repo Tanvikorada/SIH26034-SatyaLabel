@@ -763,7 +763,7 @@ function checkContradictoryDeclarations(fields) {
 // ─── MAIN RUNNER ─────────────────────────────────────────────────────────────
 
 const { GoogleGenerativeAI } = require('@google/generative-ai');
-const Groq = require('groq-sdk');
+// Groq removed
 const config = require('../config');
 
 async function validateCompliance(fieldsMap, rawText = '', options = {}) {
@@ -798,21 +798,33 @@ DO NOT return markdown code blocks, just raw JSON.`;
 
   let responseText = '';
 
-  if (config.groq?.enabled && options.forceEngine !== 'gemini') {
-    console.log('[RulesEngine] Calling Groq LLM (llama-3.3-70b-versatile)...');
-    const groq = new Groq({ apiKey: config.groq.apiKey });
-    const completion = await groq.chat.completions.create({
-      messages: [{ role: 'user', content: prompt }],
-      model: 'llama-3.3-70b-versatile',
-      response_format: { type: 'json_object' }
-    }, { timeout: 30000 });
-    responseText = completion.choices[0]?.message?.content || '';
-  } else if (config.gemini?.enabled) {
-    console.log('[RulesEngine] Using Gemini LLM (gemini-3.6-flash)...');
+  if (config.gemini?.enabled) {
+    console.log('[RulesEngine] Using Gemini LLM...');
     const genAI = new GoogleGenerativeAI(config.gemini.apiKey);
-    const model = genAI.getGenerativeModel({ model: 'gemini-3.6-flash' });
-    const result = await model.generateContent(prompt);
-    responseText = result.response.text();
+    let result = null;
+    let errToThrow = null;
+    const modelsToTry = ['gemini-1.5-flash', 'gemini-1.5-pro', 'gemini-1.5-flash-8b'];
+    
+    for (const modelName of modelsToTry) {
+        try {
+            console.log(`[RulesEngine] Trying model ${modelName}...`);
+            const model = genAI.getGenerativeModel({ model: modelName });
+            result = await model.generateContent(prompt);
+            responseText = result.response.text();
+            break; // Success
+        } catch (err) {
+            console.warn(`[RulesEngine] Model ${modelName} failed: ${err.message}`);
+            errToThrow = err;
+            if (!err.message.includes('503') && !err.message.includes('429') && !err.message.includes('overloaded') && !err.message.includes('high demand')) {
+                break; // Don't retry if it's a structural error
+            }
+            await new Promise(r => setTimeout(r, 1500)); // sleep before retry
+        }
+    }
+    
+    if (!result) {
+        throw errToThrow || new Error("All Gemini models failed.");
+    }
   } else {
     throw new Error("Neither GROQ_API_KEY nor GEMINI_API_KEY is configured.");
   }
