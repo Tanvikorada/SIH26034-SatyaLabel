@@ -1,4 +1,4 @@
-const CACHE_NAME = 'satyalabel-cache-v1';
+const CACHE_NAME = 'satyalabel-cache-v2';
 
 const urlsToCache = [
   '/',
@@ -44,8 +44,8 @@ self.addEventListener('fetch', (event) => {
   // Only handle GET requests
   if (event.request.method !== 'GET') return;
   
-  // Skip cross-origin requests unless they are specific APIs we want to cache
-  if (!event.request.url.startsWith(self.location.origin) && !event.request.url.includes('satyalabel-backend')) return;
+  // Skip all cross-origin requests (including the backend API)
+  if (!event.request.url.startsWith(self.location.origin)) return;
 
   event.respondWith(
     fetch(event.request)
