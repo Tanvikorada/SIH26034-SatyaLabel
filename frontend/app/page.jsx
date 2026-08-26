@@ -394,15 +394,39 @@ function RuleMicroApp() {
 
 function PipelineSection() {
   return (
-    <section className="py-24 px-6 md:px-12 max-w-[1200px] mx-auto relative z-10">
-      <div className="mb-16 text-center">
-        <h2 className="text-3xl font-medium tracking-tight mb-3">Live Automated Pipeline</h2>
-        <p className="text-[var(--color-text-secondary)]">Experience the architecture continuously at work in real-time.</p>
+    <section className="py-32 px-6 md:px-12 max-w-[1200px] mx-auto relative z-10 border-t border-[var(--color-border)]">
+      <div className="mb-20 text-center relative">
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-[var(--color-primary)]/10 blur-[100px] rounded-full pointer-events-none" />
+        <h2 className="text-4xl font-medium tracking-tight mb-4">Live Automated Pipeline</h2>
+        <p className="text-[var(--color-text-secondary)] text-[16px]">Experience the multi-stage architecture continuously at work in real-time.</p>
       </div>
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 auto-rows-[250px]">
-        <InteractivePipelineCard title="1. Capture" icon={Upload}><UploadMicroApp /></InteractivePipelineCard>
-        <InteractivePipelineCard title="2. Extract" icon={ScanLine}><OCRMicroApp /></InteractivePipelineCard>
-        <InteractivePipelineCard title="3. Adjudicate" icon={Scale}><RuleMicroApp /></InteractivePipelineCard>
+      
+      <div className="relative">
+        {/* Animated Connector Line (Desktop) */}
+        <div className="hidden md:block absolute top-[125px] left-[16%] right-[16%] h-[2px] bg-[var(--color-border)] z-0 overflow-hidden">
+          <motion.div 
+            className="h-full w-1/3 bg-gradient-to-r from-transparent via-[var(--color-primary)] to-transparent opacity-70"
+            animate={{ x: ['-100%', '300%'] }} 
+            transition={{ duration: 3, repeat: Infinity, ease: 'linear' }} 
+          />
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 auto-rows-[280px] relative z-10">
+          <div className="relative group hover:-translate-y-2 transition-transform duration-500">
+            <InteractivePipelineCard title="1. Capture" icon={Upload}><UploadMicroApp /></InteractivePipelineCard>
+            <div className="absolute -inset-1 bg-gradient-to-b from-[var(--color-primary)]/0 to-[var(--color-primary)]/0 group-hover:from-[var(--color-primary)]/20 blur-xl transition-all duration-500 rounded-3xl -z-10" />
+          </div>
+          
+          <div className="relative group hover:-translate-y-2 transition-transform duration-500 md:mt-12">
+            <InteractivePipelineCard title="2. Extract" icon={ScanLine}><OCRMicroApp /></InteractivePipelineCard>
+            <div className="absolute -inset-1 bg-gradient-to-b from-purple-500/0 to-purple-500/0 group-hover:from-purple-500/20 blur-xl transition-all duration-500 rounded-3xl -z-10" />
+          </div>
+          
+          <div className="relative group hover:-translate-y-2 transition-transform duration-500">
+            <InteractivePipelineCard title="3. Adjudicate" icon={Scale}><RuleMicroApp /></InteractivePipelineCard>
+            <div className="absolute -inset-1 bg-gradient-to-b from-green-500/0 to-green-500/0 group-hover:from-green-500/20 blur-xl transition-all duration-500 rounded-3xl -z-10" />
+          </div>
+        </div>
       </div>
     </section>
   );
@@ -528,42 +552,56 @@ function RulingLedger() {
 }
 
 function TechStack() {
+  const [activeTech, setActiveTech] = useState(null);
+
+  const stack = [
+    { id: 'next', name: 'Next.js & React', role: 'Frontend & Routing', type: 'edge', col: 'col-span-1 md:col-span-2', desc: 'Edge-rendered UI using the App Router for zero-latency client interactions.' },
+    { id: 'pwa', name: 'PWA Service Workers', role: 'Offline Queuing', type: 'edge', col: 'col-span-1 md:col-span-2', desc: 'Intercepts network requests to locally queue scans when deep inside warehouses without 4G/5G.' },
+    { id: 'node', name: 'Node.js & Express', role: 'API Gateway', type: 'core', col: 'col-span-2 md:col-span-2', desc: 'High-throughput backend orchestrating the dual-OCR pipelines.' },
+    { id: 'tesseract', name: 'Tesseract.js', role: 'Deterministic Spatial OCR', type: 'ai', col: 'col-span-1 md:col-span-3', desc: 'Maps the physical X/Y bounding boxes of every character to enforce Rule 7 (Font Size) deterministically.' },
+    { id: 'groq', name: 'Groq Cloud LPU', role: 'Inference Engine', type: 'ai', col: 'col-span-1 md:col-span-3', desc: 'Runs inference at 800+ tokens per second, ensuring the entire scan completes in under 3 seconds.' },
+    { id: 'llama', name: 'Llama 3.2 90B Vision', role: 'Multimodal Extraction', type: 'ai', col: 'col-span-2 md:col-span-6', desc: 'Massive 90-Billion parameter flagship model running at Temp 0.0 to parse complex curved label layouts into strict JSON without hallucinations.' },
+    { id: 'regex', name: 'Regex Rules Engine', role: 'Legal Metrology Act 2011', type: 'logic', col: 'col-span-1 md:col-span-3', desc: 'Bypasses AI completely to cross-reference the extracted JSON against 38 hardcoded Indian laws (e.g. MRP tax statements).' },
+    { id: 'pg', name: 'PostgreSQL', role: 'Immutable Ledger', type: 'data', col: 'col-span-1 md:col-span-3', desc: 'Every penalty is cryptographically hashed and committed to a relational database for unbreakable chain-of-custody.' },
+    { id: 'pdf', name: 'PDF-lib', role: 'Notice Generation', type: 'data', col: 'col-span-2 md:col-span-6', desc: 'Dynamically injects the failed rules into an official Government Notice PDF template for instant field enforcement.' }
+  ];
+
   return (
-    <section className="py-32 px-6 md:px-12 max-w-[1200px] mx-auto w-full relative z-10 border-t border-[var(--color-border)] bg-transparent overflow-hidden">
-      <div className="mb-24 text-center relative z-20">
-        <h2 className="text-3xl font-medium tracking-tight mb-3">The Analysis Pipeline</h2>
-        <p className="text-[var(--color-text-secondary)]">How raw pixels become deterministic legal rulings.</p>
+    <section className="py-32 px-6 max-w-[1200px] mx-auto w-full relative z-10 border-t border-[var(--color-border)] bg-transparent overflow-hidden">
+      <div className="mb-20 text-center relative z-20">
+        <h2 className="text-4xl font-medium tracking-tight mb-4">Enterprise Architecture</h2>
+        <p className="text-[var(--color-text-secondary)] max-w-2xl mx-auto">10+ interconnected technologies parallelized for sub-3-second field audits. Hover over the stack to inspect the data flow.</p>
       </div>
 
-      <div className="relative w-full max-w-[1000px] mx-auto flex flex-col md:flex-row items-center justify-between gap-6 md:gap-2">
-         {/* Animated connector line behind on desktop */}
-         <div className="hidden md:block absolute top-1/2 left-[5%] right-[5%] h-[1px] bg-[var(--color-border)] -translate-y-1/2 z-0 overflow-hidden">
-             <motion.div className="h-full bg-[var(--color-text-primary)] opacity-40 w-1/3" animate={{ x: ['-100%', '300%'] }} transition={{ duration: 2.5, repeat: Infinity, ease: 'linear' }} />
-         </div>
+      <div className="relative w-full max-w-[1100px] mx-auto">
+        <div className="grid grid-cols-2 md:grid-cols-6 gap-3">
+          {stack.map((tech) => (
+            <div 
+              key={tech.id}
+              onMouseEnter={() => setActiveTech(tech.id)}
+              onMouseLeave={() => setActiveTech(null)}
+              className={`relative bg-[var(--color-surface)]/30 border p-5 rounded-2xl cursor-crosshair transition-all duration-300 flex flex-col justify-between min-h-[140px] overflow-hidden ${tech.col} ${activeTech === tech.id ? 'border-[var(--color-primary)] bg-[var(--color-surface)] shadow-[0_0_30px_rgba(var(--color-primary-rgb),0.15)] scale-[1.02] z-20' : activeTech ? 'border-[var(--color-border)] opacity-40 scale-95 z-0' : 'border-[var(--color-border)] hover:bg-[var(--color-surface)]/80 z-10'}`}
+            >
+              <div className="flex justify-between items-start mb-4">
+                <span className={`text-[10px] font-mono tracking-widest uppercase px-2 py-1 rounded-full border ${tech.type === 'edge' ? 'text-blue-500 border-blue-500/30 bg-blue-500/10' : tech.type === 'core' ? 'text-green-500 border-green-500/30 bg-green-500/10' : tech.type === 'ai' ? 'text-purple-500 border-purple-500/30 bg-purple-500/10' : tech.type === 'logic' ? 'text-[var(--color-primary)] border-[var(--color-primary)]/30 bg-[var(--color-primary)]/10' : 'text-orange-500 border-orange-500/30 bg-orange-500/10'}`}>
+                  {tech.type}
+                </span>
+                {activeTech === tech.id && <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} className="w-2 h-2 rounded-full bg-[var(--color-primary)] animate-ping" />}
+              </div>
+              
+              <div>
+                <h3 className={`text-[16px] font-semibold mb-1 transition-colors ${activeTech === tech.id ? 'text-[var(--color-primary)]' : 'text-[var(--color-text-primary)]'}`}>{tech.name}</h3>
+                <p className="text-[12px] font-mono text-[var(--color-text-muted)]">{tech.role}</p>
+              </div>
 
-         {/* Nodes */}
-         <TechNode icon={<Scan size={24}/>} title="1. Capture" subtitle="Mobile Web/Edge" delay={0} />
-         <TechNode icon={<Cpu size={24}/>} title="2. Engine" subtitle="Node.js (Render)" delay={0.2} />
-         <TechNode icon={<Zap size={24}/>} title="3. Vision AI" subtitle="Gemini 1.5 Pro" delay={0.4} />
-         <TechNode icon={<FileText size={24}/>} title="4. Rules" subtitle="Deterministic Logic" delay={0.6} />
-         <TechNode icon={<Database size={24}/>} title="5. Ledger" subtitle="Supabase (PG)" delay={0.8} />
+              <div className={`absolute inset-0 bg-[var(--color-surface)]/95 backdrop-blur-md p-5 flex items-center justify-center text-center transition-opacity duration-300 ${activeTech === tech.id ? 'opacity-100 visible' : 'opacity-0 invisible'}`}>
+                <p className="text-[13px] leading-relaxed text-[var(--color-text-primary)]">{tech.desc}</p>
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
     </section>
-  );
-}
-
-function TechNode({ icon, title, subtitle, delay }) {
-  return (
-     <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} transition={{ delay }} viewport={{ once: true }}
-       className="relative z-10 flex flex-col items-center gap-4 p-6 bg-transparent border border-[var(--color-border)] rounded-2xl w-full md:w-[170px] shadow-sm hover:border-[var(--color-text-primary)] hover:bg-[var(--color-surface)] hover:-translate-y-1 transition-all group backdrop-blur-sm">
-         <div className="w-14 h-14 rounded-full bg-[var(--color-surface)] border border-[var(--color-border)] flex items-center justify-center text-[var(--color-text-primary)] group-hover:scale-110 transition-transform shadow-md">
-           {icon}
-         </div>
-         <div className="text-center">
-            <div className="text-[14px] font-medium text-[var(--color-text-primary)] mb-1">{title}</div>
-            <div className="text-[12px] text-[var(--color-text-muted)]">{subtitle}</div>
-         </div>
-     </motion.div>
   );
 }
 
