@@ -766,14 +766,6 @@ const { GoogleGenerativeAI } = require('@google/generative-ai');
 const Groq = require('groq-sdk');
 const config = require('../config');
 
-const S = {
-  PASS: 'PASS',
-  PNOC: 'POTENTIAL NON-COMPLIANCE',
-  REVIEW: 'MANUAL REVIEW',
-  NA: 'NOT APPLICABLE',
-  NV: 'NOT VERIFIED'
-};
-
 async function validateCompliance(fieldsMap, rawText = '', options = {}) {
   const prompt = `You are a strict, expert compliance auditor for the Indian Legal Metrology (Packaged Commodities) Rules, 2011.
 Evaluate the following extracted label data for compliance.

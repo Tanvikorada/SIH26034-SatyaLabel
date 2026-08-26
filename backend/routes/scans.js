@@ -73,9 +73,7 @@ async function runScanPipeline(scan, imagePath, metadata = {}) {
     );
 
     // Step 3: Rules engine
-    const { violations, stats } = await validateCompliance(fieldsMap, ocrResult.text, metadata); //
-      source_type: sourceType,
-    });
+    const { violations, stats } = await validateCompliance(fieldsMap, ocrResult.text, metadata);
 
     // Step 4: Find or create Product
     const productName = fieldsMap.product_name || scan.productNameHint || null;
