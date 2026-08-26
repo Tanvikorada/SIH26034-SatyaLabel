@@ -190,10 +190,10 @@ async function runTesseract(imagePath) {
  *
  * @param {string} imagePath
  * @param {number} [attempt=1]
- * @param {string} [modelName='gemini-1.5-flash']
+ * @param {string} [modelName='gemini-1.5-flash-latest']
  * @returns {{ text, structuredData, confidence, engine }}
  */
-async function runGeminiVision(imagePath, attempt = 1, modelName = 'gemini-1.5-flash') {
+async function runGeminiVision(imagePath, attempt = 1, modelName = 'gemini-1.5-flash-latest') {
   if (!config.gemini?.enabled || !config.gemini?.apiKey) {
     throw Object.assign(
       new Error('Gemini API key not configured. Add GEMINI_API_KEY to .env to enable Vision fallback.'),
@@ -287,7 +287,7 @@ Respond with ONLY the complete JSON object. No markdown, no explanation.`;
   } catch (err) {
     const is503 = err.message && (err.message.includes('503') || err.message.includes('overloaded') || err.message.includes('high demand'));
     if ((err.code === 'GEMINI_TIMEOUT' || is503) && attempt < 3) {
-      const nextModel = modelName === 'gemini-1.5-flash' ? 'gemini-1.5-pro' : 'gemini-1.5-flash-8b';
+      const nextModel = modelName === 'gemini-1.5-flash-latest' ? 'gemini-1.5-pro-latest' : 'gemini-1.0-pro-vision-latest';
       console.warn(`[OCR] Gemini ${is503 ? '503 High Demand' : 'Timeout'} - retrying with ${nextModel}...`);
       await new Promise(r => setTimeout(r, 2000));
       return runGeminiVision(imagePath, attempt + 1, nextModel);
