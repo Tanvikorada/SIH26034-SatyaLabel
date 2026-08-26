@@ -552,53 +552,94 @@ function RulingLedger() {
 }
 
 function TechStack() {
-  const [activeTech, setActiveTech] = useState(null);
-
-  const stack = [
-    { id: 'next', name: 'Next.js & React', role: 'Frontend & Routing', type: 'edge', col: 'col-span-1 md:col-span-2', desc: 'Edge-rendered UI using the App Router for zero-latency client interactions.' },
-    { id: 'pwa', name: 'PWA Service Workers', role: 'Offline Queuing', type: 'edge', col: 'col-span-1 md:col-span-2', desc: 'Intercepts network requests to locally queue scans when deep inside warehouses without 4G/5G.' },
-    { id: 'node', name: 'Node.js & Express', role: 'API Gateway', type: 'core', col: 'col-span-2 md:col-span-2', desc: 'High-throughput backend orchestrating the dual-OCR pipelines.' },
-    { id: 'tesseract', name: 'Tesseract.js', role: 'Deterministic Spatial OCR', type: 'ai', col: 'col-span-1 md:col-span-3', desc: 'Maps the physical X/Y bounding boxes of every character to enforce Rule 7 (Font Size) deterministically.' },
-    { id: 'groq', name: 'Groq Cloud LPU', role: 'Inference Engine', type: 'ai', col: 'col-span-1 md:col-span-3', desc: 'Runs inference at 800+ tokens per second, ensuring the entire scan completes in under 3 seconds.' },
-    { id: 'llama', name: 'Llama 3.2 90B Vision', role: 'Multimodal Extraction', type: 'ai', col: 'col-span-2 md:col-span-6', desc: 'Massive 90-Billion parameter flagship model running at Temp 0.0 to parse complex curved label layouts into strict JSON without hallucinations.' },
-    { id: 'regex', name: 'Regex Rules Engine', role: 'Legal Metrology Act 2011', type: 'logic', col: 'col-span-1 md:col-span-3', desc: 'Bypasses AI completely to cross-reference the extracted JSON against 38 hardcoded Indian laws (e.g. MRP tax statements).' },
-    { id: 'pg', name: 'PostgreSQL', role: 'Immutable Ledger', type: 'data', col: 'col-span-1 md:col-span-3', desc: 'Every penalty is cryptographically hashed and committed to a relational database for unbreakable chain-of-custody.' },
-    { id: 'pdf', name: 'PDF-lib', role: 'Notice Generation', type: 'data', col: 'col-span-2 md:col-span-6', desc: 'Dynamically injects the failed rules into an official Government Notice PDF template for instant field enforcement.' }
-  ];
-
   return (
-    <section className="py-32 px-6 max-w-[1200px] mx-auto w-full relative z-10 border-t border-[var(--color-border)] bg-transparent overflow-hidden">
-      <div className="mb-20 text-center relative z-20">
-        <h2 className="text-4xl font-medium tracking-tight mb-4">Enterprise Architecture</h2>
-        <p className="text-[var(--color-text-secondary)] max-w-2xl mx-auto">10+ interconnected technologies parallelized for sub-3-second field audits. Hover over the stack to inspect the data flow.</p>
+    <section className="py-32 px-6 max-w-[1400px] mx-auto w-full relative z-10 border-t border-[var(--color-border)] bg-transparent overflow-hidden">
+      <div className="mb-24 text-center relative z-20">
+        <h2 className="text-4xl font-medium tracking-tight mb-4">Enterprise Architecture Flow</h2>
+        <p className="text-[var(--color-text-secondary)] max-w-2xl mx-auto">10+ interconnected technologies parallelized for sub-3-second field audits. This is the exact journey of a single scan.</p>
       </div>
 
-      <div className="relative w-full max-w-[1100px] mx-auto">
-        <div className="grid grid-cols-2 md:grid-cols-6 gap-3">
-          {stack.map((tech) => (
-            <div 
-              key={tech.id}
-              onMouseEnter={() => setActiveTech(tech.id)}
-              onMouseLeave={() => setActiveTech(null)}
-              className={`relative bg-[var(--color-surface)]/30 border p-5 rounded-2xl cursor-crosshair transition-all duration-300 flex flex-col justify-between min-h-[140px] overflow-hidden ${tech.col} ${activeTech === tech.id ? 'border-[var(--color-primary)] bg-[var(--color-surface)] shadow-[0_0_30px_rgba(var(--color-primary-rgb),0.15)] scale-[1.02] z-20' : activeTech ? 'border-[var(--color-border)] opacity-40 scale-95 z-0' : 'border-[var(--color-border)] hover:bg-[var(--color-surface)]/80 z-10'}`}
-            >
-              <div className="flex justify-between items-start mb-4">
-                <span className={`text-[10px] font-mono tracking-widest uppercase px-2 py-1 rounded-full border ${tech.type === 'edge' ? 'text-blue-500 border-blue-500/30 bg-blue-500/10' : tech.type === 'core' ? 'text-green-500 border-green-500/30 bg-green-500/10' : tech.type === 'ai' ? 'text-purple-500 border-purple-500/30 bg-purple-500/10' : tech.type === 'logic' ? 'text-[var(--color-primary)] border-[var(--color-primary)]/30 bg-[var(--color-primary)]/10' : 'text-orange-500 border-orange-500/30 bg-orange-500/10'}`}>
-                  {tech.type}
-                </span>
-                {activeTech === tech.id && <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} className="w-2 h-2 rounded-full bg-[var(--color-primary)] animate-ping" />}
-              </div>
-              
-              <div>
-                <h3 className={`text-[16px] font-semibold mb-1 transition-colors ${activeTech === tech.id ? 'text-[var(--color-primary)]' : 'text-[var(--color-text-primary)]'}`}>{tech.name}</h3>
-                <p className="text-[12px] font-mono text-[var(--color-text-muted)]">{tech.role}</p>
-              </div>
-
-              <div className={`absolute inset-0 bg-[var(--color-surface)]/95 backdrop-blur-md p-5 flex items-center justify-center text-center transition-opacity duration-300 ${activeTech === tech.id ? 'opacity-100 visible' : 'opacity-0 invisible'}`}>
-                <p className="text-[13px] leading-relaxed text-[var(--color-text-primary)]">{tech.desc}</p>
-              </div>
+      <div className="relative w-full overflow-x-auto pb-10">
+        <div className="min-w-[1000px] flex items-center justify-between gap-4">
+          
+          {/* Stage 1: Edge */}
+          <div className="flex-1 flex flex-col gap-4">
+            <div className="text-center mb-2">
+              <span className="text-[11px] font-bold tracking-widest uppercase text-blue-500 bg-blue-500/10 px-3 py-1 rounded-full border border-blue-500/30">1. Edge Capture</span>
             </div>
-          ))}
+            <div className="bg-surface/50 border border-[var(--color-border)] p-4 rounded-xl hover:border-blue-500/50 transition-colors">
+              <h3 className="font-semibold text-[15px] mb-1">Next.js & React</h3>
+              <p className="text-[12px] text-[var(--color-text-muted)]">Edge-rendered UI routing</p>
+            </div>
+            <div className="bg-surface/50 border border-[var(--color-border)] p-4 rounded-xl hover:border-blue-500/50 transition-colors">
+              <h3 className="font-semibold text-[15px] mb-1">PWA Service Workers</h3>
+              <p className="text-[12px] text-[var(--color-text-muted)]">Offline queuing in warehouses</p>
+            </div>
+          </div>
+
+          {/* Arrow */}
+          <div className="text-[var(--color-border)] shrink-0 animate-pulse"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg></div>
+
+          {/* Stage 2: Gateway */}
+          <div className="flex-1 flex flex-col gap-4">
+            <div className="text-center mb-2">
+              <span className="text-[11px] font-bold tracking-widest uppercase text-green-500 bg-green-500/10 px-3 py-1 rounded-full border border-green-500/30">2. Gateway</span>
+            </div>
+            <div className="bg-surface/50 border border-[var(--color-border)] p-4 rounded-xl hover:border-green-500/50 transition-colors">
+              <h3 className="font-semibold text-[15px] mb-1">Node.js & Express</h3>
+              <p className="text-[12px] text-[var(--color-text-muted)]">API orchestration</p>
+            </div>
+            <div className="bg-surface/50 border border-[var(--color-border)] p-4 rounded-xl hover:border-green-500/50 transition-colors">
+              <h3 className="font-semibold text-[15px] mb-1">Multer Engine</h3>
+              <p className="text-[12px] text-[var(--color-text-muted)]">Multi-part image processing</p>
+            </div>
+          </div>
+
+          {/* Arrow */}
+          <div className="text-[var(--color-border)] shrink-0 animate-pulse"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg></div>
+
+          {/* Stage 3: AI Inference */}
+          <div className="flex-1 flex flex-col gap-4 relative">
+            <div className="absolute -inset-4 bg-purple-500/5 blur-2xl rounded-full z-0" />
+            <div className="text-center mb-2 relative z-10">
+              <span className="text-[11px] font-bold tracking-widest uppercase text-purple-500 bg-purple-500/10 px-3 py-1 rounded-full border border-purple-500/30">3. AI Extraction</span>
+            </div>
+            <div className="bg-surface/80 border border-purple-500/30 p-4 rounded-xl relative z-10 shadow-[0_0_20px_rgba(168,85,247,0.15)]">
+              <h3 className="font-semibold text-[15px] mb-1 text-purple-400">Llama 3.2 90B Vision</h3>
+              <p className="text-[12px] text-[var(--color-text-muted)]">Multimodal JSON parsing</p>
+            </div>
+            <div className="bg-surface/50 border border-[var(--color-border)] p-4 rounded-xl relative z-10">
+              <h3 className="font-semibold text-[15px] mb-1">Groq LPU Cloud</h3>
+              <p className="text-[12px] text-[var(--color-text-muted)]">800+ tokens/sec inference</p>
+            </div>
+            <div className="bg-surface/50 border border-[var(--color-border)] p-4 rounded-xl relative z-10">
+              <h3 className="font-semibold text-[15px] mb-1">Tesseract.js</h3>
+              <p className="text-[12px] text-[var(--color-text-muted)]">Deterministic spatial mapping</p>
+            </div>
+          </div>
+
+          {/* Arrow */}
+          <div className="text-[var(--color-border)] shrink-0 animate-pulse"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg></div>
+
+          {/* Stage 4: Logic & Ledger */}
+          <div className="flex-1 flex flex-col gap-4">
+            <div className="text-center mb-2">
+              <span className="text-[11px] font-bold tracking-widest uppercase text-saffron bg-saffron/10 px-3 py-1 rounded-full border border-saffron/30">4. Logic & Ledger</span>
+            </div>
+            <div className="bg-surface/80 border border-saffron/30 p-4 rounded-xl shadow-[0_0_20px_rgba(255,153,51,0.1)]">
+              <h3 className="font-semibold text-[15px] mb-1 text-saffron">Regex Rules Engine</h3>
+              <p className="text-[12px] text-[var(--color-text-muted)]">2011 Act compliance logic</p>
+            </div>
+            <div className="bg-surface/50 border border-[var(--color-border)] p-4 rounded-xl">
+              <h3 className="font-semibold text-[15px] mb-1">PostgreSQL</h3>
+              <p className="text-[12px] text-[var(--color-text-muted)]">Immutable penalty ledger</p>
+            </div>
+            <div className="bg-surface/50 border border-[var(--color-border)] p-4 rounded-xl">
+              <h3 className="font-semibold text-[15px] mb-1">PDF-lib</h3>
+              <p className="text-[12px] text-[var(--color-text-muted)]">Official Notice generation</p>
+            </div>
+          </div>
+
         </div>
       </div>
     </section>
