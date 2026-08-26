@@ -202,7 +202,7 @@ async function runGeminiVision(imagePath, attempt = 1, modelName = 'gemini-1.5-f
 
   const imageBuffer = fs.readFileSync(imagePath);
   const base64Image = imageBuffer.toString('base64');
-  const mimeType = imagePath.toLowerCase().endsWith('.png') ? 'image/png' : 'image/jpeg';
+  const mimeType = 'image/jpeg';
 
   const STRUCTURED_PROMPT = `You are extracting mandatory declarations from a packaged commodity label image for a Legal Metrology compliance check. Return ONLY valid JSON with these keys:
 {
@@ -300,17 +300,13 @@ Respond with ONLY the complete JSON object. No markdown, no explanation.`;
     console.log('[OCR] Gemini REST API extraction complete');
 
   } catch (err) {
-    if (attempt < 3) {
-      const nextModel = modelName === 'gemini-1.5-flash' 
-            ? 'gemini-1.5-pro' 
-            : (modelName === 'gemini-1.5-pro' ? 'gemini-1.0-pro-vision-latest' : 'gemini-pro-vision');
-      
-      console.warn(`[OCR] Gemini REST failed with ${modelName} (${err.message}) - retrying with ${nextModel}...`);
-      await new Promise(r => setTimeout(r, 1000));
-      return runGeminiVision(imagePath, attempt + 1, nextModel);
+      if (attempt < 2) {
+        console.warn(`[OCR] Gemini REST failed with ${modelName} (${err.message}) - retrying once...`);
+        await new Promise(r => setTimeout(r, 2000));
+        return runGeminiVision(imagePath, attempt + 1, modelName);
+      }
+      throw err;
     }
-    throw err;
-  }
 
   return {
     text: rawText,
