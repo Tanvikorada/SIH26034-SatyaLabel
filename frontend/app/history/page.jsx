@@ -54,7 +54,7 @@ export default function HistoryPage() {
                 </div>
 
                 {/* Desktop Product / Mobile Title */}
-                <div className="w-full md:w-2/5 font-medium text-[15px] md:text-[14px] text-text-primary mb-1 md:mb-0 truncate">{s.product?.product_name || 'Unknown Product'}</div>
+                <div className="w-full md:w-2/5 font-medium text-[15px] md:text-[14px] text-text-primary mb-1 md:mb-0 truncate">{s.product_name || s.product?.product_name || 'Unknown Product'}</div>
                 
                 {/* Desktop Date */}
                 <div className="hidden md:block w-1/4 text-[14px] text-text-secondary">{new Date(s.createdAt || s.created_at).toLocaleDateString()}</div>
