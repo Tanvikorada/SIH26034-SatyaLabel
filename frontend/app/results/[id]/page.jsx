@@ -64,8 +64,8 @@ const downloadPDF = async () => {
         if (!isMounted) return;
 
         if (data.status === 'processing') {
-          // Poll every 2.5 seconds if still processing
-          pollTimeout = setTimeout(fetchScan, 2500);
+          // Poll every 10 seconds to avoid Cloudflare rate limiting (which causes CORS errors)
+          pollTimeout = setTimeout(fetchScan, 10000);
         } else {
           setReport(data);
           setLoading(false);

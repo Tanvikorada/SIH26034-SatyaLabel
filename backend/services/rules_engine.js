@@ -798,7 +798,7 @@ DO NOT return markdown code blocks, just raw JSON.`;
 
   let responseText = '';
 
-  if (config.groq?.enabled) {
+  if (config.groq?.enabled && options.forceEngine !== 'gemini') {
     console.log('[RulesEngine] Calling Groq LLM (llama-3.3-70b-versatile)...');
     const groq = new Groq({ apiKey: config.groq.apiKey });
     const completion = await groq.chat.completions.create({
