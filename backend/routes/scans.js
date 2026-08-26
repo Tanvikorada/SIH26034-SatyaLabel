@@ -119,7 +119,7 @@ async function runScanPipeline(scan, imagePath, metadata = {}) {
     const { results, violations, stats } = await validateCompliance(fieldsMap, ocrResult.text, metadata);
 
     // Step 4: Find or create Product
-    const productName = fieldsMap.product_name || scan.productNameHint || null;
+    const productName = fieldsMap.product_name || scan.productNameHint || 'Unknown Product';
     const brandName   = fieldsMap.brand_name   || scan.brandNameHint   || null;
     let product = null;
 

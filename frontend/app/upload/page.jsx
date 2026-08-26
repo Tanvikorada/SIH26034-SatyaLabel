@@ -55,6 +55,8 @@ export default function UploadPage() {
     try {
       const formData = new FormData();
       formData.append('image', file);
+      formData.append('product_name', productName || '');
+      formData.append('source_type', sourceType || 'physical_label');
       formData.append('metadata', JSON.stringify(metadata));
 
       const res = await fetch(`${API}/scans`, {
