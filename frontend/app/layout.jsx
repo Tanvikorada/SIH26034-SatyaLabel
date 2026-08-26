@@ -10,16 +10,27 @@ const sourceSerif = Source_Serif_4({ subsets: ['latin'], weight: ['400'], variab
 export const metadata = {
   title: 'SatyaLabel',
   description: 'Legal Metrology Compliance Checker',
+  manifest: '/manifest.json',
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'black-translucent',
+    title: 'SatyaLabel',
+  },
 }
+
+export const viewport = {
+  themeColor: '#ffffff',
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+  viewportFit: 'cover',
+};
 
 export default function RootLayout({ children }) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <head>
-        <link rel="manifest" href="/manifest.json" />
-        <link rel="apple-touch-icon" href="/icon.svg" />
-        <meta name="theme-color" content="#ffffff" />
-      </head>
+      <head></head>
       <body className={`${inter.variable} ${sourceSerif.variable} font-sans`}>
         <ThemeProvider
           attribute="class"

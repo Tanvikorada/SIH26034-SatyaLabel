@@ -121,52 +121,26 @@ function KineticText({ text, className }) {
 
 function HeroSeal() {
   return (
-    <div className="relative w-full max-w-[320px] aspect-square flex items-center justify-center md:ml-12 group cursor-default">
-      {/* Glow effect behind */}
-      <div className="absolute inset-8 rounded-full blur-[60px] opacity-10" style={{ background: 'var(--color-text-primary)' }} />
-      
-      <svg viewBox="0 0 200 200" className="relative z-10 w-full h-full overflow-visible">
+    <div className="relative w-full max-w-[320px] aspect-square flex items-center justify-center group cursor-default">
+      <svg viewBox="0 0 200 200" className="relative z-10 w-full h-full">
         <defs>
-          <path id="textCircle" d="M 100, 100 m -85, 0 a 85,85 0 1,1 170,0 a 85,85 0 1,1 -170,0" />
+          <path id="textCircle" d="M 100, 100 m -75, 0 a 75,75 0 1,1 150,0 a 75,75 0 1,1 -150,0" />
         </defs>
 
         {/* Rotating Text Ring */}
         <motion.g animate={{ rotate: 360 }} transition={{ duration: 25, repeat: Infinity, ease: 'linear' }} style={{ transformOrigin: '50% 50%' }}>
-            <text fill="var(--color-text-muted)" fontSize="11" letterSpacing="4.5" fontWeight="500" className="uppercase font-mono opacity-80">
+            <text fill="var(--color-text-primary)" fontSize="13" letterSpacing="4.5" fontWeight="600" className="uppercase font-mono">
                 <textPath href="#textCircle" startOffset="0%">
-                  LEGAL METROLOGY COMPLIANCE • SATYALABEL AI • LEGAL METROLOGY COMPLIANCE • SATYALABEL AI • 
+                  LEGAL METROLOGY • COMPLIANCE • SATYALABEL •
                 </textPath>
             </text>
         </motion.g>
 
-        {/* Outer dashed ring */}
-        <motion.circle cx="100" cy="100" r="70" fill="none" stroke="var(--color-border)" strokeWidth="1.5" strokeDasharray="4 8"
-          animate={{ rotate: -360 }} transition={{ duration: 80, repeat: Infinity, ease: 'linear' }}
-          style={{ transformOrigin: '50% 50%' }}
-        />
-        
-        {/* Inner solid ring */}
-        <circle cx="100" cy="100" r="58" fill="var(--color-surface)" stroke="var(--color-border)" strokeWidth="1" />
-        
-        {/* Center Shield */}
-        <motion.path 
-          d="M100 55 L124 65 L124 92 C124 112 114 125 100 133 C86 125 76 112 76 92 L76 65 Z"
-          fill="var(--color-background)" stroke="var(--color-text-primary)" strokeWidth="2"
-          initial={{ opacity: 0.8, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 2, repeat: Infinity, repeatType: 'reverse', ease: 'easeInOut' }}
-        />
-        
-        {/* Checkmark inside shield */}
-        <path d="M90 95 L97 102 L111 87" fill="none" stroke="var(--color-text-primary)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
-        
-        {/* Scanning laser line moving down the shield */}
-        <motion.line 
-          x1="65" y1="50" x2="135" y2="50" 
-          stroke="var(--color-text-primary)" strokeWidth="1.5" opacity="0.6"
-          animate={{ y: [0, 80, 0] }}
-          transition={{ duration: 3, repeat: Infinity, ease: 'linear' }}
-        />
+        {/* Static Center Core - Premium 2D */}
+        <circle cx="100" cy="100" r="50" fill="var(--color-text-primary)" />
+        <path d="M 90,80 L 110,80 L 105,120 L 95,120 Z" fill="var(--color-bg)" />
+        <circle cx="100" cy="115" r="3" fill="var(--color-text-primary)" />
+        <rect x="85" y="70" width="30" height="4" fill="var(--color-bg)" rx="1" />
       </svg>
     </div>
   );

@@ -163,6 +163,26 @@ export default function ResultsPage({ params }) {
                 <div className="text-[12px] font-mono text-text-muted">Legal Metrology Rules, 2011</div>
               </div>
 
+              
+              {/* AI COMPLIANCE ANALYSIS */}
+              <div className="border border-border rounded-2xl p-6 shadow-lg bg-surface relative overflow-hidden mb-6 mt-8">
+                <div className="absolute top-0 right-0 p-4 opacity-5 pointer-events-none">
+                  <svg width="120" height="120" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+                </div>
+                <h3 className="text-[14px] font-mono text-text-muted uppercase tracking-widest mb-4">AI Compliance Analysis</h3>
+                <div className="text-[15px] leading-relaxed text-text-secondary space-y-3">
+                  <p>
+                    <strong className="text-text-primary font-medium">Verdict:</strong> The label {report.complianceScore >= 80 ? 'meets most legal requirements' : 'violates multiple mandatory declarations'} under the Legal Metrology (Packaged Commodities) Rules, 2011.
+                  </p>
+                  <p>
+                    <strong className="text-text-primary font-medium">Critical Findings:</strong> Out of {report.totalRulesChecked} rules verified by the AI engine, <span className={report.totalViolations > 0 ? "text-red-500 font-medium" : "text-green-500 font-medium"}>{report.totalViolations} violations</span> were detected.
+                  </p>
+                  <p className="text-[13px] bg-background/50 p-3 rounded-lg border border-border mt-4">
+                    <strong>Legal Context:</strong> The manufacturer, packer, or importer is strictly liable under Rule 32 for the omission of declarations such as MRP, Net Quantity, or Manufacturer Address on the principal display panel. {report.totalViolations > 0 ? "An official notice may be issued." : "No immediate action required."}
+                  </p>
+                </div>
+              </div>
+
               {/* RULING LEDGER */}
               <div className="border border-border rounded-2xl overflow-hidden shadow-lg bg-surface/30 relative">
                 <div className="flex flex-col p-2 gap-2">
