@@ -294,7 +294,7 @@ router.get('/batch/:id', optionalAuth, async (req, res) => {
 
     if (!batch) return fail(res, 404, 'BATCH_NOT_FOUND', 'Batch not found');
 
-    const formattedScans = (batch.scans || []).map(formatScanList);
+    const formattedScans = (batch.scans || []).map(formatScanSummary);
     
     ok(res, {
       id: batch.id,
