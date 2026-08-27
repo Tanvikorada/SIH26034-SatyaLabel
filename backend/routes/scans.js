@@ -65,6 +65,7 @@ const { runOcrPipeline } = require('../services/ocr_service');
 const { extractFields } = require('../services/extraction_service');
 const { validateCompliance } = require('../services/rules_engine');
 const { generateReport } = require('../services/report_service');
+const { generateAIAuditorAnalysis } = require('../services/auditor_service');
 
 // ─── HELPERS ─────────────────────────────────────────────────────────────────
 
@@ -115,8 +116,25 @@ async function runScanPipeline(scan, imagePath, metadata = {}) {
       ocrResult._fontMetrics || null
     );
 
+    // Step 2.5: Multi-Product Guardrail
+    if (ocrResult.geminiStructuredData?.error === 'MULTI_PRODUCT_DETECTED') {
+      console.warn(`[Pipeline] Scan ${scan.id} failed: Multiple products detected in a single frame.`);
+      await scan.update({
+        status: 'failed',
+        errorMessage: 'Multiple products detected. Please scan one product at a time for accurate compliance analysis.',
+      });
+      return;
+    }
+
     // Step 3: Rules engine
     const { results, violations, stats } = await validateCompliance(fieldsMap, ocrResult.text, metadata);
+
+    // Step 3.5: AI Auditor Brain (Reasoning Layer)
+    console.log("[Pipeline] Generating AI Auditor reasoning...");
+    const aiAnalysis = await generateAIAuditorAnalysis(fieldsMap, violations, ocrResult.text);
+    if (aiAnalysis) {
+      fieldsMap._ai_analysis = aiAnalysis;
+    }
 
     // Step 4: Find or create Product
     const productName = fieldsMap.product_name || scan.productNameHint || 'Unknown Product';
