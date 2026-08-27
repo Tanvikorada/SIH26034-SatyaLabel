@@ -130,8 +130,11 @@ async function runBatchPipeline(batch, imagePath, metadata = {}) {
          fieldsMap._quality_warning = rawProductData.meta_quality_reason || 'Image quality too poor for full verification.';
       }
       if (rawProductData.meta_obstruction && rawProductData.meta_obstruction !== 'none') {
-         fieldsMap._quality_warning = (fieldsMap._quality_warning || '') + ' Obstruction detected: ' + rawProductData.meta_obstruction;
-      }
+           let reason = rawProductData.meta_obstruction;
+           if (reason === 'partially_cut_off') reason = 'Curved surface / Edge cut off. Take multiple photos for full validation.';
+           else if (reason === 'thumb_covering_text') reason = 'Thumb covering text detected.';
+           fieldsMap._quality_warning = (fieldsMap._quality_warning ? fieldsMap._quality_warning + ' | ' : '') + 'Obstruction: ' + reason;
+        }
 
       const { results, violations, stats } = await validateCompliance(fieldsMap, ocrResult.text, metadata);
       

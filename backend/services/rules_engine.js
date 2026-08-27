@@ -1,4 +1,32 @@
-// backend/services/rules_engine.js
+    const gateApp = checkApplicability(fieldsMap, options);
+    const gateExempt = checkExemption(fieldsMap, options);
+    const isExempt = (gateApp && gateApp.status === S.NA) || (gateExempt && gateExempt.status === S.NA);
+    
+    let rawResults = [gateApp, gateExempt].filter(Boolean);
+
+    if (isExempt) {
+       const exemptReason = gateExempt?.detail || gateApp?.detail || 'Exempt package';
+       rawResults.push(na('Rule 6', 'Mandatory Declarations', 'general', 'Skipped: ' + exemptReason));
+    } else {
+       rawResults = rawResults.concat([
+         checkManufacturerName(fieldsMap),
+         checkManufacturerAddress(fieldsMap),
+         checkCountryOfOrigin(fieldsMap, options),
+         checkGenericName(fieldsMap),
+         checkNetQuantityPresence(fieldsMap),
+         checkUnitConvention(fieldsMap),
+         checkMfgDate(fieldsMap),
+         checkBestBefore(fieldsMap, options),
+         checkMRP(fieldsMap),
+         checkConsumerCare(fieldsMap),
+         checkMisleadingQuantityWording(fieldsMap),
+         checkFontSize(fieldsMap),
+         checkPDPPlacement(fieldsMap, options),
+         checkLegibility(fieldsMap),
+         checkAdvertisementListing(fieldsMap, options),
+         checkContradictoryDeclarations(fieldsMap)
+       ].filter(Boolean));
+    }ckend/services/rules_engine.js
 // ============================================================
 // LEGAL METROLOGY (PACKAGED COMMODITIES) RULES, 2011
 // Compliance Rule Engine — SIH26034 SatyaLabel
