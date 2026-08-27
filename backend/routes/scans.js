@@ -187,10 +187,10 @@ async function runBatchPipeline(batch, imagePath, metadata = {}) {
       for (const v of violationsToSave) {
         await Violation.create({
           scanId: scan.id,
-          ruleId: v.ruleId,
-          ruleTitle: v.ruleTitle,
+          ruleId: v.rule_id || v.ruleId,
+          ruleTitle: v.rule_title || v.ruleTitle,
           status: v.status,
-          affectedField: v.affectedField,
+          affectedField: v.field || v.affectedField,
           severity: v.severity,
           detail: v.detail,
           confidence: v.confidence || 'estimated',
@@ -202,6 +202,7 @@ async function runBatchPipeline(batch, imagePath, metadata = {}) {
 
   } catch (err) {
     console.error('[Pipeline] Fatal error processing batch', batch.id, err);
+    require('fs').writeFileSync(require('path').join(__dirname, '../uploads/last_crash.txt'), err.stack || err.message);
     await batch.update({ status: 'failed' }).catch(() => {});
   }
 }
@@ -456,13 +457,13 @@ function formatScanFull(scan) {
     // Violations — spec 05 shape with blueprint 5-status
     violations: (scan.violations || []).map(v => ({
       id:          v.id,
-      rule_id:     v.ruleId,
-      ruleId:      v.ruleId,
-      rule_title:  v.ruleTitle,
-      ruleTitle:   v.ruleTitle,
+      rule_id:     v.rule_id || v.ruleId,
+      ruleId:      v.rule_id || v.ruleId,
+      rule_title:  v.rule_title || v.ruleTitle,
+      ruleTitle:   v.rule_title || v.ruleTitle,
       status:      v.status,
-      field:       v.affectedField,
-      affectedField: v.affectedField,
+      field:       v.field || v.affectedField,
+      affectedField: v.field || v.affectedField,
       severity:    v.severity,
       detail:      v.detail,
       confidence:  v.confidence,
