@@ -165,13 +165,22 @@ function parseDate(str) {
 // If officer has confirmed applicability, use that; otherwise flag for review.
 
 function checkApplicability(fields, options) {
-  const R = 'Rule 3';
-  const T = 'Applicability of the Chapter';
+    const R = 'Rule 3';
+    const T = 'Applicability of the Chapter';
 
-  // Officer explicitly flagged as not applicable (industrial/institutional/exempt)
-  if (options.is_not_applicable === true) {
-    return na(R, T, 'applicability',
-      `Officer confirmed: this package is not subject to Chapter II retail-package provisions. Reason: ${options.not_applicable_reason || 'Not specified'}.`);
+    // MULTI-PIECE / WHOLESALE BYPASS (Rule 29)
+    if (fields.is_wholesale_or_multipiece_package === true || fields.is_wholesale_or_multipiece_package === 'true') {
+      return review('Rule 29', 'Wholesale / Multi-piece Package', 'general', 'low',
+        'Wholesale or multi-piece package detected. Standard retail declarations under Rule 6 may not fully apply. Manual verification against Rule 29 is required.');
+    }
+
+    if (options.is_retail === false) {
+      return na(R, T, 'applicability', 
+      'User indicated this is not a retail package. Chapter II provisions may not apply.');
+    }
+
+    return null;
+  }.`);
   }
 
   // If officer confirmed applicability, proceed (return null = no issue, continue checks)

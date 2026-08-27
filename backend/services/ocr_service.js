@@ -220,6 +220,7 @@ For EACH product object, you MUST include these exact keys:
   "meta_image_quality": "good" | "blurry" | "glare" | "too_far",
   "meta_obstruction": "none" | "thumb_covering_text" | "partially_cut_off",
   "meta_quality_reason": "Explain if it is blurry or obstructed. If good, put null",
+  "is_wholesale_or_multipiece_package": true | false,
   "manufacturer_name": "string or null",
   "manufacturer_address": "string or null",
   "common_name": "string or null",
@@ -241,7 +242,9 @@ For EACH product object, you MUST include these exact keys:
 }
 
 CRITICAL RULES FOR HALLUCINATION PREVENTION:
-- If a value (like MRP) is blurry, obstructed by a thumb, or cut off, DO NOT GUESS IT. Set it to null.
+- STICKER OVERRIDE: If you see a secondary paper sticker placed over the original packaging (commonly done by importers to add Indian MRP/FSSAI details), you MUST prioritize the data printed on the sticker over the underlying packaging.
+- WHOLESALE DETECTION: Set is_wholesale_or_multipiece_package to true ONLY if the product is a large wholesale carton, bulk box, or shrink-wrapped bundle of multiple retail items.
+- If a value (like MRP) is blurry, obstructed by a thumb, or cut off by glare, DO NOT GUESS IT. Set it to null.
 - It is better to return null than to return a wrong value. You are a strict legal auditor.
 - Return ONLY the JSON array.` + (tesseractText ? `
 
@@ -333,6 +336,7 @@ For EACH product object, you MUST include these exact keys:
   "meta_image_quality": "good" | "blurry" | "glare" | "too_far",
   "meta_obstruction": "none" | "thumb_covering_text" | "partially_cut_off",
   "meta_quality_reason": "Explain if it is blurry or obstructed. If good, put null",
+  "is_wholesale_or_multipiece_package": true | false,
   "manufacturer_name": "string or null",
   "manufacturer_address": "string or null",
   "common_name": "string or null",
@@ -354,7 +358,9 @@ For EACH product object, you MUST include these exact keys:
 }
 
 CRITICAL RULES FOR HALLUCINATION PREVENTION:
-- If a value (like MRP) is blurry, obstructed by a thumb, or cut off, DO NOT GUESS IT. Set it to null.
+- STICKER OVERRIDE: If you see a secondary paper sticker placed over the original packaging (commonly done by importers to add Indian MRP/FSSAI details), you MUST prioritize the data printed on the sticker over the underlying packaging.
+- WHOLESALE DETECTION: Set is_wholesale_or_multipiece_package to true ONLY if the product is a large wholesale carton, bulk box, or shrink-wrapped bundle of multiple retail items.
+- If a value (like MRP) is blurry, obstructed by a thumb, or cut off by glare, DO NOT GUESS IT. Set it to null.
 - It is better to return null than to return a wrong value. You are a strict legal auditor.
 - Return ONLY the JSON array.` + (tesseractText ? `\n\nHere is some raw, noisy text extracted from the image by a secondary OCR engine. Use it as a hint to locate fields:\n${tesseractText}` : '');
 
