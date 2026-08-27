@@ -156,7 +156,18 @@ export default function ResultsPage({ params }) {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          
+        {report.extracted_fields?._quality_warning && (
+          <div className="mb-8 p-4 rounded-xl border border-amber-500/30 bg-amber-500/10 flex items-start gap-4 animate-fade-in">
+             <div className="text-amber-500 text-2xl">⚠️</div>
+             <div>
+               <h3 className="text-amber-400 font-semibold mb-1">Image Quality / Obstruction Warning</h3>
+               <p className="text-amber-200/80 text-sm">{report.extracted_fields._quality_warning}</p>
+               <p className="text-amber-200/60 text-xs mt-2">The AI strictly refused to extract fields in the affected areas to prevent hallucinating incorrect legal values.</p>
+             </div>
+          </div>
+        )}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <div className="lg:col-span-2 flex flex-col gap-6">
               
               <div className="flex items-center justify-between">
