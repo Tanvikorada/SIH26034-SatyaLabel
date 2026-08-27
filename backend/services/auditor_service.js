@@ -1,13 +1,16 @@
-const { Groq } = require('groq-sdk');
+const { GoogleGenerativeAI } = require('@google/generative-ai');
 const config = require('../config');
 
 async function generateAIAuditorAnalysis(fieldsMap, violations, rawText) {
-  if (!config.groq?.enabled || !config.groq?.apiKey) {
-    return null; // Silent fallback if no key
+  if (!config.gemini?.enabled || !config.gemini?.apiKey) {
+    console.warn("[Auditor] No Gemini key found.");
+    return null; 
   }
   
   try {
-    const groq = new Groq({ apiKey: config.groq.apiKey });
+    const genAI = new GoogleGenerativeAI(config.gemini.apiKey);
+    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+    
     const prompt = `You are an expert Legal Metrology Compliance Auditor in India. 
 You are reviewing a product label for compliance with the Legal Metrology (Packaged Commodities) Rules, 2011.
 
@@ -23,14 +26,9 @@ In paragraph 2, cite the specific Legal Metrology rules (e.g. Rule 6, Rule 32) a
 
 Do NOT output markdown headers, just return plain text paragraphs separated by a double newline. Be authoritative, precise, and act like a senior legal auditor.`;
 
-    const completion = await groq.chat.completions.create({
-      model: "llama-3.1-70b-versatile", // Fast reasoning model
-      messages: [{ role: "user", content: prompt }],
-      temperature: 0.2,
-      max_tokens: 500,
-    });
-
-    return completion.choices[0]?.message?.content?.trim() || null;
+    const result = await model.generateContent(prompt);
+    const text = result.response.text();
+    return text.trim() || null;
   } catch (err) {
     console.warn("[Auditor] LLM generation failed:", err.message);
     return null;
