@@ -107,7 +107,7 @@ async function runBatchPipeline(batch, imagePath, metadata = {}) {
     console.log('[Pipeline] Starting pipeline for Batch', batch.id);
     const ocrResult = await runOcrPipeline(imagePath, metadata.forceEngine);
 
-    if (!ocrResult.success) {
+    if (!ocrResult) {
       await batch.update({ status: 'failed' });
       return;
     }
