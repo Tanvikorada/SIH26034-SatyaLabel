@@ -123,11 +123,26 @@ async function runScanPipeline(scan, imagePath, metadata = {}) {
     const brandName   = fieldsMap.brand_name   || scan.brandNameHint   || null;
     let product = null;
 
-    if (productName) {
+    if (productName === 'Unknown Product') {
+      // Create a unique entry so we don't clump all unknown scans together and inherit old brands (like Diet Coke)
+      product = await Product.create({
+        productName,
+        brandName,
+        category: inferCategory(fieldsMap)
+      });
+    } else if (productName) {
       [product] = await Product.findOrCreate({
         where: { productName },
         defaults: { productName, brandName, category: inferCategory(fieldsMap) },
       });
+      
+      // Update existing product with new metadata if it was missing
+      if (product) {
+        let needsUpdate = false;
+        if (!product.brandName && brandName) { product.brandName = brandName; needsUpdate = true; }
+        if (!product.category && inferCategory(fieldsMap)) { product.category = inferCategory(fieldsMap); needsUpdate = true; }
+        if (needsUpdate) await product.save();
+      }
     }
 
     // Step 5: Update scan with results
