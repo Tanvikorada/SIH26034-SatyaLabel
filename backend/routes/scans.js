@@ -205,6 +205,90 @@ async function runBatchPipeline(batch, imagePath, metadata = {}) {
     await batch.update({ status: 'failed' }).catch(() => {});
   }
 }
+// OLD:// ─── POST /api/v1/scans ───────────────────────────────────────────────────────
+// Spec 05: Returns 202 immediately. Pipeline runs async.
+// Client polls GET /scans/:id until status !== "processing".
+//
+// Multipart body:
+//   image        — file (JPG/PNG, max 10MB)
+//   source_type  — "physical_label" | "ecommerce_listing"
+//   product_name — optional hint (used if OCR misses it)
+//   brand_name   — optional hint
+router.post('/', optionalAuth, (req, res, next) => {
+  // Run multer first, then handle in callback to send 202 before pipeline
+  upload.single('image')(req, res, async (uploadErr) => {
+    if (uploadErr) {
+      if (uploadErr.code === 'LIMIT_FILE_SIZE') {
+        return fail(res, 413, 'FILE_TOO_LARGE', 'File too large — maximum 10MB.');
+      }
+      if (uploadErr.code === 'INVALID_FILE_TYPE') {
+        return fail(res, 400, 'INVALID_FILE_TYPE', uploadErr.message);
+      }
+      return fail(res, 400, 'UPLOAD_ERROR', uploadErr.message);
+    }
+
+    if (!req.file) {
+      return fail(res, 400, 'MISSING_IMAGE', 'No image file uploaded — include field "image".');
+    }
+
+    const sourceType    = req.body.source_type || 'physical_label';
+    const productNameHint = req.body.product_name || null;
+    const brandNameHint   = req.body.brand_name   || null;
+
+    // Validate source_type
+    if (!['physical_label', 'ecommerce_listing'].includes(sourceType)) {
+      return fail(res, 400, 'INVALID_SOURCE_TYPE',
+        'source_type must be "physical_label" or "ecommerce_listing"');
+    }
+
+      try {
+        // 1. Upload to Supabase Storage
+        const fileBuffer = fs.readFileSync(req.file.path);
+        const fileName = `${Date.now()}_${path.basename(req.file.originalname)}`;
+        
+        const { data: uploadData, error: uploadError } = await supabase
+          .storage
+          .from('uploads')
+          .upload(fileName, fileBuffer, {
+            contentType: req.file.mimetype,
+            upsert: true
+          });
+
+        let cloudUrl = req.file.path; // fallback
+        if (!uploadError) {
+          const { data } = supabase.storage.from('uploads').getPublicUrl(fileName);
+          cloudUrl = data.publicUrl;
+          console.log('[Supabase] Successfully uploaded to cloud:', cloudUrl);
+        } else {
+          console.error('[Supabase] Upload failed, falling back to local:', uploadError.message);
+        }
+
+        // Create scan record immediately (status = processing)
+        const scan = await Scan.create({
+          imagePath:        cloudUrl,
+          originalFilename: req.file.originalname,
+          uploadedBy:       req.user?.id || null,
+          sourceType,
+          status:           'processing',
+        });
+
+        // Store hints on object for pipeline (not in DB schema)
+        scan.productNameHint = productNameHint;
+        scan.brandNameHint   = brandNameHint;
+
+        //  Return 202 IMMEDIATELY (spec 05) 
+        // Frontend polls GET /scans/:id every 2s until status !== "processing"
+        ok(res, { scan_id: scan.id, status: 'processing' }, 202);
+
+        //  Fire pipeline async (after response sent) 
+        // We still pass req.file.path (the local file) to the OCR pipeline
+        setImmediate(() => runScanPipeline(scan, req.file.path, { forceEngine: req.body.forceEngine }));
+
+      } catch (err) {
+      return fail(res, 500, 'INTERNAL_ERROR', err.message);
+    }
+  });
+});
 
 // ─── GET /api/v1/scans/batch/:id ────────────────────────────────────────────────────────
 router.get('/batch/:id', optionalAuth, async (req, res) => {
