@@ -258,31 +258,21 @@ router.post('/', optionalAuth, (req, res, next) => {
         if (!uploadError) {
           const { data } = supabase.storage.from('uploads').getPublicUrl(fileName);
           cloudUrl = data.publicUrl;
-          console.log('[Supabase] Successfully uploaded to cloud:', cloudUrl);
-        } else {
-          console.error('[Supabase] Upload failed, falling back to local:', uploadError.message);
         }
 
-        // Create scan record immediately (status = processing)
-        const scan = await Scan.create({
-          imagePath:        cloudUrl,
-          originalFilename: req.file.originalname,
+        const { Batch } = require('../models');
+        const batch = await Batch.create({
+          originalImage:    cloudUrl,
           uploadedBy:       req.user?.id || null,
-          sourceType,
           status:           'processing',
         });
+        batch.productNameHint = productNameHint;
+        batch.brandNameHint   = brandNameHint;
+        batch.sourceType      = sourceType;
 
-        // Store hints on object for pipeline (not in DB schema)
-        scan.productNameHint = productNameHint;
-        scan.brandNameHint   = brandNameHint;
+        ok(res, { batch_id: batch.id, status: 'processing' }, 202);
 
-        //  Return 202 IMMEDIATELY (spec 05) 
-        // Frontend polls GET /scans/:id every 2s until status !== "processing"
-        ok(res, { scan_id: scan.id, status: 'processing' }, 202);
-
-        //  Fire pipeline async (after response sent) 
-        // We still pass req.file.path (the local file) to the OCR pipeline
-        setImmediate(() => runScanPipeline(scan, req.file.path, { forceEngine: req.body.forceEngine }));
+        setImmediate(() => runBatchPipeline(batch, req.file.path, { forceEngine: req.body.forceEngine }));
 
       } catch (err) {
       return fail(res, 500, 'INTERNAL_ERROR', err.message);

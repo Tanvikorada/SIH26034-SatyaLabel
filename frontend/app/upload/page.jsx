@@ -125,7 +125,7 @@ export default function UploadPage() {
       const responseData = json.data || json;
       
       toast.success('Scan complete', { id: toastId });
-      setTimeout(() => router.push(`/results/${responseData.scan_id || responseData.id || 'mock'}`), 1000);
+      setTimeout(() => router.push(`/batch/${responseData.batch_id || 'mock'}`), 1000);
     } catch (err) {
       await saveToSyncQueue(files[0], metadata);
       toast.warning('Network Offline', { id: toastId, description: 'Scan queued locally.' });
