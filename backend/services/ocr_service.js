@@ -297,7 +297,7 @@ ${tesseractText}` : '');
   return { text: rawText, structuredData, confidence: 85, words: [], engine: 'gemini', _fontMetrics: null };
 }
 
-async function runGroqVision(imagePath, attempt = 1, modelName = 'llama-3.2-90b-vision-preview', tesseractText = '') {
+async function runGroqVision(imagePath, attempt = 1, modelName = 'qwen/qwen3.8-27b', tesseractText = '') {
   if (!config.groq?.enabled || !config.groq?.apiKey) {
     throw new Error('Groq API key not configured.');
   }
@@ -372,8 +372,9 @@ Do not guess or hallucinate values - only extract what is actually visible in th
     console.log('[OCR] Groq API extraction complete');
 
   } catch (err) {
-    if (attempt < 3) {
-      const nextModel = modelName === 'llama-3.2-90b-vision-preview' ? 'llama-3.2-11b-vision-preview' : 'llama-3.2-90b-vision-preview';
+    if (attempt < 4) {
+      const fallbackModels = ['qwen/qwen3.8-27b', 'llama-3.2-90b-vision-preview', 'llama-3.2-11b-vision-preview', 'qwen-vl-72b'];
+      const nextModel = fallbackModels[attempt];
       console.warn(`[OCR] Groq failed with ${modelName} (${err.message}) - retrying with ${nextModel}...`);
       await new Promise(r => setTimeout(r, 2000));
       return runGroqVision(imagePath, attempt + 1, nextModel, tesseractText);
@@ -425,7 +426,7 @@ async function runOcrPipeline(imagePath, metadata = {}) {
       if (config.groq?.enabled && config.groq?.apiKey) {
         console.log("[OCR] Attempting Groq Vision fallback...");
         try {
-          const groqResult = await runGroqVision(processedPath, 1, 'llama-3.2-90b-vision-preview', safeHint);
+          const groqResult = await runGroqVision(processedPath, 1, 'qwen/qwen3.8-27b', safeHint);
           return {
             text: ocrResult.text,
             engine: "groq",
