@@ -35,7 +35,7 @@
 
 /* 🌙 Dark Mode Overrides (Mello Reference) 🌙 */
 .dark {
-  --color-background: #000000; /* pure black */
+  --color-background: #09090b; /* pure black */
   --color-surface: #0a0a0a; /* dark grey surface */
   --color-primary:          #ffffff;
   --color-primary-hover:    #f4f4f5;
@@ -43,8 +43,8 @@
   --color-accent-soft:      rgba(255,255,255,0.08);
   --color-border:           #27272a; /* graphite */
   --color-text-primary:     #fafafa; /* white */
-  --color-text-secondary:   #a1a1aa; /* mist */
-  --color-text-muted:       #71717a; /* fog */
+  --color-text-secondary:   #d4d4d8; /* mist */
+  --color-text-muted:       #a1a1aa; /* fog */
 
   /* Status - dark */
   --color-pass:              #10b981;
