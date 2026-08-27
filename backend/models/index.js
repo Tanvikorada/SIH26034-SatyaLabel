@@ -84,6 +84,37 @@ const Product = sequelize.define('Product', {
   updatedAt: false,
 });
 
+// ── TABLE: batches ────────────────────────────────────────────────────────────
+const Batch = sequelize.define('Batch', {
+  id: {
+    type: DataTypes.UUID,
+    defaultValue: DataTypes.UUIDV4,
+    primaryKey: true,
+  },
+  uploadedBy: {
+    type: DataTypes.UUID,
+    allowNull: true,
+    references: { model: 'users', key: 'id' },
+    field: 'uploaded_by',
+  },
+  originalImage: {
+    type: DataTypes.TEXT,
+    allowNull: false,
+    field: 'original_image',
+  },
+  status: {
+    type: DataTypes.TEXT,
+    allowNull: false,
+    defaultValue: 'processing',
+    validate: { isIn: [['processing', 'completed', 'failed']] },
+  },
+}, {
+  tableName: 'batches',
+  timestamps: true,
+  createdAt: 'created_at',
+  updatedAt: false,
+});
+
 // ─── TABLE: scans ─────────────────────────────────────────────────────────────
 // One row per image scan event.
 const Scan = sequelize.define('Scan', {
@@ -91,6 +122,13 @@ const Scan = sequelize.define('Scan', {
     type: DataTypes.UUID,
     defaultValue: DataTypes.UUIDV4,
     primaryKey: true,
+  },
+  batchId: {
+    type: DataTypes.UUID,
+    allowNull: true,
+    references: { model: 'batches', key: 'id' },
+    onDelete: 'CASCADE',
+    field: 'batch_id',
   },
 
   // ── Foreign Keys ──────────────────────────────────────────────────────────
@@ -370,6 +408,12 @@ const Report = sequelize.define('Report', {
 User.hasMany(Scan, { foreignKey: 'uploadedBy', as: 'scans' });
 Scan.belongsTo(User, { foreignKey: 'uploadedBy', as: 'uploadedByUser' });
 
+Batch.hasMany(Scan, { foreignKey: 'batchId', as: 'scans', onDelete: 'CASCADE' });
+Scan.belongsTo(Batch, { foreignKey: 'batchId', as: 'batch' });
+
+User.hasMany(Batch, { foreignKey: 'uploadedBy', as: 'batches' });
+Batch.belongsTo(User, { foreignKey: 'uploadedBy', as: 'uploadedByUser' });
+
 Product.hasMany(Scan, { foreignKey: 'productId', as: 'scans' });
 Scan.belongsTo(Product, { foreignKey: 'productId', as: 'product' });
 
@@ -400,6 +444,7 @@ const syncDatabase = async (options = {}) => {
     // Sync tables in dependency order
     await User.sync(options);
     await Product.sync(options);
+    await Batch.sync(options);
     await Scan.sync(options);
     await Violation.sync(options);
     await Report.sync(options);
@@ -420,6 +465,7 @@ module.exports = {
   sequelize,
   User,
   Product,
+  Batch,
   Scan,
   Violation,
   Report,
