@@ -215,8 +215,11 @@ STEP 1: Examine the image for glare, stickers, and overall quality.
 STEP 2: Identify how many DISTINCT products are in the image.
 STEP 3: For EACH distinct product, extract its details into a JSON object.
 STEP 4: Return a SINGLE JSON OBJECT containing a "products" array.
+  - CRITICAL MULTI-IMAGE STITCHING RULE: The user may have uploaded multiple photos that were automatically stitched side-by-side into this single image. 
+  - If the stitched photos show the FRONT and BACK of the EXACT SAME product (e.g., front label and back ingredients of one item), you MUST merge all the details into a SINGLE object in the "products" array. Do not treat them as two separate products.
+  - If the stitched photos show TWO COMPLETELY DIFFERENT products (e.g., a bottle of Coke and a bag of chips), you MUST output TWO separate objects in the "products" array. Do not mix or combine their details into one.
 
-The JSON format MUST exactly match this structure:
+  The JSON format MUST exactly match this structure:
 {
   "products": [
     {
@@ -336,8 +339,11 @@ STEP 1: Examine the image for glare, stickers, and overall quality.
 STEP 2: Identify how many DISTINCT products are in the image.
 STEP 3: For EACH distinct product, extract its details into a JSON object.
 STEP 4: Return a SINGLE JSON OBJECT containing a "products" array.
+  - CRITICAL MULTI-IMAGE STITCHING RULE: The user may have uploaded multiple photos that were automatically stitched side-by-side into this single image. 
+  - If the stitched photos show the FRONT and BACK of the EXACT SAME product (e.g., front label and back ingredients of one item), you MUST merge all the details into a SINGLE object in the "products" array. Do not treat them as two separate products.
+  - If the stitched photos show TWO COMPLETELY DIFFERENT products (e.g., a bottle of Coke and a bag of chips), you MUST output TWO separate objects in the "products" array. Do not mix or combine their details into one.
 
-The JSON format MUST exactly match this structure:
+  The JSON format MUST exactly match this structure:
 {
   "products": [
     {
