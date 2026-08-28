@@ -37,10 +37,7 @@ export default function BatchPage({ params }) {
           intervalId = setTimeout(fetchBatch, 2000);
         } else {
           setLoading(false);
-          // If only 1 scan exists and it's completed, redirect directly to results page for seamless UX
-          if (data.status === 'completed' && data.scans?.length === 1) {
-             router.replace(`/results/${data.scans[0].id}`);
-          }
+          
         }
       } catch(err) {
         setLoading(false);
@@ -119,7 +116,7 @@ export default function BatchPage({ params }) {
                     <div>
                       <h3 className="text-[18px] font-medium text-text-primary mb-1">
                         {scan.product_name || 'Unknown Product'}
-                        {scan.extracted_fields?.is_wholesale_or_multipiece_package && (
+                        {(scan.extracted_fields?.is_wholesale_or_multipiece_package === 'true' || scan.extracted_fields?.is_wholesale_or_multipiece_package === true) && (
                           <span className="ml-3 inline-flex items-center px-2 py-0.5 rounded text-[10px] font-medium bg-blue-500/10 text-blue-400 border border-blue-500/20 align-middle uppercase tracking-wider">
                             Wholesale
                           </span>
