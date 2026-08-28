@@ -31,7 +31,7 @@ export default function HistoryPage() {
     if (!localStorage.getItem('token')) return router.push('/login');
     const fetchScans = async () => {
       try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'https://satyalabel-backend.onrender.com/api/v1'}/scans`, {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'https://satyalabel-backend.onrender.com/api/v1'}/scans?search=${encodeURIComponent(debouncedSearch)}`, {
           headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
         });
         if (!res.ok) throw new Error("API Error");
