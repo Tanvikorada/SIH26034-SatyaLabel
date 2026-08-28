@@ -222,6 +222,7 @@ The JSON format MUST exactly match this structure:
     {
       "reasoning_log": "Explain your logic first. E.g., 'I see a sticker over the MRP, so I will prioritize it.'",
       "meta_image_quality": "good" | "blurry" | "glare" | "too_far",
+      "visual_readability": "excellent" | "poor_contrast" | "blurry_print",
   "meta_obstruction": "none" | "thumb_covering_text" | "partially_cut_off",
   "meta_quality_reason": "Explain if it is blurry or obstructed. If good, put null",
   "is_wholesale_or_multipiece_package": true | false,
@@ -342,6 +343,7 @@ The JSON format MUST exactly match this structure:
     {
       "reasoning_log": "Explain your logic first. E.g., 'I see a sticker over the MRP, so I will prioritize it.'",
       "meta_image_quality": "good" | "blurry" | "glare" | "too_far",
+      "visual_readability": "excellent" | "poor_contrast" | "blurry_print",
   "meta_obstruction": "none" | "thumb_covering_text" | "partially_cut_off",
   "meta_quality_reason": "Explain if it is blurry or obstructed. If good, put null",
   "is_wholesale_or_multipiece_package": true | false,

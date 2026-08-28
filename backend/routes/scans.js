@@ -367,7 +367,7 @@ router.get('/', optionalAuth, async (req, res) => {
 // Spec 05 full response shape:
 // { id, status, image_url, source_type, extracted_fields, overall_compliance,
 //   violations: [...], created_at }
-router.get('/:id', optionalAuth, async (req, res) => {
+router.get('/:id', requireAuth, async (req, res) => {
   try {
     const scan = await Scan.findByPk(req.params.id, {
       include: [
@@ -388,7 +388,7 @@ router.get('/:id', optionalAuth, async (req, res) => {
 
 // ─── DELETE /api/v1/scans/:id ─────────────────────────────────────────────────
 // Spec 05: admin only
-router.delete('/:id', optionalAuth, async (req, res) => {
+router.delete('/:id', requireAuth, requireAdmin, async (req, res) => {
   // Admin check — fail gracefully in demo mode if no auth
   if (req.user && req.user.role !== 'admin') {
     return fail(res, 403, 'FORBIDDEN', 'Only admins can delete scans.');

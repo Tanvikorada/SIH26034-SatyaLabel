@@ -6,14 +6,14 @@
 const express = require('express');
 const router = express.Router();
 const { sequelize, Scan, Product, Violation } = require('../models');
-const { optionalAuth } = require('../middleware/auth');
+const { requireAuth } = require('../middleware/auth');
 const { QueryTypes } = require('sequelize');
 
 const ok   = (res, data) => res.json({ data });
 const fail = (res, status, code, msg) => res.status(status).json({ error: { code, message: msg } });
 
 // ─── GET /api/dashboard/stats ─────────────────────────────────────────────────
-router.get('/stats', optionalAuth, async (req, res) => {
+router.get('/stats', requireAuth, async (req, res) => {
   try {
     // ── Overview counts ──────────────────────────────────────────────────────
     const overview = await sequelize.query(`
@@ -121,7 +121,7 @@ router.get('/stats', optionalAuth, async (req, res) => {
 
 // ─── GET /api/dashboard/products ─────────────────────────────────────────────
 // All distinct products with scan history
-router.get('/products', optionalAuth, async (req, res) => {
+router.get('/products', requireAuth, async (req, res) => {
   try {
     const products = await sequelize.query(`
       SELECT
