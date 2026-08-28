@@ -120,10 +120,12 @@ async function runBatchPipeline(batch, imagePath, metadata = {}) {
       productsArray = [productsArray];
     }
 
+    let successfulScans = 0;
     for (const rawProductData of productsArray) {
       if (!rawProductData || Object.keys(rawProductData).length === 0) continue;
       
-      const fieldsMap = extractFields(
+      try {
+        const fieldsMap = extractFields(
         ocrResult.text,
         rawProductData,
         ocrResult._fontMetrics || null
@@ -202,9 +204,17 @@ async function runBatchPipeline(batch, imagePath, metadata = {}) {
           confidence: v.confidence || 'estimated',
         });
       }
+      successfulScans++;
+      } catch (innerErr) {
+        console.error('[Pipeline] Error processing individual product inside batch', batch.id, innerErr);
+      }
     }
 
-    await batch.update({ status: 'completed' });
+    if (successfulScans > 0) {
+      await batch.update({ status: 'completed' });
+    } else {
+      await batch.update({ status: 'failed' });
+    }
 
   } catch (err) {
     console.error('[Pipeline] Fatal error processing batch', batch.id, err);
