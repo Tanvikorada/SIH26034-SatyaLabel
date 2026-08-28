@@ -361,7 +361,11 @@ router.get('/batch/:id', requireAuth, async (req, res) => {
 // ─── GET /api/v1/scans ───────────────────────────────────────────────────────
 // Spec 05 query params: ?compliance=non_compliant&search=<name>&page=&limit=
 router.get('/debug-err', (req, res) => {
-  res.json({ err: global.lastInnerErr || "No error logged" });
+  let crash = 'No crash';
+  try {
+    crash = require('fs').readFileSync(require('path').join(__dirname, '../uploads/last_crash.txt'), 'utf8');
+  } catch (e) {}
+  res.json({ err: global.lastInnerErr || "No error logged", crash });
 });
 router.get('/', requireAuth, async (req, res) => {
   try {
