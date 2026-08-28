@@ -4,14 +4,23 @@ const JWT_SECRET = process.env.JWT_SECRET || 'sih_hackathon_super_secret_key_202
 
 function requireAuth(req, res, next) {
   const authHeader = req.headers.authorization;
-  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+  const queryToken = req.query.token; // Support for EventSource (SSE)
+  
+  let token = null;
+  if (authHeader && authHeader.startsWith('Bearer ')) {
+    token = authHeader.split(' ')[1];
+  } else if (queryToken) {
+    token = queryToken;
+  }
+
+  if (!token) {
     // For hackathon fallback if no token is sent (to avoid completely breaking testing before fixing frontend)
     // In production, this should return 401 immediately.
     req.user = { id: null, role: 'field_officer' };
     return next();
   }
 
-  const token = authHeader.split(' ')[1];
+  
   try {
     const decoded = jwt.verify(token, JWT_SECRET);
     req.user = decoded; // { id, role, email }

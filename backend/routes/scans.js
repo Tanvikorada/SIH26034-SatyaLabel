@@ -215,6 +215,14 @@ async function runBatchPipeline(batch, imagePath, metadata = {}) {
     } else {
       await batch.update({ status: 'failed' });
     }
+    
+    // SSE Push Notification
+    const clients = batchClients.get(String(batch.id)) || [];
+    clients.forEach(clientRes => {
+      clientRes.write(`data: ${JSON.stringify({ status: batch.status })}\n\n`);
+      clientRes.end();
+    });
+    batchClients.delete(String(batch.id));
 
   } catch (err) {
     console.error('[Pipeline] Fatal error processing batch', batch.id, err);
@@ -298,6 +306,30 @@ router.post('/', requireAuth, (req, res, next) => {
 });
 
 // ─── GET /api/v1/scans/batch/:id ────────────────────────────────────────────────────────
+// Global SSE clients map
+const batchClients = new Map();
+
+// GET /api/v1/scans/batch/:id/stream - SSE Endpoint
+router.get('/batch/:id/stream', requireAuth, (req, res) => {
+  res.writeHead(200, {
+    'Content-Type': 'text/event-stream',
+    'Cache-Control': 'no-cache',
+    'Connection': 'keep-alive'
+  });
+  
+  const batchId = String(req.params.id);
+  if (!batchClients.has(batchId)) batchClients.set(batchId, []);
+  batchClients.get(batchId).push(res);
+  
+  // Send initial ping to establish connection
+  res.write(': ping\n\n');
+
+  req.on('close', () => {
+    const clients = batchClients.get(batchId) || [];
+    batchClients.set(batchId, clients.filter(c => c !== res));
+  });
+});
+
 router.get('/batch/:id', requireAuth, async (req, res) => {
   try {
     const { Batch, Scan, Product } = require('../models');

@@ -454,6 +454,30 @@ CRITICAL RULES FOR HALLUCINATION PREVENTION:
  * @returns {OcrPipelineResult}
  * @throws {Error} with .code for known failure cases (IMAGE_TOO_LOW_RES, NO_TEXT_DETECTED)
  */
+
+// Zod Schema to strictly enforce AI output structure
+const ProductSchema = z.object({
+  reasoning_log: z.string().nullable().optional(),
+  meta_image_quality: z.string().nullable().optional(),
+  visual_readability: z.string().nullable().optional(),
+  meta_obstruction: z.string().nullable().optional(),
+  meta_quality_reason: z.string().nullable().optional(),
+  is_wholesale_or_multipiece_package: z.union([z.boolean(), z.string()]).nullable().optional(),
+  manufacturer_name: z.string().nullable().optional(),
+  manufacturer_address: z.string().nullable().optional(),
+  common_name: z.string().nullable().optional(),
+  net_quantity: z.union([z.string(), z.number()]).nullable().optional(),
+  net_quantity_unit: z.string().nullable().optional(),
+  mrp: z.union([z.string(), z.number()]).nullable().optional(),
+  mrp_includes_tax_statement: z.union([z.boolean(), z.string()]).nullable().optional(),
+  mfg_date: z.string().nullable().optional(),
+  consumer_care_details: z.string().nullable().optional(),
+}).passthrough();
+
+const AIResponseSchema = z.object({
+  products: z.array(ProductSchema).min(1, "Must detect at least one product")
+});
+
 async function runOcrPipeline(imagePath, metadata = {}) {
   let processedPath = null;
   try {
