@@ -59,7 +59,7 @@ const supabase = createClient(
 );
 
 const upload = require('../middleware/upload');
-const { optionalAuth, requireAuth, requireAdmin } = require('../middleware/auth');
+const { requireAuth, requireAdmin } = require('../middleware/auth');
 const { Scan, Product, Violation, Report, User } = require('../models');
 const { runOcrPipeline } = require('../services/ocr_service');
 const { extractFields } = require('../services/extraction_service');
@@ -218,7 +218,7 @@ async function runBatchPipeline(batch, imagePath, metadata = {}) {
 //   source_type  — "physical_label" | "ecommerce_listing"
 //   product_name — optional hint (used if OCR misses it)
 //   brand_name   — optional hint
-router.post('/', optionalAuth, (req, res, next) => {
+router.post('/', requireAuth, (req, res, next) => {
   // Run multer first, then handle in callback to send 202 before pipeline
   upload.single('image')(req, res, async (uploadErr) => {
     if (uploadErr) {
@@ -285,7 +285,7 @@ router.post('/', optionalAuth, (req, res, next) => {
 });
 
 // ─── GET /api/v1/scans/batch/:id ────────────────────────────────────────────────────────
-router.get('/batch/:id', optionalAuth, async (req, res) => {
+router.get('/batch/:id', requireAuth, async (req, res) => {
   try {
     const { Batch, Scan, Product } = require('../models');
     const batch = await Batch.findByPk(req.params.id, {
@@ -313,7 +313,7 @@ router.get('/batch/:id', optionalAuth, async (req, res) => {
 
 // ─── GET /api/v1/scans ───────────────────────────────────────────────────────
 // Spec 05 query params: ?compliance=non_compliant&search=<name>&page=&limit=
-router.get('/', optionalAuth, async (req, res) => {
+router.get('/', requireAuth, async (req, res) => {
   try {
     const page  = Math.max(1, parseInt(req.query.page)  || 1);
     const limit = Math.min(50, parseInt(req.query.limit) || 20);
@@ -485,7 +485,7 @@ function formatScanFull(scan) {
 // ─── POST /api/v1/scans/:id/report ───────────────────────────────────────────────────
 // Spec 05: Generates / returns PDF report for a completed scan.
 // Returns: { data: { report_id, file_url } }
-router.post('/:id/report', optionalAuth, async (req, res) => {
+router.post('/:id/report', requireAuth, async (req, res) => {
   try {
     const scan = await Scan.findByPk(req.params.id, {
       include: [
@@ -567,7 +567,7 @@ router.get('/debug-models', async (req, res) => {
 
 
 // POST /api/v1/scans/:id/cancel
-router.post('/:id/cancel', optionalAuth, async (req, res) => {
+router.post('/:id/cancel', requireAuth, async (req, res) => {
   try {
     const scan = await Scan.findByPk(req.params.id);
     if (!scan) return fail(res, 404, 'SCAN_NOT_FOUND', 'Scan not found');

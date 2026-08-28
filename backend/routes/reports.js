@@ -16,7 +16,7 @@ const express = require('express');
 const router = express.Router();
 const path = require('path');
 const fs = require('fs');
-const { optionalAuth } = require('../middleware/auth');
+const { requireAuth } = require('../middleware/auth');
 const { Scan, Report, Product, Violation } = require('../models');
 const { generateReport } = require('../services/report_service');
 
@@ -26,7 +26,7 @@ const fail = (res, status, code, msg)  => res.status(status).json({ error: { cod
 // ─── POST /api/v1/scans/:scanId/report ───────────────────────────────────────
 // Spec 05: generate PDF for a completed scan
 // Returns: { report_id, file_url }
-router.post('/scans/:scanId/report', optionalAuth, async (req, res) => {
+router.post('/scans/:scanId/report', requireAuth, async (req, res) => {
   try {
     const scan = await Scan.findByPk(req.params.scanId, {
       include: [
@@ -98,7 +98,7 @@ router.post('/scans/:scanId/report', optionalAuth, async (req, res) => {
 
 // ─── GET /api/v1/reports/:id/download ────────────────────────────────────────
 // Spec 05: download PDF by report ID
-router.get('/:id/download', optionalAuth, async (req, res) => {
+router.get('/:id/download', requireAuth, async (req, res) => {
   try {
     const report = await Report.findByPk(req.params.id, {
       include: [{ model: Scan, as: 'scan' }],
@@ -167,7 +167,7 @@ router.get('/:id/download', optionalAuth, async (req, res) => {
 // ─── LEGACY: GET /api/v1/reports/:scanId ─────────────────────────────────────
 // Old endpoint (scan ID, not report ID) — kept for backward compat
 // Redirects to the /download route of the latest report for this scan
-router.get('/:scanId', optionalAuth, async (req, res) => {
+router.get('/:scanId', requireAuth, async (req, res) => {
   // Skip if it matches the /download sub-path (handled above)
   if (req.params.scanId === 'download') return;
 
@@ -193,7 +193,7 @@ router.get('/:scanId', optionalAuth, async (req, res) => {
 });
 
 // ─── GET /api/v1/reports (list, admin) ───────────────────────────────────────
-router.get('/', optionalAuth, async (req, res) => {
+router.get('/', requireAuth, async (req, res) => {
   try {
     const reports = await Report.findAll({
       include: [{

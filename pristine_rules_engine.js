@@ -1,4 +1,32 @@
-// backend/services/rules_engine.js
+    const gateApp = checkApplicability(fieldsMap, options);
+    const gateExempt = checkExemption(fieldsMap, options);
+    const isExempt = (gateApp && gateApp.status === S.NA) || (gateExempt && gateExempt.status === S.NA);
+    
+    let rawResults = [gateApp, gateExempt].filter(Boolean);
+
+    if (isExempt) {
+       const exemptReason = gateExempt?.detail || gateApp?.detail || 'Exempt package';
+       rawResults.push(na('Rule 6', 'Mandatory Declarations', 'general', 'Skipped: ' + exemptReason));
+    } else {
+       rawResults = rawResults.concat([
+         checkManufacturerName(fieldsMap),
+         checkManufacturerAddress(fieldsMap),
+         checkCountryOfOrigin(fieldsMap, options),
+         checkGenericName(fieldsMap),
+         checkNetQuantityPresence(fieldsMap),
+         checkUnitConvention(fieldsMap),
+         checkMfgDate(fieldsMap),
+         checkBestBefore(fieldsMap, options),
+         checkMRP(fieldsMap),
+         checkConsumerCare(fieldsMap),
+         checkMisleadingQuantityWording(fieldsMap),
+         checkFontSize(fieldsMap),
+         checkPDPPlacement(fieldsMap, options),
+         checkLegibility(fieldsMap),
+         checkAdvertisementListing(fieldsMap, options),
+         checkContradictoryDeclarations(fieldsMap)
+       ].filter(Boolean));
+    }ckend/services/rules_engine.js
 // ============================================================
 // LEGAL METROLOGY (PACKAGED COMMODITIES) RULES, 2011
 // Compliance Rule Engine — SIH26034 SatyaLabel
@@ -137,19 +165,22 @@ function parseDate(str) {
 // If officer has confirmed applicability, use that; otherwise flag for review.
 
 function checkApplicability(fields, options) {
-  const R = 'Rule 3';
-  const T = 'Applicability of the Chapter';
+    const R = 'Rule 3';
+    const T = 'Applicability of the Chapter';
 
-  // MULTI-PIECE / WHOLESALE BYPASS (Rule 29)
-  if (fields.is_wholesale_or_multipiece_package === true || fields.is_wholesale_or_multipiece_package === 'true') {
-    return review('Rule 29', 'Wholesale / Multi-piece Package', 'general', 'low',
-      'Wholesale or multi-piece package detected. Standard retail declarations under Rule 6 may not fully apply. Manual verification against Rule 29 is required.');
-  }
+    // MULTI-PIECE / WHOLESALE BYPASS (Rule 29)
+    if (fields.is_wholesale_or_multipiece_package === true || fields.is_wholesale_or_multipiece_package === 'true') {
+      return review('Rule 29', 'Wholesale / Multi-piece Package', 'general', 'low',
+        'Wholesale or multi-piece package detected. Standard retail declarations under Rule 6 may not fully apply. Manual verification against Rule 29 is required.');
+    }
 
-  // Officer explicitly flagged as not applicable (industrial/institutional/exempt)
-  if (options.is_not_applicable === true) {
-    return na(R, T, 'applicability',
-      `Officer confirmed: this package is not subject to Chapter II retail-package provisions. Reason: ${options.not_applicable_reason || 'Not specified'}.`);
+    if (options.is_retail === false) {
+      return na(R, T, 'applicability', 
+      'User indicated this is not a retail package. Chapter II provisions may not apply.');
+    }
+
+    return null;
+  }.`);
   }
 
   // If officer confirmed applicability, proceed (return null = no issue, continue checks)
@@ -202,15 +233,6 @@ function checkExemption(fields, options) {
     return review(R, T, 'exemption', 'low',
       'Product may be a drug formulation under the Drugs & Cosmetics Act and may be exempt from some LM(PC) provisions. ' +
       'Officer should verify applicable law before citing LM(PC) violations.');
-  }
-
-  // Tiny sachet / Small package heuristic (<10g or <10ml)
-  if (fields.net_quantity) {
-    const qty = String(fields.net_quantity).toLowerCase();
-    if (/(?:^|\s)(?:[1-9]|10)\s*(?:g|ml|gram|grams|milliliter|millilitre|ml.)(?:$|\s)/.test(qty) && !qty.includes('kg') && !qty.includes('liter')) {
-      return review(R, T, 'exemption', 'medium',
-        'Net quantity appears to be 10g/10ml or less. This package may be exempt from certain declarations under Rule 26. Officer must manually confirm exemption status.');
-    }
   }
 
   // Cannot confirm exemption from image — return null (proceed with checks)
@@ -658,14 +680,6 @@ function checkLegibility(fields) {
   const R = 'Rule 9';
   const T = 'Legibility, Prominence and Readability of Declarations';
   const f = 'legibility';
-
-  // AI Multimodal contrast analysis
-  if (fields.visual_readability === 'poor_contrast') {
-    return noncompliance(R, T, f, 'AI Vision Engine detected poor color contrast between the text and the packaging background, violating legibility requirements under Rule 9.');
-  }
-  if (fields.visual_readability === 'blurry_print') {
-    return noncompliance(R, T, f, 'AI Vision Engine detected blurry or distorted print on the packaging, violating prominence requirements under Rule 9.');
-  }
 
   const ocrConf = fields._ocr_confidence ?? fields._ocrConfidence;
 

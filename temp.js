@@ -140,12 +140,6 @@ function checkApplicability(fields, options) {
   const R = 'Rule 3';
   const T = 'Applicability of the Chapter';
 
-  // MULTI-PIECE / WHOLESALE BYPASS (Rule 29)
-  if (fields.is_wholesale_or_multipiece_package === true || fields.is_wholesale_or_multipiece_package === 'true') {
-    return review('Rule 29', 'Wholesale / Multi-piece Package', 'general', 'low',
-      'Wholesale or multi-piece package detected. Standard retail declarations under Rule 6 may not fully apply. Manual verification against Rule 29 is required.');
-  }
-
   // Officer explicitly flagged as not applicable (industrial/institutional/exempt)
   if (options.is_not_applicable === true) {
     return na(R, T, 'applicability',
@@ -202,15 +196,6 @@ function checkExemption(fields, options) {
     return review(R, T, 'exemption', 'low',
       'Product may be a drug formulation under the Drugs & Cosmetics Act and may be exempt from some LM(PC) provisions. ' +
       'Officer should verify applicable law before citing LM(PC) violations.');
-  }
-
-  // Tiny sachet / Small package heuristic (<10g or <10ml)
-  if (fields.net_quantity) {
-    const qty = String(fields.net_quantity).toLowerCase();
-    if (/(?:^|\s)(?:[1-9]|10)\s*(?:g|ml|gram|grams|milliliter|millilitre|ml.)(?:$|\s)/.test(qty) && !qty.includes('kg') && !qty.includes('liter')) {
-      return review(R, T, 'exemption', 'medium',
-        'Net quantity appears to be 10g/10ml or less. This package may be exempt from certain declarations under Rule 26. Officer must manually confirm exemption status.');
-    }
   }
 
   // Cannot confirm exemption from image — return null (proceed with checks)
@@ -658,14 +643,6 @@ function checkLegibility(fields) {
   const R = 'Rule 9';
   const T = 'Legibility, Prominence and Readability of Declarations';
   const f = 'legibility';
-
-  // AI Multimodal contrast analysis
-  if (fields.visual_readability === 'poor_contrast') {
-    return noncompliance(R, T, f, 'AI Vision Engine detected poor color contrast between the text and the packaging background, violating legibility requirements under Rule 9.');
-  }
-  if (fields.visual_readability === 'blurry_print') {
-    return noncompliance(R, T, f, 'AI Vision Engine detected blurry or distorted print on the packaging, violating prominence requirements under Rule 9.');
-  }
 
   const ocrConf = fields._ocr_confidence ?? fields._ocrConfidence;
 

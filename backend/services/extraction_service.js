@@ -1,7 +1,4 @@
 
-  if (geminiData.is_wholesale_or_multipiece_package) {
-    finalFields.is_wholesale_or_multipiece_package = geminiData.is_wholesale_or_multipiece_package;
-  }
 // backend/services/extraction_service.js
 // ============================================================
 // Structured Field Extraction — Spec 04 Implementation
