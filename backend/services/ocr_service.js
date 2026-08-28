@@ -211,13 +211,17 @@ async function runGeminiVision(imagePath, attempt = 1, modelName = 'gemini-1.5-f
   const STRUCTURED_PROMPT = `You are the core "AI Brain" of a Legal Metrology enforcement system.
 You are analyzing an image that may contain ONE OR MORE consumer packaged goods.
 
-STEP 1: Identify how many DISTINCT products are in the image.
-STEP 2: For EACH distinct product, extract its details into a JSON object.
-STEP 3: Return a JSON ARRAY containing these objects. (Even if there is only 1 product, return an array with 1 object).
+STEP 1: Examine the image for glare, stickers, and overall quality.
+STEP 2: Identify how many DISTINCT products are in the image.
+STEP 3: For EACH distinct product, extract its details into a JSON object.
+STEP 4: Return a SINGLE JSON OBJECT containing a "products" array.
 
-For EACH product object, you MUST include these exact keys:
+The JSON format MUST exactly match this structure:
 {
-  "meta_image_quality": "good" | "blurry" | "glare" | "too_far",
+  "products": [
+    {
+      "reasoning_log": "Explain your logic first. E.g., 'I see a sticker over the MRP, so I will prioritize it.'",
+      "meta_image_quality": "good" | "blurry" | "glare" | "too_far",
   "meta_obstruction": "none" | "thumb_covering_text" | "partially_cut_off",
   "meta_quality_reason": "Explain if it is blurry or obstructed. If good, put null",
   "is_wholesale_or_multipiece_package": true | false,
@@ -246,7 +250,7 @@ CRITICAL RULES FOR HALLUCINATION PREVENTION:
 - WHOLESALE DETECTION: Set is_wholesale_or_multipiece_package to true ONLY if the product is a large wholesale carton, bulk box, or shrink-wrapped bundle of multiple retail items.
 - If a value (like MRP) is blurry, obstructed by a thumb, or cut off by glare, DO NOT GUESS IT. Set it to null.
 - It is better to return null than to return a wrong value. You are a strict legal auditor.
-- Return ONLY the JSON array.` + (tesseractText ? `
+- Return ONLY the raw JSON object. Do not wrap it in markdown block quotes.` + (tesseractText ? `
 
 Here is some raw, noisy text extracted from the image by a secondary OCR engine. Use it as a hint to locate fields:
 ${tesseractText}` : '');
@@ -327,13 +331,17 @@ async function runGroqVision(imagePath, attempt = 1, modelName = 'qwen/qwen3.8-2
   const STRUCTURED_PROMPT = `You are the core "AI Brain" of a Legal Metrology enforcement system.
 You are analyzing an image that may contain ONE OR MORE consumer packaged goods.
 
-STEP 1: Identify how many DISTINCT products are in the image.
-STEP 2: For EACH distinct product, extract its details into a JSON object.
-STEP 3: Return a JSON ARRAY containing these objects. (Even if there is only 1 product, return an array with 1 object).
+STEP 1: Examine the image for glare, stickers, and overall quality.
+STEP 2: Identify how many DISTINCT products are in the image.
+STEP 3: For EACH distinct product, extract its details into a JSON object.
+STEP 4: Return a SINGLE JSON OBJECT containing a "products" array.
 
-For EACH product object, you MUST include these exact keys:
+The JSON format MUST exactly match this structure:
 {
-  "meta_image_quality": "good" | "blurry" | "glare" | "too_far",
+  "products": [
+    {
+      "reasoning_log": "Explain your logic first. E.g., 'I see a sticker over the MRP, so I will prioritize it.'",
+      "meta_image_quality": "good" | "blurry" | "glare" | "too_far",
   "meta_obstruction": "none" | "thumb_covering_text" | "partially_cut_off",
   "meta_quality_reason": "Explain if it is blurry or obstructed. If good, put null",
   "is_wholesale_or_multipiece_package": true | false,
@@ -362,7 +370,7 @@ CRITICAL RULES FOR HALLUCINATION PREVENTION:
 - WHOLESALE DETECTION: Set is_wholesale_or_multipiece_package to true ONLY if the product is a large wholesale carton, bulk box, or shrink-wrapped bundle of multiple retail items.
 - If a value (like MRP) is blurry, obstructed by a thumb, or cut off by glare, DO NOT GUESS IT. Set it to null.
 - It is better to return null than to return a wrong value. You are a strict legal auditor.
-- Return ONLY the JSON array.` + (tesseractText ? `\n\nHere is some raw, noisy text extracted from the image by a secondary OCR engine. Use it as a hint to locate fields:\n${tesseractText}` : '');
+- Return ONLY the raw JSON object. Do not wrap it in markdown block quotes.` + (tesseractText ? `\n\nHere is some raw, noisy text extracted from the image by a secondary OCR engine. Use it as a hint to locate fields:\n${tesseractText}` : '');
 
   let rawText = '';
   let structuredData = {};

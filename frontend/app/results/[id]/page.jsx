@@ -139,7 +139,7 @@ export default function ResultsPage({ params }) {
     <div className="min-h-screen bg-background text-text-primary pb-24">
       <div className="print:hidden"><NavBar /></div>
       
-      <div className="max-w-[1200px] mx-auto px-6 py-12">
+      <div id="pdf-content" className="max-w-[1200px] mx-auto px-6 py-12">
         <div ref={reportRef} className="bg-background p-2 md:p-6 rounded-2xl">
           <div className="flex justify-between items-start border-b border-border pb-8 mb-8">
             <div>
