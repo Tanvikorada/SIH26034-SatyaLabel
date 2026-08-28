@@ -206,7 +206,9 @@ async function runBatchPipeline(batch, imagePath, metadata = {}) {
       }
       successfulScans++;
       } catch (innerErr) {
+        global.lastInnerErr = innerErr.stack || innerErr.message;
         console.error('[Pipeline] Error processing individual product inside batch', batch.id, innerErr);
+        require('fs').writeFileSync('inner_err.log', innerErr.stack || innerErr.message);
       }
     }
 
@@ -358,6 +360,9 @@ router.get('/batch/:id', requireAuth, async (req, res) => {
 
 // ─── GET /api/v1/scans ───────────────────────────────────────────────────────
 // Spec 05 query params: ?compliance=non_compliant&search=<name>&page=&limit=
+router.get('/debug-err', (req, res) => {
+  res.json({ err: global.lastInnerErr || "No error logged" });
+});
 router.get('/', requireAuth, async (req, res) => {
   try {
     const page  = Math.max(1, parseInt(req.query.page)  || 1);
