@@ -113,7 +113,10 @@ async function runBatchPipeline(batch, imagePath, metadata = {}) {
     }
 
     let productsArray = ocrResult.geminiStructuredData;
-    if (!Array.isArray(productsArray)) {
+    // Handle new { "products": [...] } wrapper from prompt change
+    if (productsArray && productsArray.products && Array.isArray(productsArray.products)) {
+      productsArray = productsArray.products;
+    } else if (!Array.isArray(productsArray)) {
       productsArray = [productsArray];
     }
 

@@ -295,6 +295,8 @@ function mergeGeminiData(tier1Map, geminiData) {
     veg_nonveg: 'veg_nonveg',
     nutrition: 'nutrition',
     allergens_or_warnings: 'allergens_or_warnings',
+      visual_readability: 'visual_readability',
+      is_wholesale_or_multipiece_package: 'is_wholesale_or_multipiece_package',
   };
 
   const merged = { ...tier1Map };
