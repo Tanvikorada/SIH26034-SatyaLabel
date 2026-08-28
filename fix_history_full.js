@@ -1,4 +1,6 @@
-"use client";
+const fs = require('fs');
+
+const fullCode = `"use client";
 import { useEffect, useState } from 'react';
 import NavBar from '@/components/NavBar';
 import { useRouter } from 'next/navigation';
@@ -28,15 +30,15 @@ export default function HistoryPage() {
         const name = (s.product_name || s.product?.product_name || 'Unknown').replace(/,/g, '');
         const date = new Date(s.createdAt || s.created_at).toLocaleDateString();
         const status = s.status === 'failed' ? 'FAILED' : (s.overall_compliance || s.status);
-        return `${s.id},${name},${date},${status}`;
+        return \`\${s.id},\${name},\${date},\${status}\`;
       })
-    ].join('\n');
+    ].join('\\n');
 
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
-    link.setAttribute('download', `SatyaLabel_Export_${new Date().toISOString().split('T')[0]}.csv`);
+    link.setAttribute('download', \`SatyaLabel_Export_\${new Date().toISOString().split('T')[0]}.csv\`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -46,9 +48,9 @@ export default function HistoryPage() {
     e.stopPropagation(); // Prevent row click
     if (!confirm('Are you sure you want to delete this scan?')) return;
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'https://satyalabel-backend.onrender.com/api/v1'}/scans/${id}`, {
+      const res = await fetch(\`\${process.env.NEXT_PUBLIC_API_URL || 'https://satyalabel-backend.onrender.com/api/v1'}/scans/\${id}\`, {
         method: 'DELETE',
-        headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+        headers: { 'Authorization': \`Bearer \${localStorage.getItem('token')}\` }
       });
       if (res.ok) {
         setScans(scans.filter(s => s.id !== id));
@@ -65,9 +67,9 @@ export default function HistoryPage() {
     if (!localStorage.getItem('token')) return router.push('/login');
     const fetchScans = async () => {
       try {
-        const url = `${process.env.NEXT_PUBLIC_API_URL || 'https://satyalabel-backend.onrender.com/api/v1'}/scans` + (debouncedSearch ? `?search=${encodeURIComponent(debouncedSearch)}` : '');
+        const url = \`\${process.env.NEXT_PUBLIC_API_URL || 'https://satyalabel-backend.onrender.com/api/v1'}/scans\` + (debouncedSearch ? \`?search=\${encodeURIComponent(debouncedSearch)}\` : '');
         const res = await fetch(url, {
-          headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+          headers: { 'Authorization': \`Bearer \${localStorage.getItem('token')}\` }
         });
         if (!res.ok) throw new Error("API Error");
         const json = await res.json();
@@ -120,7 +122,7 @@ export default function HistoryPage() {
           <div className="flex flex-col gap-4 md:gap-0">
             {scans.length === 0 && <div className="p-10 text-center text-text-muted">No scans found.</div>}
             {scans.map((s, i) => (
-              <div key={i} className="flex flex-col md:flex-row w-full p-5 md:px-6 md:py-5 items-start md:items-center bg-background md:bg-transparent border border-border md:border-b md:border-x-0 md:border-t-0 last:border-0 rounded-xl md:rounded-none hover:border-[var(--color-primary)] md:hover:bg-surface/50 transition-colors cursor-pointer" onClick={() => router.push(`/results/${s.id}`)}>
+              <div key={i} className="flex flex-col md:flex-row w-full p-5 md:px-6 md:py-5 items-start md:items-center bg-background md:bg-transparent border border-border md:border-b md:border-x-0 md:border-t-0 last:border-0 rounded-xl md:rounded-none hover:border-[var(--color-primary)] md:hover:bg-surface/50 transition-colors cursor-pointer" onClick={() => router.push(\`/results/\${s.id}\`)}>
                 
                 {/* Mobile: Header with status */}
                 <div className="flex md:hidden items-center justify-between w-full mb-3">
@@ -166,3 +168,7 @@ export default function HistoryPage() {
     </div>
   );
 }
+`;
+
+fs.writeFileSync('frontend/app/history/page.jsx', fullCode);
+console.log("History page completely fixed");
