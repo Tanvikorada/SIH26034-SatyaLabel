@@ -407,14 +407,12 @@ CRITICAL RULES FOR HALLUCINATION PREVENTION:
 
     try {
       const jsonMatch = cleaned.match(/[\[\{][\s\S]*[\]\}]/);
-      if (jsonMatch) {
-        structuredData = JSON.parse(jsonMatch[0]);
-      } else {
-        structuredData = { _raw_text: responseText };
-      }
+      const rawParsed = jsonMatch ? JSON.parse(jsonMatch[0]) : JSON.parse(cleaned);
+      const toValidate = Array.isArray(rawParsed.products) ? rawParsed : { products: Array.isArray(rawParsed) ? rawParsed : [rawParsed] };
+      structuredData = AIResponseSchema.parse(toValidate);
     } catch (parseErr) {
-      console.warn('[OCR] JSON parse failed - using raw text');
-      structuredData = { _raw_text: responseText };
+      console.warn('[OCR] JSON parse/Zod validation failed:', parseErr.message);
+      throw new Error('AI hallucinated bad JSON schema: ' + parseErr.message);
     }
 
     rawText = structuredData._raw_text || responseText;
