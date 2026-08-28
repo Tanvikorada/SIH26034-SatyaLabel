@@ -15,6 +15,7 @@ const Groq = require('groq-sdk');
 const fs = require('fs');
 const path = require('path');
 const config = require('../config');
+const { z } = require('zod');
 
 // ─── CONSTANTS ────────────────────────────────────────────────────────────────
 
