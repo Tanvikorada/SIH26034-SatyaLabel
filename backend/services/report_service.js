@@ -160,8 +160,8 @@ async function generateReport(scan, outputDir = './reports') {
   const metaItems = [
     ['Report ID', scan.id],
     ['Generated', new Date().toLocaleString('en-IN')],
-    ['Product Name', truncate(scan.productName || 'Unknown', 60)],
-    ['Brand', truncate(scan.brandName || 'Unknown', 60)],
+    ['Product Name', truncate((scan.product?.product_name || (scan.extracted_fields ? scan.extracted_fields.product_name : null)) || 'Unknown', 60)],
+    ['Brand', truncate((scan.product?.brand_name || (scan.extracted_fields ? scan.extracted_fields.brand_name : null)) || 'Unknown', 60)],
     ['OCR Engine', scan.ocrEngineUsed || 'tesseract'],
     ['Compliance Score', `${scan.complianceScore || 0}%`],
     ['Original File', truncate(scan.originalFilename || scan.imagePath, 60)],
@@ -194,10 +194,10 @@ async function generateReport(scan, outputDir = './reports') {
   y -= 20;
 
   const statsData = [
-    ['Total Rules Checked', scan.totalRulesChecked || 16, COLORS.darkBlue],
-    ['Rules Passed', (scan.totalRulesChecked || 16) - (scan.totalViolations || 0), COLORS.green],
-    ['Critical Violations', scan.criticalViolations || 0, COLORS.red],
-    ['Major Violations', (scan.totalViolations || 0) - (scan.criticalViolations || 0), COLORS.orange],
+    ['Total Rules Checked', (scan.violations ? scan.violations.length : 16) || 16, COLORS.darkBlue],
+    ['Rules Passed', ((scan.violations ? scan.violations.length : 16) || 16) - ((scan.violations ? scan.violations.filter(v => v.status !== 'PASS').length : 0) || 0), COLORS.green],
+    ['Critical Violations', (scan.violations ? scan.violations.filter(v => v.severity === 'high').length : 0) || 0, COLORS.red],
+    ['Major Violations', ((scan.violations ? scan.violations.filter(v => v.status !== 'PASS').length : 0) || 0) - ((scan.violations ? scan.violations.filter(v => v.severity === 'high').length : 0) || 0), COLORS.orange],
     ['Minor / Estimated', scan.estimatedViolations || 0, COLORS.yellow],
   ];
 
