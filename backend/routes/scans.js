@@ -251,9 +251,11 @@ router.post('/', requireAuth, (req, res, next) => {
       return fail(res, 400, 'UPLOAD_ERROR', uploadErr.message);
     }
 
-    if (!req.file) {
-      return fail(res, 400, 'MISSING_IMAGE', 'No image file uploaded — include field "image".');
-    }
+    if (!req.files || req.files.length === 0) {
+        return fail(res, 400, 'MISSING_IMAGE', 'No image files uploaded - include field "images".');
+      }
+      const filePaths = req.files.map(f => f.path);
+      const cloudUrl = JSON.stringify(filePaths);
 
     const sourceType    = req.body.source_type || 'physical_label';
     const productNameHint = req.body.product_name || null;
