@@ -120,7 +120,7 @@ async function runBatchPipeline(batch, imagePath, metadata = {}) {
       let productsArray = ocrResult.geminiStructuredData?.products || ocrResult.geminiStructuredData;
       if (!Array.isArray(productsArray)) productsArray = [productsArray];
       if (productsArray.length > 1) {
-        await batch.update({ status: 'failed', errorMessage: 'Multiple products detected.' });
+        await batch.update({ status: 'failed', errorMessage: filePathsArray.length > 1 ? 'MULTIPLE_IMAGES_MULTIPLE_PRODUCTS' : 'SINGLE_IMAGE_MULTIPLE_PRODUCTS' });
         return;
       }
       
