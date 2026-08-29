@@ -108,6 +108,11 @@ const Batch = sequelize.define('Batch', {
     defaultValue: 'processing',
     validate: { isIn: [['processing', 'completed', 'failed']] },
   },
+  errorMessage: {
+    type: DataTypes.TEXT,
+    allowNull: true,
+    field: 'error_message',
+  },
 }, {
   tableName: 'batches',
   timestamps: true,
