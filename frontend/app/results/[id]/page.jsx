@@ -1,73 +1,36 @@
+
 'use client';
-import { useEffect, useState, useRef } from 'react';
-import NavBar from '@/components/NavBar';
+import { useEffect, useState, use } from 'react';
 import { useRouter } from 'next/navigation';
-import { toast } from 'sonner';
-import html2canvas from 'html2canvas';
-import { jsPDF } from 'jspdf';
+import NavBar from '../../../components/NavBar';
+import { toast } from 'react-hot-toast';
 
 export default function ResultsPage({ params }) {
+  const resolvedParams = use(params);
+  const router = useRouter();
   const [report, setReport] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState('action');
-  const [expandedRule, setExpandedRule] = useState(null);
-  const [resolvedParams, setResolvedParams] = useState(null);
-  const reportRef = useRef(null);
-  const router = useRouter();
-  
+  const [activeTab, setActiveTab] = useState('summary');
+
   const API = process.env.NEXT_PUBLIC_API_URL || 'https://satyalabel-backend.onrender.com/api/v1';
 
   useEffect(() => {
-    params.then(p => setResolvedParams(p));
-  }, [params]);
-
-  useEffect(() => {
-    if (!resolvedParams) return;
-    if (!localStorage.getItem('token')) return router.push('/login');
-    
-    let intervalId;
-    
-    const fetchScan = async () => {
+    const fetchReport = async () => {
       try {
         const res = await fetch(`${API}/scans/${resolvedParams.id}`, {
           headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
         });
-        if (!res.ok) throw new Error("API Error");
+        if (!res.ok) throw new Error('Failed to fetch');
         const json = await res.json();
-        const data = json.data || json;
-        
-        setReport(data);
-        
-        if (data.status !== 'processing') {
-          clearInterval(intervalId);
-          setLoading(false);
-        }
+        setReport(json.data);
       } catch (err) {
-        clearInterval(intervalId);
+        console.error(err);
+      } finally {
         setLoading(false);
       }
     };
-    
-    fetchScan();
-    intervalId = setInterval(fetchScan, 3000);
-    
-    return () => clearInterval(intervalId);
-  }, [resolvedParams, router, API]);
-
-  const cancelScan = async () => {
-    try {
-      const res = await fetch(`${API}/scans/${resolvedParams.id}/cancel`, {
-        method: 'POST',
-        headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
-      });
-      if (res.ok) {
-        toast.success('Scan cancelled.');
-        router.push('/dashboard');
-      }
-    } catch(err) {
-      toast.error('Could not cancel scan');
-    }
-  };
+    fetchReport();
+  }, [resolvedParams.id]);
 
   const downloadPDF = async () => {
     toast.info('Generating Official Government Report...');
@@ -91,81 +54,147 @@ export default function ResultsPage({ params }) {
       a.click();
       toast.success('PDF Downloaded Successfully');
     } catch (e) {
-      console.error(e);
       toast.error('Could not generate PDF');
     }
   };
 
-  const handleDelete = async () => {
-    if (!confirm('Are you sure you want to delete this scan record?')) return;
-    try {
-      const res = await fetch(`${API}/scans/${resolvedParams.id}`, {
-        method: 'DELETE',
-        headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
-      });
-      if (res.ok) {
-        toast.success('Scan record deleted.');
-        router.push('/dashboard');
-      } else {
-        toast.error('Failed to delete (Admins only)');
+  const downloadCSV = () => {
+    const fields = report.extractedFields || report.extracted_fields || {};
+    const violations = report.violations || [];
+    const csvRows = [];
+    csvRows.push("LEGAL METROLOGY COMPLIANCE REPORT");
+    csvRows.push(`Scan ID,${report.id}`);
+    csvRows.push(`Date,${new Date(report.created_at).toLocaleString()}`);
+    csvRows.push(`Overall Status,${report.overall_compliance || report.overallStatus}`);
+    csvRows.push(`Compliance Score,${report.compliance_score || report.complianceScore}%`);
+    csvRows.push("");
+    
+    csvRows.push("--- EXTRACTED DATA ---");
+    csvRows.push("Field Name,Extracted Value");
+    for (const [k, v] of Object.entries(fields)) {
+      if (!k.startsWith('_') && v) {
+        const label = k.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+        csvRows.push(`"${label}","${String(v).replace(/"/g, '""')}"`);
       }
-    } catch(err) {
-      toast.error('Error deleting record');
     }
+    
+    csvRows.push("");
+    csvRows.push("--- RULE VIOLATIONS ---");
+    csvRows.push("Rule ID,Status,Severity,Details");
+    for (const v of violations) {
+      if(v.status !== 'PASS' && v.status !== 'NOT APPLICABLE') {
+        csvRows.push(`"${v.rule_id}","${v.status}","${v.severity || 'high'}","${String(v.detail_text || v.detail || '').replace(/"/g, '""')}"`);
+      }
+    }
+    
+    const blob = new Blob([csvRows.join('\n')], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `compliance_report_${report.id}.csv`;
+    a.click();
   };
 
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-background text-text-primary flex flex-col">
-        <div className="print:hidden"><NavBar /></div>
-        <div className="flex-1 flex flex-col items-center justify-center gap-6 pb-32">
-          <div className="w-12 h-12 rounded-full border-4 border-border border-t-[var(--color-primary)] animate-spin"></div>
-          <div className="flex flex-col items-center gap-2">
-            <h2 className="text-[20px] font-medium tracking-tight">Analyzing Label...</h2>
-            <p className="text-[14px] text-text-secondary font-mono">Running OCR and Legal Metrology Rules Engine</p>
-          </div>
-          <button onClick={cancelScan} className="mt-4 px-4 py-2 rounded-full border border-border text-text-secondary hover:text-red-400 hover:border-red-900/50 transition-colors text-sm font-medium">Cancel Scan</button>
-        </div>
-      </div>
-    );
-  }
+  if (loading) return <div className="min-h-screen bg-background text-text-primary flex items-center justify-center"><div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-accent"></div></div>;
+  if (!report) return <div className="min-h-screen bg-background text-text-primary p-12 text-center">Scan not found</div>;
 
-  if (!report) return <div className="min-h-screen bg-background text-text-primary"><NavBar/><div className="p-10 text-red-500">Not found</div></div>;
+  const isPass = (report.overallStatus || report.overall_compliance) === 'compliant';
+  const badgeClass = isPass ? 'bg-green-500/10 text-green-500 border border-green-500/20' : 'bg-red-500/10 text-red-500 border border-red-500/20';
+  const scoreColor = report.compliance_score >= 80 ? 'text-green-500' : report.compliance_score >= 50 ? 'text-amber-500' : 'text-red-500';
 
-  if (report.status === 'failed') {
-    return (
-      <div className="min-h-screen bg-background text-text-primary flex flex-col">
-        <div className="print:hidden"><NavBar /></div>
-        <div className="flex-1 flex items-center justify-center p-6 pb-32">
-          <div className="mello-card p-8 max-w-md w-full flex flex-col items-center text-center gap-4 border-red-900/50">
-            <div className="w-16 h-16 rounded-full bg-red-500/10 flex items-center justify-center mb-2">
-              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#ef4444" strokeWidth="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-            </div>
-            <h2 className="text-[22px] font-medium text-red-500">Scan Failed</h2>
-            <p className="text-[14px] text-text-secondary mb-4">{report.errorMessage || report.error_message || "The AI engine could not extract text from this image."}</p>
-            <button onClick={() => router.push('/upload')} className="mello-btn-secondary w-full">Try Another Image</button>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  const getBadge = (s) => {
-    if (s === 'PASS' || s === 'pass') return 'mello-badge-pass';
-    if (s === 'MANUAL REVIEW' || s === 'needs_review') return 'mello-badge-review';
-    if (s === 'POTENTIAL NON-COMPLIANCE' || s === 'fail' || s === 'estimated_fail') return 'mello-badge-fail';
-    return 'mello-badge-na';
-  };
+  const fields = report.extractedFields || report.extracted_fields || {};
 
   return (
     <div className="min-h-screen bg-background text-text-primary pb-24">
-      <div className="print:hidden"><NavBar /></div>
+      <NavBar />
       
-      <div id="pdf-content" className="max-w-[1200px] mx-auto px-6 py-12">
-        <div ref={reportRef} className="bg-background p-2 md:p-6 rounded-2xl">
-                    <div className="mb-10 p-6 bg-surface/30 border border-border rounded-2xl">
-            <h3 className="text-sm font-bold tracking-widest uppercase text-text-muted mb-4">Photographic Evidence</h3>
-            <div className="flex gap-4 overflow-x-auto pb-2">
+      <main className="max-w-[1000px] mx-auto px-6 mt-8">
+        {/* HERO SECTION */}
+        <div className="glass rounded-[24px] p-8 mb-8 relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-64 h-64 bg-accent/5 rounded-full blur-[80px] -mr-32 -mt-32"></div>
+          
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 relative z-10">
+            <div>
+              <div className="flex items-center gap-3 mb-3">
+                <span className="text-[12px] font-mono text-text-muted tracking-wider">ID: {report.id}</span>
+                <span className={`text-[11px] font-bold tracking-widest uppercase px-3 py-1 rounded-full ${badgeClass}`}>
+                  {report.overallStatus || report.overall_compliance}
+                </span>
+              </div>
+              <h1 className="text-[32px] md:text-[40px] font-medium tracking-tight mb-1 text-white">
+                {report.product?.product_name || fields.product_name || 'Unknown Product'}
+              </h1>
+              <p className="text-text-secondary text-[16px]">
+                {report.product?.brand_name || fields.brand_name || 'Brand Unspecified'}
+              </p>
+            </div>
+            
+            <div className="flex flex-col items-end">
+              <div className="text-[12px] text-text-muted font-bold tracking-widest uppercase mb-1">AI Compliance Score</div>
+              <div className={`text-[48px] font-medium tracking-tighter leading-none ${scoreColor}`}>
+                {report.compliance_score || report.complianceScore}%
+              </div>
+            </div>
+          </div>
+          
+          {/* Action Buttons */}
+          <div className="flex flex-wrap gap-3 mt-8 pt-6 border-t border-border/50">
+            <button onClick={downloadPDF} className="mello-btn-primary flex items-center gap-2">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+              Download Notice
+            </button>
+            <button onClick={downloadCSV} className="mello-btn-secondary flex items-center gap-2">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="3" y1="9" x2="21" y2="9"></line><line x1="9" y1="21" x2="9" y2="9"></line></svg>
+              Export CSV
+            </button>
+          </div>
+        </div>
+
+        {/* TAB NAVIGATION */}
+        <div className="flex space-x-1 border-b border-border mb-8">
+          {['summary', 'evidence', 'data'].map((tab) => (
+            <button
+              key={tab}
+              onClick={() => setActiveTab(tab)}
+              className={`px-6 py-3 text-[13px] font-bold tracking-widest uppercase transition-all ${activeTab === tab ? 'text-accent border-b-2 border-accent bg-accent/5' : 'text-text-muted hover:text-text-primary'}`}
+            >
+              {tab}
+            </button>
+          ))}
+        </div>
+
+        {/* TAB CONTENTS */}
+        
+        {/* TAB 1: SUMMARY / VIOLATIONS */}
+        {activeTab === 'summary' && (
+          <div className="space-y-4 animate-fade-in">
+            <h3 className="text-[18px] font-medium text-white mb-6">Legal Metrology Violations</h3>
+            {(report.violations || []).filter(v => v.status !== 'PASS').map((v, i) => (
+              <div key={i} className="glass rounded-[16px] p-6 border-l-4 border-l-red-500">
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-3">
+                  <div className="flex items-center gap-3">
+                    <span className="px-2 py-1 bg-red-500/10 text-red-500 font-mono text-[11px] font-bold rounded">{v.rule_id}</span>
+                    <h4 className="text-[16px] font-medium text-white">{v.rule_title}</h4>
+                  </div>
+                </div>
+                <p className="text-[14px] text-text-secondary leading-relaxed font-mono">
+                  {v.detail || v.detail_text}
+                </p>
+              </div>
+            ))}
+            {(report.violations || []).filter(v => v.status !== 'PASS').length === 0 && (
+              <div className="glass rounded-[16px] p-12 text-center text-text-secondary">
+                No violations detected! The product is fully compliant.
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* TAB 2: EVIDENCE */}
+        {activeTab === 'evidence' && (
+          <div className="animate-fade-in space-y-6">
+            <h3 className="text-[18px] font-medium text-white">Attached Photographic Evidence</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {(() => {
                 let images = [];
                 try {
@@ -175,276 +204,37 @@ export default function ResultsPage({ params }) {
                 } catch (e) {
                   images = [report.original_image || report.originalImage || report.image_url].filter(Boolean);
                 }
-                if (images.length === 0) return <div className="text-[13px] text-text-secondary">No evidence attached.</div>;
+                if (images.length === 0) return <div className="text-[14px] text-text-muted">No evidence attached.</div>;
                 return images.map((img, idx) => (
-                  <img key={idx} src={img.startsWith('http') ? img : (process.env.NEXT_PUBLIC_API_URL || 'https://satyalabel-backend.onrender.com/api/v1').replace('/api/v1', '') + '/' + img} alt="Evidence" className="h-48 rounded-xl object-contain bg-black/20 border border-border/50 shadow-md" />
+                  <div key={idx} className="glass rounded-[16px] p-2 overflow-hidden aspect-square flex items-center justify-center bg-black/40">
+                    <img src={img.startsWith('http') ? img : API.replace('/api/v1', '') + '/' + img} alt="Evidence" className="max-w-full max-h-full object-contain rounded-[8px]" />
+                  </div>
                 ));
               })()}
             </div>
           </div>
-          <div className="flex justify-between items-start border-b border-border pb-8 mb-8">
-            <div>
-              <div className="flex items-center gap-2 mb-4">
-                <div className={getBadge(report.overallStatus || report.overall_compliance)}>{report.overallStatus || report.overall_compliance}</div>
-                <span className="text-[13px] text-text-muted font-mono">ID: {report.id}</span>
-              </div>
-              <h1 className="text-[40px] font-medium tracking-tight leading-[1.1] mb-2">{report.product?.product_name || 'Unknown Product'}</h1>
-              <p className="text-[16px] text-text-secondary">{report.product?.brand_name || 'No Brand'}</p>
-            </div>
-            <div className="text-right mello-card-flat px-6 py-4 flex flex-col items-center bg-surface/50">
-               <div className="text-[13px] text-text-muted mb-1">Compliance Score</div>
-               <div className="text-[40px] font-medium tracking-tight">{report.compliance_score || report.complianceScore || 0}%</div>
-            </div>
-          </div>
+        )}
 
-          
-        {report.extracted_fields?._quality_warning && (
-          <div className="mb-8 p-4 rounded-xl border border-amber-500/30 bg-amber-500/10 flex items-start gap-4 animate-fade-in">
-             <div className="text-amber-500 text-2xl">⚠️</div>
-             <div>
-               <h3 className="text-amber-400 font-semibold mb-1">Image Quality / Obstruction Warning</h3>
-               <p className="text-amber-200/80 text-sm">{report.extracted_fields._quality_warning}</p>
-               <p className="text-amber-200/60 text-xs mt-2">The AI strictly refused to extract fields in the affected areas to prevent hallucinating incorrect legal values.</p>
+        {/* TAB 3: DATA EXTRACTED */}
+        {activeTab === 'data' && (
+          <div className="animate-fade-in">
+             <h3 className="text-[18px] font-medium text-white mb-6">AI Structured Extraction</h3>
+             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {Object.entries(fields).filter(([k, v]) => !k.startsWith('_') && v).map(([k, v]) => (
+                  <div key={k} className="glass rounded-[16px] p-5">
+                    <div className="text-[10px] font-bold tracking-widest uppercase text-text-muted mb-2">
+                      {k.replace(/_/g, ' ')}
+                    </div>
+                    <div className="text-[14px] text-white font-medium break-words leading-tight">
+                      {String(v)}
+                    </div>
+                  </div>
+                ))}
              </div>
           </div>
         )}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <div className="lg:col-span-2 flex flex-col gap-6">
-              
-              <div className="flex items-center justify-between">
-                <h3 className="text-2xl font-medium tracking-tight">Compliance Ledger</h3>
-                <div className="text-[12px] font-mono text-text-muted">Legal Metrology Rules, 2011</div>
-              </div>
 
-              
-              {/* AI COMPLIANCE ANALYSIS */}
-              <div className="border border-border rounded-2xl p-6 shadow-lg bg-surface relative overflow-hidden mb-6 mt-8">
-                <div className="absolute top-0 right-0 p-4 opacity-5 pointer-events-none">
-                  <svg width="120" height="120" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
-                </div>
-                <h3 className="text-[14px] font-mono text-text-muted uppercase tracking-widest mb-4">AI Compliance Analysis</h3>
-                <div className="text-[15px] leading-relaxed text-text-secondary space-y-3">
-                  {report.extracted_fields?._ai_analysis ? (
-                    report.extracted_fields._ai_analysis.split('\n').filter(p => p.trim() !== '').map((paragraph, idx) => (
-                      <p key={idx}>{paragraph}</p>
-                    ))
-                  ) : (
-                    <>
-                      <p>
-                        <strong className="text-text-primary font-medium">Verdict:</strong> The label {report.complianceScore >= 80 ? 'meets most legal requirements' : 'violates multiple mandatory declarations'} under the Legal Metrology (Packaged Commodities) Rules, 2011.
-                      </p>
-                      <p>
-                        <strong className="text-text-primary font-medium">Critical Findings:</strong> Out of {report.totalRulesChecked} rules verified by the AI engine, <span className={report.totalViolations > 0 ? "text-red-500 font-medium" : "text-green-500 font-medium"}>{report.totalViolations} violations</span> were detected.
-                      </p>
-                      <p className="text-[13px] bg-background/50 p-3 rounded-lg border border-border mt-4">
-                        <strong>Legal Context:</strong> The manufacturer, packer, or importer is strictly liable under Rule 32 for the omission of declarations such as MRP, Net Quantity, or Manufacturer Address on the principal display panel. {report.totalViolations > 0 ? "An official notice may be issued." : "No immediate action required."}
-                      </p>
-                    </>
-                  )}
-                </div>
-              </div>
-
-              {/* RULING LEDGER */}
-              <div className="border border-border rounded-2xl overflow-hidden shadow-lg bg-surface/30 relative">
-                <div className="flex flex-col p-2 gap-2">
-                  {(() => {
-                    const checks = report.violations || [];
-                    const fails = checks.filter(c => c.status === 'POTENTIAL NON-COMPLIANCE' || c.status === 'fail' || c.status === 'estimated_fail');
-                    const reviews = checks.filter(c => c.status === 'MANUAL REVIEW' || c.status === 'needs_review');
-                    const passes = checks.filter(c => c.status === 'PASS' || c.status === 'pass');
-                    const sortedChecks = [...fails, ...reviews, ...passes];
-
-                    if (sortedChecks.length === 0) return <div className="p-8 text-center text-text-muted">No rules checked.</div>;
-
-                    return sortedChecks.map((v, i) => {
-                      const isPass = v.status === 'PASS' || v.status === 'pass';
-                      const isReview = v.status === 'MANUAL REVIEW' || v.status === 'needs_review';
-                      
-                      let dotColor = 'bg-red-500 shadow-[0_0_8px_#ef4444]';
-                      let badgeBg = 'bg-[#ef44441a] text-red-500';
-                      
-                      if (isPass) {
-                        dotColor = 'bg-green-500 shadow-[0_0_8px_#22c55e]';
-                        badgeBg = 'bg-[#22c55e1a] text-green-500';
-                      } else if (isReview) {
-                        dotColor = 'bg-amber-500 shadow-[0_0_8px_#f59e0b]';
-                        badgeBg = 'bg-[#f59e0b1a] text-amber-500';
-                      }
-
-                      return (
-                        <div key={i} className="flex flex-col p-4 bg-background border border-border rounded-xl cursor-pointer hover:border-[var(--color-primary)] transition-colors" onClick={() => setExpandedRule(expandedRule === i ? null : i)}>
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-4">
-                              <div className={`w-2.5 h-2.5 rounded-full ${dotColor}`} />
-                              <div className="flex flex-col">
-                                <span className="font-mono text-[11px] tracking-wider text-text-muted mb-0.5">{v.rule_id}</span>
-                                <span className="font-medium text-[15px] text-text-primary leading-tight">{v.rule_title}</span>
-                              </div>
-                            </div>
-                            <div className={`text-[11px] font-bold px-3 py-1.5 rounded-full uppercase tracking-wider ${badgeBg}`}>
-                              {(v.status || 'UNKNOWN').replace('POTENTIAL NON-COMPLIANCE', 'FAIL')}
-                            </div>
-                          </div>
-                          
-                          {/* Expanded Detail */}
-                          {expandedRule === i && (
-                            <div className="mt-4 pt-4 border-t border-border/50 text-[14px] text-text-secondary leading-relaxed font-mono">
-                              {v.detail || v.detail_text || "No official finding detailed."}
-                            </div>
-                          )}
-                        </div>
-                      )
-                    });
-                  })()}
-                </div>
-              </div>
-              
-              <div className="mello-card p-6 mt-2">
-                <h3 className="text-[15px] font-medium mb-4">Raw Extraction Log</h3>
-                <div className="bg-background border border-border p-4 rounded-[12px] font-mono text-[12px] text-text-muted whitespace-pre-wrap max-h-64 overflow-y-auto">
-                  {report.ocr_raw_text || report.ocrRawText || 'No raw text available.'}
-                </div>
-              </div>
-            </div>
-  
-            <div className="flex flex-col gap-6">
-               <h3 className="text-2xl font-medium tracking-tight">Mandatory Declarations</h3>
-               
-               <div className="flex flex-col gap-4">
-                 {(() => {
-                   const fields = report.extractedFields || report.extracted_fields || {};
-                   
-                   // Core Legal Metrology Fields
-                   const groups = {
-                     'Identity': ['manufacturer_name', 'manufacturer_address', 'common_name', 'product_name', 'brand_name'],
-                     'Quantity & Price': ['net_quantity', 'net_quantity_unit', 'mrp', 'mrp_includes_tax_statement'],
-                     'Dates': ['mfg_date', 'import_date'],
-                     'Consumer Support': ['consumer_care_details', 'customer_care']
-                   };
-
-                   // Extended Data Cards
-                   const extendedCardKeys = [
-                     { k: 'ingredients', icon: '🍲', label: 'Ingredients List' },
-                     { k: 'nutrition', icon: '📊', label: 'Nutritional Info' },
-                     { k: 'fssai_license', icon: '🛡️', label: 'FSSAI License' },
-                     { k: 'batch_lot_number', icon: '📦', label: 'Batch / Lot Number' },
-                     { k: 'best_before', icon: '⏳', label: 'Best Before / Expiry' },
-                     { k: 'country_of_origin', icon: '🌍', label: 'Country of Origin' },
-                     { k: 'veg_nonveg', icon: '🥬', label: 'Veg / Non-Veg' },
-                     { k: 'allergens_or_warnings', icon: '⚠️', label: 'Allergens & Warnings' }
-                   ];
-
-                   const renderGroup = (title, keys) => {
-                     const groupFields = keys.map(k => ({ k, v: fields[k] })).filter(f => f.v !== undefined && f.v !== null && f.v !== '');
-                     if (groupFields.length === 0) return null;
-                     
-                     return (
-                       <div key={title} className="mello-card p-5">
-                         <h4 className="text-[11px] font-bold tracking-widest uppercase text-text-muted mb-4 pb-2 border-b border-border">{title}</h4>
-                         <div className="flex flex-col">
-                           {groupFields.map(({k, v}) => (
-                             <div key={k} className="py-2.5 flex flex-col gap-1 border-b border-border/50 last:border-0 last:pb-0">
-                               <span className="text-[10px] text-text-muted uppercase tracking-wider font-mono">{k.replace(/_/g, ' ')}</span>
-                               <span className="text-[14px] font-medium text-text-primary break-words leading-tight">{String(v)}</span>
-                             </div>
-                           ))}
-                         </div>
-                       </div>
-                     );
-                   };
-
-                   const renderedGroups = Object.entries(groups).map(([title, keys]) => renderGroup(title, keys)).filter(Boolean);
-                   
-                   const assignedKeys = [...Object.values(groups).flat(), ...extendedCardKeys.map(e => e.k)];
-                   const unassignedKeys = Object.keys(fields).filter(k => !assignedKeys.includes(k) && !k.startsWith('_'));
-                   if (unassignedKeys.length > 0) {
-                     renderedGroups.push(renderGroup('Other Data', unassignedKeys));
-                   }
-
-                   // Render Extended Cards
-                   const extendedCardsToRender = extendedCardKeys
-                     .map(ext => ({ ...ext, v: fields[ext.k] }))
-                     .filter(ext => ext.v !== undefined && ext.v !== null && ext.v !== '');
-
-                   return (
-                     <>
-                       {renderedGroups.length > 0 ? renderedGroups : <div className="mello-card p-5 text-text-muted text-sm text-center">No structured data extracted.</div>}
-                       
-                       {extendedCardsToRender.length > 0 && (
-                         <div className="mt-6 pt-6 border-t border-border">
-                           <h3 className="text-xl font-medium tracking-tight mb-4">Product Attributes</h3>
-                           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                             {extendedCardsToRender.map((ext, i) => (
-                               <div key={i} className="mello-card p-5 flex flex-col hover:border-[var(--color-primary)] transition-colors">
-                                 <div className="flex items-center gap-2 mb-3">
-                                   <span className="text-[16px]">{ext.icon}</span>
-                                   <span className="text-[12px] font-bold tracking-widest uppercase text-text-muted">{ext.label}</span>
-                                 </div>
-                                 <div className="text-[14px] font-medium text-text-primary leading-relaxed break-words">
-                                   {String(ext.v)}
-                                 </div>
-                               </div>
-                             ))}
-                           </div>
-                         </div>
-                       )}
-                     </>
-                   );
-                 })()}
-               </div>
-            </div>
-          </div>
-        </div>
-
-        <div className="mt-8 flex flex-col md:flex-row gap-3 max-w-[400px] ml-auto print:hidden">
-          <button onClick={downloadPDF} className="mello-btn-primary flex-1 shadow-lg">Download Official Notice PDF</button>
-          <button onClick={() => {
-            const fields = report.extractedFields || report.extracted_fields || {};
-            const violations = report.violations || [];
-            const csvRows = [];
-            csvRows.push("LEGAL METROLOGY COMPLIANCE REPORT");
-            csvRows.push(`Scan ID,${report.id}`);
-            csvRows.push(`Date,${new Date(report.created_at).toLocaleString()}`);
-            csvRows.push(`Overall Status,${report.overall_compliance || report.overallCompliance}`);
-            csvRows.push(`Compliance Score,${report.compliance_score || report.complianceScore}%`);
-            csvRows.push("");
-            
-            csvRows.push("--- EXTRACTED DATA ---");
-            csvRows.push("Field Name,Extracted Value");
-            const niceNames = {
-              product_name: "Product Name", brand_name: "Brand", manufacturer_name: "Manufacturer",
-              net_quantity: "Net Quantity", mrp: "MRP (Max Retail Price)", mfg_date: "Mfg Date",
-              ingredients: "Ingredients", fssai_license: "FSSAI License"
-            };
-            for (const [k, v] of Object.entries(fields)) {
-              if (!k.startsWith('_') && v) {
-                const label = niceNames[k] || k.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
-                csvRows.push(`"${label}","${String(v).replace(/"/g, '""')}"`);
-              }
-            }
-            
-            csvRows.push("");
-            csvRows.push("--- RULE VIOLATIONS ---");
-            csvRows.push("Rule ID,Status,Severity,Details");
-            for (const v of violations) {
-              if(v.status !== 'PASS' && v.status !== 'NOT APPLICABLE') {
-                csvRows.push(`"${v.rule_id}","${v.status}","${v.severity || 'high'}","${String(v.detail_text || v.detail || '').replace(/"/g, '""')}"`);
-              }
-            }
-            
-            const blob = new Blob([csvRows.join('\n')], { type: 'text/csv' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `compliance_report_${report.id}.csv`;
-            a.click();
-          }} className="mello-btn-secondary flex-1">Export Data (CSV)</button>
-          {localStorage.getItem('role') === 'admin' && (
-            <button onClick={handleDelete} className="mello-btn-secondary flex-1 text-red-500 border-red-900/30 hover:bg-red-500/10">Delete Record</button>
-          )}
-        </div>
-
-      </div>
+      </main>
     </div>
   );
 }
