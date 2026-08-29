@@ -372,6 +372,14 @@ router.get('/batch/:id', requireAuth, async (req, res) => {
 
 // ─── GET /api/v1/scans ───────────────────────────────────────────────────────
 // Spec 05 query params: ?compliance=non_compliant&search=<name>&page=&limit=
+router.get('/debug-db', async (req, res) => {
+  try {
+    const { Batch } = require('../models');
+    const batch = await Batch.findOne({ order: [['created_at', 'DESC']] });
+    res.json(batch);
+  } catch(e) { res.json({ error: e.message }); }
+});
+
 router.get('/debug-err', (req, res) => {
   let crash = 'No crash';
   try {
