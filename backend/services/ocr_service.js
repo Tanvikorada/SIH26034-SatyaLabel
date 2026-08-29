@@ -208,7 +208,7 @@ async function runGeminiVision(imagePaths, attempt = 1, modelName = 'gemini-1.5-
   const mimeType = 'image/jpeg';
 
   const STRUCTURED_PROMPT = `You are the core "AI Brain" of a Legal Metrology enforcement system.
-You are analyzing an image that may contain ONE OR MORE consumer packaged goods.
+You are analyzing one or more images that represent different angles (front, back, sides) of a SINGLE consumer packaged good. Synthesize the text across all angles into ONE single product JSON output.
 
 CRITICAL INSTRUCTIONS:
 - You will receive a JSON structure. You must extract the exact data from the packaging.
@@ -298,7 +298,7 @@ async function runGroqVision(imagePaths, attempt = 1, modelName = 'qwen/qwen3.8-
   const mimeType = 'image/jpeg';
 
   const STRUCTURED_PROMPT = `You are the core "AI Brain" of a Legal Metrology enforcement system.
-You are analyzing an image that may contain ONE OR MORE consumer packaged goods.
+You are analyzing one or more images that represent different angles (front, back, sides) of a SINGLE consumer packaged good. Synthesize the text across all angles into ONE single product JSON output.
 
 Here is some raw, noisy text extracted from the image by a secondary OCR engine. Use it as a hint to locate fields:
 ${tesseractText}`;
