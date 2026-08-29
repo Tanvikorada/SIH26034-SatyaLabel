@@ -51,9 +51,15 @@ export default function BatchPage({ params }) {
               // Fallback to polling if SSE fails
               setTimeout(fetchBatch, 3000);
             };
-          } else {
-            setLoading(false);
-          }
+          } else if (data.status === 'complete' || data.status === 'completed') {
+              if (data.scans && data.scans.length === 1) {
+                router.push(`/results/${data.scans[0].id}`);
+              } else {
+                setLoading(false);
+              }
+            } else {
+              setLoading(false);
+            }
         } catch(err) {
           setLoading(false);
           toast.error('Failed to load scan batch');
