@@ -191,7 +191,7 @@ ${SCHEMA_HINT}`;
     };
 
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 20000);
+    const timeoutId = setTimeout(() => controller.abort(), 60000);
 
     const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${config.gemini.apiKey}`, {
       method: 'POST',
@@ -227,7 +227,7 @@ ${SCHEMA_HINT}`;
 
   } catch (err) {
     if (attempt < 2) {
-      const nextModel = modelName === 'gemini-2.5-flash' ? 'gemini-2.5-pro' : 'gemini-2.5-flash';
+      const nextModel = modelName === 'gemini-2.5-flash' ? 'gemini-3.5-flash' : 'gemini-2.5-flash';
       err.attemptHistory = (err.attemptHistory || '') + `[Attempt ${attempt} ${modelName}: ${err.message}] `;
         console.warn(`[OCR] Gemini failed with ${modelName} (${err.message}) - retrying with ${nextModel}...`);
       await new Promise(r => setTimeout(r, 2000));
