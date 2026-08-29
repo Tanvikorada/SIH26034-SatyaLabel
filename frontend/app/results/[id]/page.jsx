@@ -201,6 +201,7 @@ export default function ResultsPage({ params }) {
                   const imgStr = report.original_image || report.originalImage || report.image_url;
                   images = JSON.parse(imgStr);
                   if (!Array.isArray(images)) images = [imgStr];
+                  images = images.filter(Boolean); // protect against nulls
                 } catch (e) {
                   images = [report.original_image || report.originalImage || report.image_url].filter(Boolean);
                 }
