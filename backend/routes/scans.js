@@ -215,12 +215,13 @@ async function runBatchPipeline(batch, imagePath, metadata = {}) {
         global.lastInnerErr = innerErr.stack || innerErr.message;
         console.error('[Pipeline] Error processing individual product inside batch', batch.id, innerErr);
         require('fs').writeFileSync('inner_err.log', innerErr.stack || innerErr.message);
+        await batch.update({ status: 'failed', errorMessage: 'Internal error during analysis: ' + innerErr.message });
       }
 
     if (successfulScans > 0) {
       await batch.update({ status: 'completed' });
-    } else {
-      await batch.update({ status: 'failed' });
+    } else if (batch.status !== 'failed') {
+      await batch.update({ status: 'failed', errorMessage: 'Processing failed.' });
     }
     
     // SSE Push Notification
