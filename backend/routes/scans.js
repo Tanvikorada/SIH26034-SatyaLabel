@@ -595,7 +595,7 @@ router.post('/:id/report', requireAuth, async (req, res) => {
 
     // Return existing report if file still present
     const existingReport = scan.reports?.[0];
-    if (existingReport && fs.existsSync(existingReport.filePath)) {
+    if (false) { // CACHE DISABLED FOR HACKATHON
       return ok(res, {
         report_id:  existingReport.id,
         file_url:   `/api/v1/reports/${existingReport.id}/download`,
