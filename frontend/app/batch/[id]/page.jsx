@@ -20,34 +20,49 @@ export default function BatchPage({ params }) {
     if (!resolvedParams) return;
     if (!localStorage.getItem('token')) return router.push('/login');
     
-    let intervalId;
-    
-    const fetchBatch = async () => {
-      try {
-        const res = await fetch(`${API}/scans/batch/${resolvedParams.id}`, {
-          headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
-        });
-        if (!res.ok) throw new Error('Failed to fetch batch');
-        const json = await res.json();
-        const data = json.data || json;
-        
-        setBatch(data);
-        
-        if (data.status === 'processing') {
-          intervalId = setTimeout(fetchBatch, 2000);
-        } else {
-          setLoading(false);
+          // Fetch initial state
+      let eventSource;
+      const fetchBatch = async () => {
+        try {
+          const res = await fetch(`${API}/scans/batch/${resolvedParams.id}`, {
+            headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+          });
+          if (!res.ok) throw new Error('Failed to fetch batch');
+          const json = await res.json();
+          const data = json.data || json;
           
+          setBatch(data);
+          
+          if (data.status === 'processing') {
+            // Setup real-time SSE stream for updates instead of polling
+            const token = localStorage.getItem('token');
+            eventSource = new EventSource(`${API}/scans/batch/${resolvedParams.id}/stream?token=${token}`);
+            
+            eventSource.onmessage = (event) => {
+              const streamData = JSON.parse(event.data);
+              if (streamData.status !== 'processing') {
+                eventSource.close();
+                fetchBatch(); // Re-fetch to get the final complete data
+              }
+            };
+
+            eventSource.onerror = () => {
+              eventSource.close();
+              // Fallback to polling if SSE fails
+              setTimeout(fetchBatch, 3000);
+            };
+          } else {
+            setLoading(false);
+          }
+        } catch(err) {
+          setLoading(false);
+          toast.error('Failed to load scan batch');
         }
-      } catch(err) {
-        setLoading(false);
-        toast.error('Failed to load scan batch');
-      }
-    };
-    
-    fetchBatch();
-    
-    return () => clearTimeout(intervalId);
+      };
+
+      fetchBatch();
+      
+      return () => { if (eventSource) eventSource.close(); };
   }, [resolvedParams, router]);
 
   if (!resolvedParams) return null;
