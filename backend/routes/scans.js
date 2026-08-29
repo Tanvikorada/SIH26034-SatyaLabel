@@ -104,24 +104,21 @@ async function runBatchPipeline(batch, imagePath, metadata = {}) {
     const { generateReport } = require('../services/report_service');
     const { generateAIAuditorAnalysis } = require('../services/auditor_service');
 
+    const { detectAndCropProducts } = require('../services/crop_service');
+  
     console.log('[Pipeline] Starting pipeline for Batch', batch.id);
-    const ocrResult = await runOcrPipeline(imagePath, metadata.forceEngine);
-
-    if (!ocrResult) {
-      await batch.update({ status: 'failed' });
-      return;
-    }
-
-    let productsArray = ocrResult.geminiStructuredData;
-    // Handle new { "products": [...] } wrapper from prompt change
-    if (productsArray && productsArray.products && Array.isArray(productsArray.products)) {
-      productsArray = productsArray.products;
-    } else if (!Array.isArray(productsArray)) {
-      productsArray = [productsArray];
-    }
-
+    
+    const imagePaths = await detectAndCropProducts(imagePath);
     let successfulScans = 0;
-    for (const rawProductData of productsArray) {
+    
+    for (const cropPath of imagePaths) {
+      const ocrResult = await runOcrPipeline(cropPath, metadata.forceEngine);
+      if (!ocrResult) continue;
+      
+      let productsArray = ocrResult.structuredData?.products || ocrResult.structuredData;
+      if (!Array.isArray(productsArray)) productsArray = [productsArray];
+      
+      const rawProductData = productsArray[0];
       if (!rawProductData || Object.keys(rawProductData).length === 0) continue;
       
       try {
