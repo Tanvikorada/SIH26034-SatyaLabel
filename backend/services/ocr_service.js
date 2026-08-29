@@ -36,8 +36,6 @@ const GEMINI_RETRY_ONCE = true;
  * @throws {Error} "IMAGE_TOO_LOW_RES" if shortest edge < MIN_DIMENSION_PX
  */
 async function validateResolution(imagePath) {
-  console.log("validateResolution CALLED WITH:", imagePath, typeof imagePath, Array.isArray(imagePath));
-
   const meta = await sharp(imagePath).metadata();
   const { width, height } = meta;
 
@@ -200,117 +198,79 @@ async function runTesseract(imagePath) {
  */
 // --- STEP 3: GROQ VISION FALLBACK ---
 
-async function runGeminiVision(imagePathss, attempt = 1, modelName = 'gemini-1.5-flash-latest', tesseractText = '') {
+
+async function runGeminiVision(imagePaths, attempt = 1, modelName = 'gemini-1.5-flash-latest', tesseractText = '') {
   if (!config.gemini?.enabled || !config.gemini?.apiKey) {
     throw new Error('Gemini API key not configured.');
   }
 
-  try {
-    const paths = Array.isArray(imagePaths) ? imagePaths : [imagePaths];
+  const paths = Array.isArray(imagePaths) ? imagePaths : [imagePaths];
   const mimeType = 'image/jpeg';
 
   const STRUCTURED_PROMPT = `You are the core "AI Brain" of a Legal Metrology enforcement system.
 You are analyzing an image that may contain ONE OR MORE consumer packaged goods.
 
-STEP 1: Examine the image for glare, stickers, and overall quality.
-STEP 2: Identify how many DISTINCT products are in the image.
-STEP 3: For EACH distinct product, extract its details into a JSON object.
-STEP 4: Return a SINGLE JSON OBJECT containing a "products" array.
-  - CRITICAL MULTI-IMAGE STITCHING RULE: The user may have uploaded multiple photos that were automatically stitched side-by-side into this single image. 
-  - If the stitched photos show the FRONT and BACK of the EXACT SAME product (e.g., front label and back ingredients of one item), you MUST merge all the details into a SINGLE object in the "products" array. Do not treat them as two separate products.
-  - If the stitched photos show TWO COMPLETELY DIFFERENT products (e.g., a bottle of Coke and a bag of chips), you MUST output TWO separate objects in the "products" array. Do not mix or combine their details into one.
-
-  The JSON format MUST exactly match this structure:
-{
-  "products": [
-    {
-      "reasoning_log": "Explain your logic first. E.g., 'I see a sticker over the MRP, so I will prioritize it.'",
-      "meta_image_quality": "good" | "blurry" | "glare" | "too_far",
-      "visual_readability": "excellent" | "poor_contrast" | "blurry_print",
-  "meta_obstruction": "none" | "thumb_covering_text" | "partially_cut_off",
-  "meta_quality_reason": "Explain if it is blurry or obstructed. If good, put null",
-  "is_wholesale_or_multipiece_package": true | false,
-  "manufacturer_name": "string or null",
-  "manufacturer_address": "string or null",
-  "common_name": "string or null",
-  "net_quantity": "string or null",
-  "net_quantity_unit": "string or null",
-  "mrp": "string or null",
-  "mrp_includes_tax_statement": true,
-  "mfg_date": "string or null",
-  "consumer_care_details": "string or null",
-  "brand_name": "string or null",
-  "best_before": "string or null",
-  "batch_lot_number": "string or null",
-  "fssai_license": "string or null",
-  "country_of_origin": "string or null",
-  "ingredients": "string or null",
-  "nutrition": "string or null",
-  "veg_nonveg": "string or null",
-  "allergens_or_warnings": "string or null"
-}
-
-CRITICAL RULES FOR HALLUCINATION PREVENTION:
-- STICKER OVERRIDE: If you see a secondary paper sticker placed over the original packaging (commonly done by importers to add Indian MRP/FSSAI details), you MUST prioritize the data printed on the sticker over the underlying packaging.
-- WHOLESALE DETECTION: Set is_wholesale_or_multipiece_package to true ONLY if the product is a large wholesale carton, bulk box, or shrink-wrapped bundle of multiple retail items.
-- If a value (like MRP) is blurry, obstructed by a thumb, or cut off by glare, DO NOT GUESS IT. Set it to null.
-- It is better to return null than to return a wrong value. You are a strict legal auditor.
-- Return ONLY the raw JSON object. Do not wrap it in markdown block quotes.` + (tesseractText ? `
+CRITICAL INSTRUCTIONS:
+- You will receive a JSON structure. You must extract the exact data from the packaging.
+- If a value is missing, use null.
 
 Here is some raw, noisy text extracted from the image by a secondary OCR engine. Use it as a hint to locate fields:
-${tesseractText}` : '');
+${tesseractText}`;
 
   let rawText = '';
   let structuredData = {};
 
   try {
+    const parts = [
+      { text: STRUCTURED_PROMPT }
+    ];
+    for (const p of paths) {
+      const base64Image = require('fs').readFileSync(p).toString('base64');
+      parts.push({ inlineData: { mimeType, data: base64Image } });
+    }
+
     const payload = {
-      contents: [{
-        parts: [
-          { text: STRUCTURED_PROMPT },
-          { inlineData: { mimeType, data: base64Image } }
-        ]
-      }],
+      contents: [{ parts }],
       generationConfig: { temperature: 0.0 }
     };
 
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 60000);
+    const timeoutId = setTimeout(() => controller.abort(), 20000);
 
-    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${config.gemini.apiKey}`, {
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${config.gemini.apiKey}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload),
       signal: controller.signal
     });
-
+    
     clearTimeout(timeoutId);
 
-    if (!res.ok) {
-      const errText = await res.text();
-      throw new Error(`Gemini API HTTP ${res.status}: ${errText}`);
+    if (!response.ok) {
+      const errText = await response.text();
+      throw new Error(`Gemini API returned ${response.status}: ${errText}`);
     }
 
-    const data = await res.json();
+    const data = await response.json();
     const responseText = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+    
     const cleaned = responseText.replace(/```(?:json)?\s*/g, '').replace(/```\s*$/g, '').trim();
 
     try {
       const jsonMatch = cleaned.match(/[\[\{][\s\S]*[\]\}]/);
-      if (jsonMatch) {
-        structuredData = JSON.parse(jsonMatch[0]);
-      } else {
-        structuredData = { _raw_text: responseText };
-      }
+      const rawParsed = jsonMatch ? JSON.parse(jsonMatch[0]) : JSON.parse(cleaned);
+      const toValidate = Array.isArray(rawParsed.products) ? rawParsed : { products: Array.isArray(rawParsed) ? rawParsed : [rawParsed] };
+      structuredData = AIResponseSchema.parse(toValidate);
     } catch (parseErr) {
-      structuredData = { _raw_text: responseText };
+      console.warn('[OCR] JSON parse/Zod validation failed:', parseErr.message);
+      throw new Error('AI hallucinated bad JSON schema: ' + parseErr.message);
     }
 
     rawText = structuredData._raw_text || responseText;
     console.log('[OCR] Gemini API extraction complete');
 
   } catch (err) {
-    if (attempt < 3) {
+    if (attempt < 2) {
       const nextModel = modelName === 'gemini-1.5-flash-latest' ? 'gemini-1.5-pro-latest' : 'gemini-1.5-flash-latest';
       console.warn(`[OCR] Gemini failed with ${modelName} (${err.message}) - retrying with ${nextModel}...`);
       await new Promise(r => setTimeout(r, 2000));
@@ -319,65 +279,29 @@ ${tesseractText}` : '');
     throw err;
   }
 
-  return { text: rawText, structuredData, confidence: 85, words: [], engine: 'gemini', _fontMetrics: null };
+  return {
+    text: rawText,
+    structuredData,
+    confidence: 85,
+    words: [],
+    engine: 'gemini',
+    _fontMetrics: null,
+  };
 }
 
-async function runGroqVision(imagePathss, attempt = 1, modelName = 'qwen/qwen3.8-27b', tesseractText = '') {
+async function runGroqVision(imagePaths, attempt = 1, modelName = 'qwen/qwen3.8-27b', tesseractText = '') {
   if (!config.groq?.enabled || !config.groq?.apiKey) {
     throw new Error('Groq API key not configured.');
   }
 
-  try {
-    const paths = Array.isArray(imagePaths) ? imagePaths : [imagePaths];
+  const paths = Array.isArray(imagePaths) ? imagePaths : [imagePaths];
   const mimeType = 'image/jpeg';
 
   const STRUCTURED_PROMPT = `You are the core "AI Brain" of a Legal Metrology enforcement system.
 You are analyzing an image that may contain ONE OR MORE consumer packaged goods.
 
-STEP 1: Examine the image for glare, stickers, and overall quality.
-STEP 2: Identify how many DISTINCT products are in the image.
-STEP 3: For EACH distinct product, extract its details into a JSON object.
-STEP 4: Return a SINGLE JSON OBJECT containing a "products" array.
-  - CRITICAL MULTI-IMAGE STITCHING RULE: The user may have uploaded multiple photos that were automatically stitched side-by-side into this single image. 
-  - If the stitched photos show the FRONT and BACK of the EXACT SAME product (e.g., front label and back ingredients of one item), you MUST merge all the details into a SINGLE object in the "products" array. Do not treat them as two separate products.
-  - If the stitched photos show TWO COMPLETELY DIFFERENT products (e.g., a bottle of Coke and a bag of chips), you MUST output TWO separate objects in the "products" array. Do not mix or combine their details into one.
-
-  The JSON format MUST exactly match this structure:
-{
-  "products": [
-    {
-      "reasoning_log": "Explain your logic first. E.g., 'I see a sticker over the MRP, so I will prioritize it.'",
-      "meta_image_quality": "good" | "blurry" | "glare" | "too_far",
-      "visual_readability": "excellent" | "poor_contrast" | "blurry_print",
-  "meta_obstruction": "none" | "thumb_covering_text" | "partially_cut_off",
-  "meta_quality_reason": "Explain if it is blurry or obstructed. If good, put null",
-  "is_wholesale_or_multipiece_package": true | false,
-  "manufacturer_name": "string or null",
-  "manufacturer_address": "string or null",
-  "common_name": "string or null",
-  "net_quantity": "string or null",
-  "net_quantity_unit": "string or null",
-  "mrp": "string or null",
-  "mrp_includes_tax_statement": true,
-  "mfg_date": "string or null",
-  "consumer_care_details": "string or null",
-  "brand_name": "string or null",
-  "best_before": "string or null",
-  "batch_lot_number": "string or null",
-  "fssai_license": "string or null",
-  "country_of_origin": "string or null",
-  "ingredients": "string or null",
-  "nutrition": "string or null",
-  "veg_nonveg": "string or null",
-  "allergens_or_warnings": "string or null"
-}
-
-CRITICAL RULES FOR HALLUCINATION PREVENTION:
-- STICKER OVERRIDE: If you see a secondary paper sticker placed over the original packaging (commonly done by importers to add Indian MRP/FSSAI details), you MUST prioritize the data printed on the sticker over the underlying packaging.
-- WHOLESALE DETECTION: Set is_wholesale_or_multipiece_package to true ONLY if the product is a large wholesale carton, bulk box, or shrink-wrapped bundle of multiple retail items.
-- If a value (like MRP) is blurry, obstructed by a thumb, or cut off by glare, DO NOT GUESS IT. Set it to null.
-- It is better to return null than to return a wrong value. You are a strict legal auditor.
-- Return ONLY the raw JSON object. Do not wrap it in markdown block quotes.` + (tesseractText ? `\n\nHere is some raw, noisy text extracted from the image by a secondary OCR engine. Use it as a hint to locate fields:\n${tesseractText}` : '');
+Here is some raw, noisy text extracted from the image by a secondary OCR engine. Use it as a hint to locate fields:
+${tesseractText}`;
 
   let rawText = '';
   let structuredData = {};
@@ -385,17 +309,17 @@ CRITICAL RULES FOR HALLUCINATION PREVENTION:
   try {
     const groq = new Groq({ apiKey: config.groq.apiKey });
     
+    const content = [
+      { type: "text", text: STRUCTURED_PROMPT }
+    ];
+    for (const p of paths) {
+      const base64Image = require('fs').readFileSync(p).toString('base64');
+      content.push({ type: "image_url", image_url: { url: `data:${mimeType};base64,${base64Image}` } });
+    }
+
     const completion = await groq.chat.completions.create({
       model: modelName,
-      messages: [
-        {
-          role: "user",
-          content: [
-            { type: "text", text: STRUCTURED_PROMPT },
-            { type: "image_url", image_url: { url: `data:${mimeType};base64,${base64Image}` } }
-          ]
-        }
-      ],
+      messages: [{ role: "user", content }],
       temperature: 0.0,
       max_tokens: 1024,
     });
@@ -436,23 +360,7 @@ CRITICAL RULES FOR HALLUCINATION PREVENTION:
     _fontMetrics: null,
   };
 }
-/**
- * Full OCR pipeline (spec 04 Steps 1–4):
- *
- * 1. Validate resolution (reject < 600px)
- * 2. Preprocess (EXIF rotate, resize, contrast)
- * 3. Tesseract OCR
- * 4. Check if result is usable:
- *    - If empty/near-empty text → fail with clear message
- *    - If low confidence AND Gemini configured → Gemini fallback
- * 5. Return result with engine used + font metrics
- *
- * @param {string} imagePath - Absolute path to original uploaded image
- * @returns {OcrPipelineResult}
- * @throws {Error} with .code for known failure cases (IMAGE_TOO_LOW_RES, NO_TEXT_DETECTED)
- */
 
-// Zod Schema to strictly enforce AI output structure
 const ProductSchema = z.object({
   reasoning_log: z.string().nullable().optional(),
   meta_image_quality: z.string().nullable().optional(),
@@ -476,68 +384,65 @@ const AIResponseSchema = z.object({
 });
 
 async function runOcrPipeline(imagePaths, metadata = {}) {
-    let processedPaths = [];
-    try {
-        const paths = Array.isArray(imagePaths) ? imagePaths : [imagePaths];
-        console.log("[OCR] Type of paths:", typeof paths, Array.isArray(paths));
-        console.log("[OCR] paths array:", paths);
-        for (const p of paths) {
-          await validateResolution(p);
-          processedPaths.push(await preprocessImage(p));
-        }
-      
-      console.log("[OCR] Running primary Tesseract extraction...");
-      let ocrResult = await runTesseract(processedPaths[0]).catch(err => {
-          console.warn("[OCR] Tesseract failed: " + err.message);
-          return { text: '', confidence: 0, engine: 'tesseract', _fontMetrics: [] };
-      });
-      
-      // Fallback to Groq or Gemini depending on configured keys
-      const isGarbage = ocrResult.confidence < 50;
-      const safeHint = isGarbage ? '' : ocrResult.text;
-      if (isGarbage) console.log("[OCR] Tesseract confidence too low (" + ocrResult.confidence + "%). Hiding hint from Vision AI to prevent hallucinations.");
-      
-      if (config.groq?.enabled && config.groq?.apiKey) {
-        console.log("[OCR] Attempting Groq Vision fallback...");
-        try {
-          const groqResult = await runGroqVision(processedPaths, 1, 'qwen/qwen3.8-27b', safeHint);
-          return {
-            text: ocrResult.text,
-            engine: "groq",
-            confidenceAvg: groqResult.confidence,
-            geminiStructuredData: groqResult.structuredData, 
-            _fontMetrics: ocrResult._fontMetrics || [],
-            _jsonText: groqResult.text
-          };
-        } catch (groqErr) {
-          console.warn("[OCR] Groq fallback failed: " + groqErr.message);
-        }
-      } 
-      
-      if (config.gemini?.enabled && config.gemini?.apiKey) {
-        console.log("[OCR] Attempting Gemini Vision fallback...");
-        try {
-          const geminiResult = await runGeminiVision(processedPaths, 1, 'gemini-1.5-flash-latest', safeHint);
-          return {
-            text: ocrResult.text,
-            engine: "gemini",
-            confidenceAvg: geminiResult.confidence,
-            geminiStructuredData: geminiResult.structuredData,
-            _fontMetrics: ocrResult._fontMetrics || [],
-            _jsonText: geminiResult.text
-          };
-        } catch (geminiErr) {
-          console.warn("[OCR] Gemini fallback failed: " + geminiErr.message);
-        }
+  let processedPaths = [];
+  try {
+    const paths = Array.isArray(imagePaths) ? imagePaths : [imagePaths];
+    for (const p of paths) {
+      await validateResolution(p);
+      processedPaths.push(await preprocessImage(p));
+    }
+    
+    console.log("[OCR] Running primary Tesseract extraction...");
+    let ocrResult = await runTesseract(processedPaths[0]).catch(err => {
+      console.warn("[OCR] Tesseract failed: " + err.message);
+      return { text: '', confidence: 0, engine: 'tesseract', _fontMetrics: [] };
+    });
+    
+    const isGarbage = ocrResult.confidence < 50;
+    const safeHint = isGarbage ? '' : ocrResult.text;
+    
+    if (config.groq?.enabled && config.groq?.apiKey) {
+      console.log("[OCR] Attempting Groq Vision fallback...");
+      try {
+        const groqResult = await runGroqVision(processedPaths, 1, 'qwen/qwen3.8-27b', safeHint);
+        return {
+          text: ocrResult.text,
+          engine: "groq",
+          confidenceAvg: groqResult.confidence,
+          geminiStructuredData: groqResult.structuredData, 
+          _fontMetrics: ocrResult._fontMetrics || [],
+          _jsonText: groqResult.text
+        };
+      } catch (groqErr) {
+        console.warn("[OCR] Groq fallback failed: " + groqErr.message);
       }
-      
-      return ocrResult;
+    } 
+    
+    if (config.gemini?.enabled && config.gemini?.apiKey) {
+      console.log("[OCR] Attempting Gemini Vision fallback...");
+      try {
+        const geminiResult = await runGeminiVision(processedPaths, 1, 'gemini-1.5-flash-latest', safeHint);
+        return {
+          text: ocrResult.text,
+          engine: "gemini",
+          confidenceAvg: geminiResult.confidence,
+          geminiStructuredData: geminiResult.structuredData,
+          _fontMetrics: ocrResult._fontMetrics || [],
+          _jsonText: geminiResult.text
+        };
+      } catch (geminiErr) {
+        console.warn("[OCR] Gemini fallback failed: " + geminiErr.message);
+      }
+    }
+    
+    return ocrResult;
   } finally {
     for (const p of processedPaths) {
-      if (fs.existsSync(p)) {
-        try { fs.unlinkSync(p); } catch (_) {}
+      if (require('fs').existsSync(p)) {
+        try { require('fs').unlinkSync(p); } catch (_) {}
       }
     }
   }
 }
+
 module.exports = { runOcrPipeline };
