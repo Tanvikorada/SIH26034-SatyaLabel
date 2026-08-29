@@ -12,7 +12,7 @@ async function getBoundingBoxes(imagePath) {
     contents: [
       {
         parts: [
-          { text: "Detect distinct packaged products (like chips, biscuits, bottles) in this image. For each distinct product, return its 2D bounding box. Return ONLY a valid JSON array of objects. Format: [ { \"ymin\": 0, \"xmin\": 0, \"ymax\": 1000, \"xmax\": 1000 } ]. Do not include markdown." },
+          { text: "Detect EVERY individual packaged product (like chips, biscuits, bottles) in this image. If there are multiple products side-by-side, you MUST return a separate bounding box for each one. Return ONLY a valid JSON array of objects. Format: [ { \"ymin\": 0, \"xmin\": 0, \"ymax\": 1000, \"xmax\": 1000 } ]. Do not include markdown." },
           { inlineData: { mimeType: 'image/jpeg', data: base64Image } }
         ]
       }
@@ -31,7 +31,8 @@ async function getBoundingBoxes(imagePath) {
     const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
     if (!text) return null;
     
-    const boxes = JSON.parse(text);
+    const cleanedText = text.replace(/```(?:json)?\s*/g, '').replace(/```\s*$/g, '').trim();
+    const boxes = JSON.parse(cleanedText);
     return Array.isArray(boxes) ? boxes : null;
   } catch (err) {
     console.error('[CropService] Error fetching boxes:', err.message);
