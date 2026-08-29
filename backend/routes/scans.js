@@ -226,7 +226,7 @@ async function runBatchPipeline(batch, imagePath, metadata = {}) {
   } catch (err) {
     console.error('[Pipeline] Fatal error processing batch', batch.id, err);
     require('fs').writeFileSync(require('path').join(__dirname, '../uploads/last_crash.txt'), err.stack || err.message);
-    await batch.update({ status: 'failed' }).catch(() => {});
+    await batch.update({ status: 'failed', errorMessage: err.message }).catch(() => {});
   } finally {
     // SSE Push Notification MUST fire even on early returns
     const clients = batchClients.get(String(batch.id)) || [];
