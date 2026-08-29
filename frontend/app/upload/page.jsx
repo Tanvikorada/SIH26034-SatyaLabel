@@ -102,7 +102,7 @@ export default function UploadPage() {
     if (files.length === 0) return toast.error('No image selected');
     
     setLoading(true);
-    const toastId = toast.loading(files.length > 1 ? 'Stitching panorama...' : 'Initializing compliance scan...');
+    const toastId = toast.loading(files.length > 1 ? 'Processing multi-angle context...' : 'Initializing compliance scan...');
     const metadata = { productName: productName || 'Unknown', category, sourceType, forceEngine: 'gemini', timestamp: new Date().toISOString() };
     
     try {
@@ -159,7 +159,7 @@ export default function UploadPage() {
                 {previews.length > 0 ? (
                   <div className="w-full flex flex-col gap-4">
                     <div className="text-[13px] text-text-secondary text-center">
-                      Added {previews.length} of 3 photos. Images will be automatically stitched together.
+                      Added {previews.length} of 3 photos. AI will synthesize all angles.
                     </div>
                     <div className="flex flex-wrap gap-4 justify-center items-center">
                       {previews.map((src, i) => (
