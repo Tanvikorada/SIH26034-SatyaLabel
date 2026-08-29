@@ -106,11 +106,8 @@ export default function UploadPage() {
     const metadata = { productName: productName || 'Unknown', category, sourceType, forceEngine: 'gemini', timestamp: new Date().toISOString() };
     
     try {
-      const finalFile = await stitchImages(files);
-      if (files.length > 1) toast.loading('Uploading merged image...', { id: toastId });
-
       const formData = new FormData();
-      formData.append('image', finalFile);
+      files.forEach(f => formData.append('images', f));
       formData.append('product_name', productName || '');
       formData.append('source_type', sourceType || 'physical_label');
       formData.append('metadata', JSON.stringify(metadata));
