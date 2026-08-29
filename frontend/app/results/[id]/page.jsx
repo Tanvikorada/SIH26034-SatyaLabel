@@ -359,17 +359,43 @@ export default function ResultsPage({ params }) {
           <button onClick={downloadPDF} className="mello-btn-primary flex-1 shadow-lg">Download Official Notice PDF</button>
           <button onClick={() => {
             const fields = report.extractedFields || report.extracted_fields || {};
-            const csvRows = ['Field,Value'];
+            const violations = report.violations || [];
+            const csvRows = [];
+            csvRows.push("LEGAL METROLOGY COMPLIANCE REPORT");
+            csvRows.push(`Scan ID,${report.id}`);
+            csvRows.push(`Date,${new Date(report.created_at).toLocaleString()}`);
+            csvRows.push(`Overall Status,${report.overall_compliance || report.overallCompliance}`);
+            csvRows.push(`Compliance Score,${report.compliance_score || report.complianceScore}%`);
+            csvRows.push("");
+            
+            csvRows.push("--- EXTRACTED DATA ---");
+            csvRows.push("Field Name,Extracted Value");
+            const niceNames = {
+              product_name: "Product Name", brand_name: "Brand", manufacturer_name: "Manufacturer",
+              net_quantity: "Net Quantity", mrp: "MRP (Max Retail Price)", mfg_date: "Mfg Date",
+              ingredients: "Ingredients", fssai_license: "FSSAI License"
+            };
             for (const [k, v] of Object.entries(fields)) {
-              if (!k.startsWith('_')) {
-                csvRows.push(`"${k}","${String(v).replace(/"/g, '""')}"`);
+              if (!k.startsWith('_') && v) {
+                const label = niceNames[k] || k.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                csvRows.push(`"${label}","${String(v).replace(/"/g, '""')}"`);
               }
             }
+            
+            csvRows.push("");
+            csvRows.push("--- RULE VIOLATIONS ---");
+            csvRows.push("Rule ID,Status,Severity,Details");
+            for (const v of violations) {
+              if(v.status !== 'PASS' && v.status !== 'NOT APPLICABLE') {
+                csvRows.push(`"${v.rule_id}","${v.status}","${v.severity || 'high'}","${String(v.detail_text || v.detail || '').replace(/"/g, '""')}"`);
+              }
+            }
+            
             const blob = new Blob([csvRows.join('\n')], { type: 'text/csv' });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = `scan_export_${report.id}.csv`;
+            a.download = `compliance_report_${report.id}.csv`;
             a.click();
           }} className="mello-btn-secondary flex-1">Export Data (CSV)</button>
           {localStorage.getItem('role') === 'admin' && (
