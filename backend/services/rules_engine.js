@@ -598,7 +598,7 @@ function checkFontSize(fields) {
     if (estimatedMm < 1.0) {
       return noncompliance(R, T, f, `Computed letter height ratio (${estimatedRatio.toFixed(3)}) resolves to approx ${estimatedMm}mm, which is below the 1.0mm minimum threshold under Rule 7.`);
     }
-    return pass(R, T, f, `Pixel bounding box mathematics indicate font ratio of ${estimatedRatio.toFixed(3)} (approx ${estimatedMm}mm), which exceeds the 1.0mm minimum.`);
+    return makeResult(R, T, f, S.PASS, null, `Pixel bounding box mathematics indicate font ratio of ${estimatedRatio.toFixed(3)} (approx ${estimatedMm}mm), which exceeds the 1.0mm minimum.`, "estimated");
   }
   
   // If no calibration data available — CRITICAL: never invent mm from pixels
