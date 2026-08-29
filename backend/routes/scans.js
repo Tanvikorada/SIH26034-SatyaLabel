@@ -216,7 +216,6 @@ async function runBatchPipeline(batch, imagePath, metadata = {}) {
         console.error('[Pipeline] Error processing individual product inside batch', batch.id, innerErr);
         require('fs').writeFileSync('inner_err.log', innerErr.stack || innerErr.message);
       }
-    }
 
     if (successfulScans > 0) {
       await batch.update({ status: 'completed' });
