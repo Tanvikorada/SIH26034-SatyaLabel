@@ -223,19 +223,18 @@ async function runBatchPipeline(batch, imagePath, metadata = {}) {
     } else if (batch.status !== 'failed') {
       await batch.update({ status: 'failed', errorMessage: 'Processing failed.' });
     }
-    
-    // SSE Push Notification
+  } catch (err) {
+    console.error('[Pipeline] Fatal error processing batch', batch.id, err);
+    require('fs').writeFileSync(require('path').join(__dirname, '../uploads/last_crash.txt'), err.stack || err.message);
+    await batch.update({ status: 'failed' }).catch(() => {});
+  } finally {
+    // SSE Push Notification MUST fire even on early returns
     const clients = batchClients.get(String(batch.id)) || [];
     clients.forEach(clientRes => {
       clientRes.write(`data: ${JSON.stringify({ status: batch.status })}\n\n`);
       clientRes.end();
     });
     batchClients.delete(String(batch.id));
-
-  } catch (err) {
-    console.error('[Pipeline] Fatal error processing batch', batch.id, err);
-    require('fs').writeFileSync(require('path').join(__dirname, '../uploads/last_crash.txt'), err.stack || err.message);
-    await batch.update({ status: 'failed' }).catch(() => {});
   }
 }
 // OLD:// ─── POST /api/v1/scans ───────────────────────────────────────────────────────
