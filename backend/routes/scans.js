@@ -507,13 +507,26 @@ function formatScanSummary(scan) {
   };
 }
 
-function formatScanFull(scan) {
-  return {
-    id: scan.id,
-    status: scan.status,
-    // image_url: relative path usable by frontend to display thumbnail
-    image_url: scan.imagePath ? `/uploads/${path.basename(scan.imagePath)}` : null,
-    source_type: scan.sourceType,
+  function formatScanFull(scan) {
+    let imgUrl = null;
+    if (scan.imagePath) {
+      try {
+        const parsed = JSON.parse(scan.imagePath);
+        imgUrl = parsed; // Send the array of URLs
+      } catch (e) {
+        if (scan.imagePath.startsWith('http')) {
+          imgUrl = [scan.imagePath];
+        } else {
+          imgUrl = [`/uploads/${require('path').basename(scan.imagePath)}`];
+        }
+      }
+    }
+    
+    return {
+      id: scan.id,
+      status: scan.status,
+      image_url: JSON.stringify(imgUrl),
+      source_type: scan.sourceType,
     overall_compliance: scan.overallCompliance,
     // overallStatus alias for frontend backward compat
     overallStatus: scan.overallCompliance,
