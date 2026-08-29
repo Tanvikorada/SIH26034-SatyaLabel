@@ -3,7 +3,7 @@
 import { useEffect, useState, use } from 'react';
 import { useRouter } from 'next/navigation';
 import NavBar from '../../../components/NavBar';
-import { toast } from 'react-hot-toast';
+import { toast } from 'sonner';
 
 export default function ResultsPage({ params }) {
   const resolvedParams = use(params);
@@ -31,6 +31,24 @@ export default function ResultsPage({ params }) {
     };
     fetchReport();
   }, [resolvedParams.id]);
+
+  const handleDelete = async () => {
+    if (!confirm('Are you sure you want to delete this scan record?')) return;
+    try {
+      const res = await fetch(`${API}/scans/${resolvedParams.id}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+      });
+      if (res.ok) {
+        toast.success('Scan record deleted.');
+        router.push('/dashboard');
+      } else {
+        toast.error('Failed to delete scan.');
+      }
+    } catch (err) {
+      toast.error('Error deleting scan.');
+    }
+  };
 
   const downloadPDF = async () => {
     toast.info('Generating Official Government Report...');
@@ -121,7 +139,7 @@ export default function ResultsPage({ params }) {
                   {report.overallStatus || report.overall_compliance}
                 </span>
               </div>
-              <h1 className="text-[32px] md:text-[40px] font-medium tracking-tight mb-1 text-white">
+              <h1 className="text-[32px] md:text-[40px] font-medium tracking-tight mb-1 text-text-primary">
                 {report.product?.product_name || fields.product_name || 'Unknown Product'}
               </h1>
               <p className="text-text-secondary text-[16px]">
@@ -168,13 +186,13 @@ export default function ResultsPage({ params }) {
         {/* TAB 1: SUMMARY / VIOLATIONS */}
         {activeTab === 'summary' && (
           <div className="space-y-4 animate-fade-in">
-            <h3 className="text-[18px] font-medium text-white mb-6">Legal Metrology Violations</h3>
+            <h3 className="text-[18px] font-medium text-text-primary mb-6">Legal Metrology Violations</h3>
             {(report.violations || []).filter(v => v.status !== 'PASS').map((v, i) => (
               <div key={i} className="glass rounded-[16px] p-6 border-l-4 border-l-red-500">
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-3">
                   <div className="flex items-center gap-3">
                     <span className="px-2 py-1 bg-red-500/10 text-red-500 font-mono text-[11px] font-bold rounded">{v.rule_id}</span>
-                    <h4 className="text-[16px] font-medium text-white">{v.rule_title}</h4>
+                    <h4 className="text-[16px] font-medium text-text-primary">{v.rule_title}</h4>
                   </div>
                 </div>
                 <p className="text-[14px] text-text-secondary leading-relaxed font-mono">
@@ -193,7 +211,7 @@ export default function ResultsPage({ params }) {
         {/* TAB 2: EVIDENCE */}
         {activeTab === 'evidence' && (
           <div className="animate-fade-in space-y-6">
-            <h3 className="text-[18px] font-medium text-white">Attached Photographic Evidence</h3>
+            <h3 className="text-[18px] font-medium text-text-primary">Attached Photographic Evidence</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {(() => {
                 let images = [];
@@ -219,14 +237,14 @@ export default function ResultsPage({ params }) {
         {/* TAB 3: DATA EXTRACTED */}
         {activeTab === 'data' && (
           <div className="animate-fade-in">
-             <h3 className="text-[18px] font-medium text-white mb-6">AI Structured Extraction</h3>
+             <h3 className="text-[18px] font-medium text-text-primary mb-6">AI Structured Extraction</h3>
              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {Object.entries(fields).filter(([k, v]) => !k.startsWith('_') && v).map(([k, v]) => (
                   <div key={k} className="glass rounded-[16px] p-5">
                     <div className="text-[10px] font-bold tracking-widest uppercase text-text-muted mb-2">
                       {k.replace(/_/g, ' ')}
                     </div>
-                    <div className="text-[14px] text-white font-medium break-words leading-tight">
+                    <div className="text-[14px] text-text-primary font-medium break-words leading-tight">
                       {String(v)}
                     </div>
                   </div>
