@@ -68,8 +68,7 @@ export default function ResultsPage({ params }) {
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `Legal_Metrology_Notice_${resolvedParams.id}.pdf`;
-      a.click();
+      window.open(url, '_blank');
       toast.success('PDF Downloaded Successfully');
     } catch (e) {
       toast.error('Could not generate PDF');
