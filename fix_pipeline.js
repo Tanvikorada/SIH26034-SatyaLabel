@@ -1,71 +1,64 @@
 const fs = require('fs');
-let js = fs.readFileSync('backend/routes/scans.js', 'utf8');
+let js = fs.readFileSync('backend/services/ocr_service.js', 'utf8');
 
-const target = `      console.log('[Pipeline] Starting pipeline for Batch', batch.id);
-      const ocrResult = await runOcrPipeline(imagePath, metadata.forceEngine);
-  
-      if (!ocrResult) {
-        await batch.update({ status: 'failed' });
-        return;
+const pipelineStart = js.indexOf('async function runOcrPipeline(imagePaths, metadata = {}) {');
+const newPipeline = `async function runOcrPipeline(imagePaths, metadata = {}) {
+  let processedPaths = [];
+  try {
+    const paths = Array.isArray(imagePaths) ? imagePaths : [imagePaths];
+    for (const p of paths) {
+      await validateResolution(p);
+      processedPaths.push(await preprocessImage(p));
+    }
+    
+    let groqResult = null;
+    if (config.groq?.enabled && config.groq?.apiKey) {
+      console.log("[OCR] Attempting Groq Vision...");
+      try {
+        groqResult = await runGroqVision(processedPaths, 1, 'qwen/qwen3.8-27b');
+        return {
+          text: groqResult.structuredData?.products?.[0]?.raw_text_transcript || groqResult.text,
+          engine: "groq",
+          confidenceAvg: groqResult.confidence,
+          geminiStructuredData: groqResult.structuredData, 
+          _fontMetrics: [],
+          _jsonText: groqResult.text
+        };
+      } catch (groqErr) {
+        console.warn("[OCR] Groq failed: " + groqErr.message);
       }
-      
-      let productsArray = ocrResult.structuredData?.products || ocrResult.structuredData;
-      if (!Array.isArray(productsArray)) {
-        productsArray = [productsArray];
-      }
-      
-      let successfulScans = 0;
-      for (const rawProductData of productsArray) {
-        if (!rawProductData || Object.keys(rawProductData).length === 0) continue;
-        
-        try {`;
-
-const replace = `      const { detectAndCropProducts } = require('../services/crop_service');
-      console.log('[Pipeline] Starting pipeline for Batch', batch.id);
-      
-      const imagePaths = await detectAndCropProducts(imagePath);
-      let successfulScans = 0;
-      
-      for (const cropPath of imagePaths) {
-        const ocrResult = await runOcrPipeline(cropPath, metadata.forceEngine);
-        if (!ocrResult) continue;
-        
-        let productsArray = ocrResult.structuredData?.products || ocrResult.structuredData;
-        if (!Array.isArray(productsArray)) productsArray = [productsArray];
-        
-        // Take only the first product since we cropped the image down to a single product context
-        const rawProductData = productsArray[0];
-        if (!rawProductData || Object.keys(rawProductData).length === 0) continue;
-        
-        try {`;
-
-// Standardize line endings for matching
-if (js.includes(target.replace(/\r\n/g, '\n'))) {
-  js = js.replace(target.replace(/\r\n/g, '\n'), replace);
-} else {
-  js = js.replace(target, replace);
-}
-
-// We also need to add a closing brace for the `for (const cropPath of imagePaths)` loop
-const endTarget = `        successfulScans++;
-      } catch (innerErr) {
-        global.lastInnerErr = innerErr.stack || innerErr.message;
-        console.error('[Pipeline] Error processing individual product inside batch', batch.id, innerErr);
-        require('fs').writeFileSync('inner_err.log', innerErr.stack || innerErr.message);
+    } 
+    
+    if (config.gemini?.enabled && config.gemini?.apiKey) {
+      console.log("[OCR] Attempting Gemini Vision...");
+      try {
+        const geminiResult = await runGeminiVision(processedPaths, 1, 'gemini-1.5-flash-latest');
+        return {
+          text: geminiResult.structuredData?.products?.[0]?.raw_text_transcript || geminiResult.text,
+          engine: "gemini",
+          confidenceAvg: geminiResult.confidence,
+          geminiStructuredData: geminiResult.structuredData,
+          _fontMetrics: [],
+          _jsonText: geminiResult.text
+        };
+      } catch (geminiErr) {
+        console.warn("[OCR] Gemini failed: " + geminiErr.message);
       }
     }
-
-    if (successfulScans > 0) {`;
-
-const endReplace = `        successfulScans++;
-        } catch (innerErr) {
-          global.lastInnerErr = innerErr.stack || innerErr.message;
-          console.error('[Pipeline] Error processing individual product inside batch', batch.id, innerErr);
-          require('fs').writeFileSync('inner_err.log', innerErr.stack || innerErr.message);
-        }
+    
+    throw new Error('All OCR engines failed or are unconfigured.');
+  } finally {
+    for (const p of processedPaths) {
+      if (require('fs').existsSync(p)) {
+        try { require('fs').unlinkSync(p); } catch (_) {}
       }
+    }
+  }
+}
 
-      if (successfulScans > 0) {`;
+module.exports = { runOcrPipeline };
+`;
 
-// Note: I actually don't need to add a closing brace if I am just replacing `for (const rawProductData of productsArray)` 
-// with `for (const cropPath of imagePaths) {` because it maps 1:1 with the closing braces!
+js = js.substring(0, pipelineStart) + newPipeline;
+fs.writeFileSync('backend/services/ocr_service.js', js);
+console.log("Fixed pipeline syntax!");

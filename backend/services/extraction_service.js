@@ -347,88 +347,43 @@ function mergeGeminiData(tier1Map, geminiData) {
  * @returns {object} fieldsMap  - { fieldName → fieldValue, _confidence, _netQtyNormalized, ... }
  */
 function extractFields(rawText, geminiStructuredData = null, ocrFontMetrics = null) {
-  const text = normalizeText(rawText || '');
-  const g = geminiStructuredData || null;
+  const g = geminiStructuredData || {};
 
-  // ── Tier 1: Regex extraction ──────────────────────────────────────────────
-  const mfr = extractManufacturerBlock(text);
-
-  const tier1 = {
-    product_name:           { value: g?.common_name || g?.product_name || null, confidence: g ? 'medium' : null },
-    brand_name:             { value: g?.brand_name || null, confidence: g ? 'medium' : null },
-    net_quantity:           extractNetQuantity(text),
-    mrp:                    extractMRP(text),
-    mfg_date:               extractMfgDate(text),
-    best_before:            extractBestBefore(text),
-    manufacturer_name:      { value: mfr.name, confidence: mfr.nameConf },
-    manufacturer_address:   { value: mfr.address, confidence: mfr.addrConf },
-    customer_care:          extractCustomerCare(text),
-    batch_lot_number:       extractBatchNumber(text),
-    fssai_license:          extractFSSAI(text),
-    country_of_origin:      extractCountryOfOrigin(text),
-    ingredients:            extractIngredients(text),
-    veg_nonveg:             extractVegNonVeg(text),
+  const fields = {
+    product_name: g.common_name || g.product_name || null,
+    brand_name: g.brand_name || null,
+    net_quantity: g.net_quantity || null,
+    net_quantity_unit: g.net_quantity_unit || null,
+    mrp: g.mrp || null,
+    mrp_includes_tax_statement: g.mrp_includes_tax_statement || null,
+    mfg_date: g.mfg_date || null,
+    best_before: g.best_before || null,
+    manufacturer_name: g.manufacturer_name || null,
+    manufacturer_address: g.manufacturer_address || null,
+    customer_care: g.consumer_care_details || null,
+    batch_lot_number: g.batch_lot_number || null,
+    fssai_license: g.fssai_license || null,
+    country_of_origin: g.country_of_origin || null,
+    ingredients: g.ingredients || null,
+    veg_nonveg: g.veg_nonveg || null,
+    
+    _netQtyNormalized: g.net_quantity ? parseFloat(String(g.net_quantity).replace(/[^0-9.]/g, '')) : null,
+    _confidence: {
+      product_name: g.product_name ? 'high' : null,
+      mrp: g.mrp ? 'high' : null,
+      net_quantity: g.net_quantity ? 'high' : null,
+      manufacturer_address: g.manufacturer_address ? 'high' : null,
+    },
+    _mrpValues: g.mrp ? [g.mrp] : [],
+    _rawText: rawText || ''
   };
 
-  // ── Tier 1 confidence assessment ──────────────────────────────────────────
-  const assessment = assessTier1Confidence(tier1);
-  console.log(`[Extraction] Tier 1: ${assessment.fieldsCovered}/${assessment.fieldsTotal} fields, ${assessment.highConfFields} high-confidence`);
-
-  // ── Tier 2: Merge Gemini data (if available) ──────────────────────────────
-  // Always merge when Gemini data is present — it fills gaps.
-  const finalMap = mergeGeminiData(tier1, g);
-
-  // ── Build flat fieldsMap for rules engine ─────────────────────────────────
-  // Rules engine expects: { fieldName → fieldValue }
-  // We attach confidence as _confidence and font metrics as _fontMetrics
-  const fieldsMap = {};
-  const confidenceMap = {};
-
-  for (const [key, entry] of Object.entries(finalMap)) {
-    fieldsMap[key] = entry?.value ?? null;
-    if (entry?.confidence) confidenceMap[key] = entry.confidence;
-  }
-
-  // ── Attach metadata for rules engine Rule Set 2 ───────────────────────────
-  if (ocrFontMetrics) {
-    fieldsMap._fontHeightPixels = ocrFontMetrics.minFontHeightPx;
-    fieldsMap._avgFontHeightPx = ocrFontMetrics.avgFontHeightPx;
-    // imageDPI is unknown for phone photos — we use a conservative 96 DPI assumption
-    fieldsMap._imageDPI = 96;
-  }
-
-  // Net quantity normalized (for Rule 7 numeral height lookup)
-  fieldsMap._netQtyNormalized = normalizeQuantity(fieldsMap.net_quantity);
-
-  // Attach confidence map for UI display ("possible violation — verify manually")
-  fieldsMap._confidence = confidenceMap;
-
-  // Attach all detected MRP values (for contradictory declarations check)
-  const allMrps = [];
-  const mrpRe = new RegExp(P.mrpLabelled.source, 'gi');
-  const mrpRe2 = new RegExp(P.mrpBare.source, 'gi');
-  let mm;
-  while ((mm = mrpRe.exec(text)) !== null) allMrps.push(mm[1]);
-  if (allMrps.length === 0) {
-    while ((mm = mrpRe2.exec(text)) !== null) allMrps.push(mm[1]);
-  }
-  fieldsMap._mrpValues = [...new Set(allMrps)];
-
-  // Attach raw text for rules engine context checks (MRP "inclusive of all taxes")
-  fieldsMap._rawText = text;
-
-  console.log(`[Extraction] Final fields: ${Object.keys(fieldsMap).filter(k => !k.startsWith('_') && fieldsMap[k] !== null).join(', ')}`);
-
-  return fieldsMap;
+  return fields;
 }
 
-// ─── LEGACY COMPAT: array form (used by seed script + older code) ─────────────
-
 /**
- * @deprecated Use extractFields() which returns a map directly.
- * Kept for backward compatibility with older routes.
- */
-function extractFieldsArray(rawText, geminiData = null) {
+ * @deprecated
+eldsArray(rawText, geminiData = null) {
   const map = extractFields(rawText, geminiData);
   return Object.entries(map)
     .filter(([k]) => !k.startsWith('_'))

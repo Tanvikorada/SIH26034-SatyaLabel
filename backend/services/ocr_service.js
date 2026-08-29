@@ -10,7 +10,7 @@
 
 
 const sharp = require('sharp');
-const Tesseract = require('tesseract.js');
+
 const Groq = require('groq-sdk');
 const fs = require('fs');
 const path = require('path');
@@ -109,73 +109,7 @@ async function preprocessImage(imagePath) {
 
 // ─── STEP 2: TESSERACT OCR (PRIMARY) ─────────────────────────────────────────
 
-/**
- * Run Tesseract on preprocessed image.
- * Returns text, per-word bounding boxes (for Rule 7 font size estimation),
- * and average word confidence.
- *
- * Language: eng+hin — handles bilingual Indian labels (English + Hindi)
- *
- * @param {string} imagePath
- * @returns {{ text, confidence, words, engine }}
- */
-async function runTesseract(imagePath) {
-  console.log('[OCR] Running Tesseract (eng+hin)…');
 
-  const result = await Tesseract.recognize(imagePath, 'eng', {
-    logger: (m) => {
-      if (m.status === 'recognizing text') {
-        process.stdout.write(`\r[Tesseract] ${Math.floor(m.progress * 100)}%`);
-      }
-    },
-  });
-  process.stdout.write('\n');
-
-  const { data } = result;
-
-  // Word-level confidence — exclude punctuation and very short tokens
-  const words = (data.words || []).filter(w => w.text.trim().length > 1);
-  const confidences = words.map(w => w.confidence).filter(c => c > 0);
-
-  const avgConfidence = confidences.length > 0
-    ? confidences.reduce((a, b) => a + b, 0) / confidences.length
-    : 0;
-
-  // Bounding boxes for Rule 7 font-size estimation
-  // Each word: { text, confidence, bbox: { x0, y0, x1, y1 } }
-  // height in pixels = y1 - y0
-  const wordBoxes = words.map(w => ({
-    text: w.text,
-    confidence: w.confidence,
-    bbox: w.bbox,
-    heightPx: w.bbox ? (w.bbox.y1 - w.bbox.y0) : null,
-  }));
-
-  // Find minimum font height across all words (for font size check)
-  const heightValues = wordBoxes
-    .map(w => w.heightPx)
-    .filter(h => h !== null && h > 2); // exclude noise
-
-  const minFontHeightPx = heightValues.length > 0 ? Math.min(...heightValues) : null;
-  const avgFontHeightPx = heightValues.length > 0
-    ? heightValues.reduce((a, b) => a + b, 0) / heightValues.length
-    : null;
-
-  console.log(`[OCR] Tesseract done — ${words.length} words, avg confidence: ${avgConfidence.toFixed(1)}%`);
-
-  return {
-    text: data.text || '',
-    confidence: avgConfidence,
-    words: wordBoxes,
-    engine: 'tesseract',
-    // Font size estimation data passed to rules engine
-    _fontMetrics: {
-      minFontHeightPx,
-      avgFontHeightPx,
-      wordCount: words.length,
-    },
-  };
-}
 
 // ─── STEP 3: GEMINI VISION FALLBACK ──────────────────────────────────────────
 
@@ -199,7 +133,7 @@ async function runTesseract(imagePath) {
 // --- STEP 3: GROQ VISION FALLBACK ---
 
 
-async function runGeminiVision(imagePaths, attempt = 1, modelName = 'gemini-1.5-flash-latest', tesseractText = '') {
+async function runGeminiVision(imagePaths, attempt = 1, modelName = 'gemini-1.5-flash-latest') {
   if (!config.gemini?.enabled || !config.gemini?.apiKey) {
     throw new Error('Gemini API key not configured.');
   }
@@ -212,10 +146,8 @@ You are analyzing one or more images that represent different angles (front, bac
 
 CRITICAL INSTRUCTIONS:
 - You will receive a JSON structure. You must extract the exact data from the packaging.
-- If a value is missing, use null.
-
-Here is some raw, noisy text extracted from the image by a secondary OCR engine. Use it as a hint to locate fields:
-${tesseractText}`;
+- Read carefully and accurately. If a value is missing, use null.
+- Provide a literal transcription of all readable text on the package in the 'raw_text_transcript' field.`;
 
   let rawText = '';
   let structuredData = {};
@@ -274,7 +206,7 @@ ${tesseractText}`;
       const nextModel = modelName === 'gemini-1.5-flash-latest' ? 'gemini-1.5-pro-latest' : 'gemini-1.5-flash-latest';
       console.warn(`[OCR] Gemini failed with ${modelName} (${err.message}) - retrying with ${nextModel}...`);
       await new Promise(r => setTimeout(r, 2000));
-      return runGeminiVision(imagePaths, attempt + 1, nextModel, tesseractText);
+      return runGeminiVision(imagePaths, attempt + 1, nextModel);
     }
     throw err;
   }
@@ -289,7 +221,7 @@ ${tesseractText}`;
   };
 }
 
-async function runGroqVision(imagePaths, attempt = 1, modelName = 'qwen/qwen3.8-27b', tesseractText = '') {
+async function runGroqVision(imagePaths, attempt = 1, modelName = 'qwen/qwen3.8-27b') {
   if (!config.groq?.enabled || !config.groq?.apiKey) {
     throw new Error('Groq API key not configured.');
   }
@@ -300,8 +232,7 @@ async function runGroqVision(imagePaths, attempt = 1, modelName = 'qwen/qwen3.8-
   const STRUCTURED_PROMPT = `You are the core "AI Brain" of a Legal Metrology enforcement system.
 You are analyzing one or more images that represent different angles (front, back, sides) of a SINGLE consumer packaged good. Synthesize the text across all angles into ONE single product JSON output.
 
-Here is some raw, noisy text extracted from the image by a secondary OCR engine. Use it as a hint to locate fields:
-${tesseractText}`;
+- Provide a literal transcription of all readable text on the package in the 'raw_text_transcript' field.`;
 
   let rawText = '';
   let structuredData = {};
@@ -346,7 +277,7 @@ ${tesseractText}`;
       const nextModel = fallbackModels[attempt];
       console.warn(`[OCR] Groq failed with ${modelName} (${err.message}) - retrying with ${nextModel}...`);
       await new Promise(r => setTimeout(r, 2000));
-      return runGroqVision(imagePaths, attempt + 1, nextModel, tesseractText);
+      return runGroqVision(imagePaths, attempt + 1, nextModel);
     }
     throw err;
   }
@@ -362,6 +293,7 @@ ${tesseractText}`;
 }
 
 const ProductSchema = z.object({
+  raw_text_transcript: z.string().nullable().optional(),
   reasoning_log: z.string().nullable().optional(),
   meta_image_quality: z.string().nullable().optional(),
   visual_readability: z.string().nullable().optional(),
@@ -392,50 +324,42 @@ async function runOcrPipeline(imagePaths, metadata = {}) {
       processedPaths.push(await preprocessImage(p));
     }
     
-    console.log("[OCR] Running primary Tesseract extraction...");
-    let ocrResult = await runTesseract(processedPaths[0]).catch(err => {
-      console.warn("[OCR] Tesseract failed: " + err.message);
-      return { text: '', confidence: 0, engine: 'tesseract', _fontMetrics: [] };
-    });
-    
-    const isGarbage = ocrResult.confidence < 50;
-    const safeHint = isGarbage ? '' : ocrResult.text;
-    
+    let groqResult = null;
     if (config.groq?.enabled && config.groq?.apiKey) {
-      console.log("[OCR] Attempting Groq Vision fallback...");
+      console.log("[OCR] Attempting Groq Vision...");
       try {
-        const groqResult = await runGroqVision(processedPaths, 1, 'qwen/qwen3.8-27b', safeHint);
+        groqResult = await runGroqVision(processedPaths, 1, 'qwen/qwen3.8-27b');
         return {
-          text: ocrResult.text,
+          text: groqResult.structuredData?.products?.[0]?.raw_text_transcript || groqResult.text,
           engine: "groq",
           confidenceAvg: groqResult.confidence,
           geminiStructuredData: groqResult.structuredData, 
-          _fontMetrics: ocrResult._fontMetrics || [],
+          _fontMetrics: [],
           _jsonText: groqResult.text
         };
       } catch (groqErr) {
-        console.warn("[OCR] Groq fallback failed: " + groqErr.message);
+        console.warn("[OCR] Groq failed: " + groqErr.message);
       }
     } 
     
     if (config.gemini?.enabled && config.gemini?.apiKey) {
-      console.log("[OCR] Attempting Gemini Vision fallback...");
+      console.log("[OCR] Attempting Gemini Vision...");
       try {
-        const geminiResult = await runGeminiVision(processedPaths, 1, 'gemini-1.5-flash-latest', safeHint);
+        const geminiResult = await runGeminiVision(processedPaths, 1, 'gemini-1.5-flash-latest');
         return {
-          text: ocrResult.text,
+          text: geminiResult.structuredData?.products?.[0]?.raw_text_transcript || geminiResult.text,
           engine: "gemini",
           confidenceAvg: geminiResult.confidence,
           geminiStructuredData: geminiResult.structuredData,
-          _fontMetrics: ocrResult._fontMetrics || [],
+          _fontMetrics: [],
           _jsonText: geminiResult.text
         };
       } catch (geminiErr) {
-        console.warn("[OCR] Gemini fallback failed: " + geminiErr.message);
+        console.warn("[OCR] Gemini failed: " + geminiErr.message);
       }
     }
     
-    return ocrResult;
+    throw new Error('All OCR engines failed or are unconfigured.');
   } finally {
     for (const p of processedPaths) {
       if (require('fs').existsSync(p)) {
