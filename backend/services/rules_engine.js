@@ -596,7 +596,7 @@ function checkFontSize(fields) {
     const estimatedMm = 1.8;
     
     if (estimatedMm < 1.0) {
-      return noncompliance(R, T, f, `Computed letter height ratio (${estimatedRatio.toFixed(3)}) resolves to approx ${estimatedMm}mm, which is below the 1.0mm minimum threshold under Rule 7.`);
+      return pnoc(R, T, f, 'high', `Computed letter height ratio (${estimatedRatio.toFixed(3)}) resolves to approx ${estimatedMm}mm, which is below the 1.0mm minimum threshold under Rule 7.`);
     }
     return makeResult(R, T, f, S.PASS, null, `Pixel bounding box mathematics indicate font ratio of ${estimatedRatio.toFixed(3)} (approx ${estimatedMm}mm), which exceeds the 1.0mm minimum.`, "estimated");
   }
@@ -673,10 +673,10 @@ function checkLegibility(fields) {
 
   // AI Multimodal contrast analysis
   if (fields.visual_readability === 'poor_contrast') {
-    return noncompliance(R, T, f, 'AI Vision Engine detected poor color contrast between the text and the packaging background, violating legibility requirements under Rule 9.');
+    return pnoc(R, T, f, 'AI Vision Engine detected poor color contrast between the text and the packaging background, violating legibility requirements under Rule 9.');
   }
   if (fields.visual_readability === 'blurry_print') {
-    return noncompliance(R, T, f, 'AI Vision Engine detected blurry or distorted print on the packaging, violating prominence requirements under Rule 9.');
+    return pnoc(R, T, f, 'AI Vision Engine detected blurry or distorted print on the packaging, violating prominence requirements under Rule 9.');
   }
 
   const ocrConf = fields._ocr_confidence ?? fields._ocrConfidence;
