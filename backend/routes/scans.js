@@ -268,30 +268,34 @@ router.post('/', requireAuth, (req, res, next) => {
     }
 
       try {
-        // 1. Upload to Supabase Storage
-        const fileBuffer = fs.readFileSync(req.file.path);
-        const fileName = `${Date.now()}_${path.basename(req.file.originalname)}`;
-        
-        const { data: uploadData, error: uploadError } = await supabase
-          .storage
-          .from('uploads')
-          .upload(fileName, fileBuffer, {
-            contentType: req.file.mimetype,
-            upsert: true
+        // 1. Upload to Supabase Storage (Multi-Image Support)
+          const cloudUrls = [];
+          for (const f of req.files) {
+            const fileBuffer = require('fs').readFileSync(f.path);
+            const fileName = `${Date.now()}_${require('path').basename(f.originalname)}`;
+            
+            const { data: uploadData, error: uploadError } = await supabase
+              .storage
+              .from('uploads')
+              .upload(fileName, fileBuffer, {
+                contentType: f.mimetype,
+                upsert: true
+              });
+    
+            let cUrl = f.path; // fallback
+            if (!uploadError && supabase.storage) {
+              const { data } = supabase.storage.from('uploads').getPublicUrl(fileName);
+              cUrl = data.publicUrl;
+            }
+            cloudUrls.push(cUrl);
+          }
+  
+          const { Batch } = require('../models');
+          const batch = await Batch.create({
+            originalImage: JSON.stringify(cloudUrls),
+            uploadedBy: req.user?.id || null,
+            status: 'processing',
           });
-
-        let cloudUrl = req.file.path; // fallback
-        if (!uploadError) {
-          const { data } = supabase.storage.from('uploads').getPublicUrl(fileName);
-          cloudUrl = data.publicUrl;
-        }
-
-        const { Batch } = require('../models');
-        const batch = await Batch.create({
-          originalImage:    cloudUrl,
-          uploadedBy:       req.user?.id || null,
-          status:           'processing',
-        });
         batch.productNameHint = productNameHint;
         batch.brandNameHint   = brandNameHint;
         batch.sourceType      = sourceType;
