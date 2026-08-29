@@ -115,7 +115,7 @@ async function runBatchPipeline(batch, imagePath, metadata = {}) {
       const ocrResult = await runOcrPipeline(cropPath, metadata.forceEngine);
       if (!ocrResult) continue;
       
-      let productsArray = ocrResult.structuredData?.products || ocrResult.structuredData;
+      let productsArray = ocrResult.geminiStructuredData?.products || ocrResult.geminiStructuredData;
       if (!Array.isArray(productsArray)) productsArray = [productsArray];
       
       const rawProductData = productsArray[0];
