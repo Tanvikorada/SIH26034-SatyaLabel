@@ -108,10 +108,10 @@ async function runBatchPipeline(batch, imagePath, metadata = {}) {
   
     console.log('[Pipeline] Starting pipeline for Batch', batch.id);
     
-    const imagePaths = await detectAndCropProducts(imagePath);
     let successfulScans = 0;
-    
-    for (const cropPath of imagePaths) {
+      const ocrResult = await runOcrPipeline(imagePath, metadata.forceEngine);
+      if (ocrResult) {
+        const cropPath = imagePath[0] || imagePath; // just for the thumbnail
       const ocrResult = await runOcrPipeline(cropPath, metadata.forceEngine);
       if (!ocrResult) continue;
       
