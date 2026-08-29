@@ -361,7 +361,7 @@ router.get('/batch/:id', requireAuth, async (req, res) => {
     ok(res, {
       id: batch.id,
       status: batch.status,
-      original_image: batch.originalImage,
+      original_image: batch.originalImage, error_message: batch.errorMessage,
       scans: formattedScans
     });
   } catch (err) {
