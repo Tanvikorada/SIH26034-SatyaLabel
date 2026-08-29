@@ -237,122 +237,103 @@ export default function ResultsPage({ params }) {
           </div>
         )}
 
-        {/* TAB 1.5: INGREDIENTS IQ PREMIUM */}
+        {/* TAB 1.5: INGREDIENTS IQ */}
           {activeTab === 'ingredients' && (
-            <div className="animate-fade-in">
-              <div className="mb-8">
-                <h3 className="text-[22px] font-medium tracking-tight text-text-primary mb-1">Clinical Ingredient Analysis</h3>
+            <div className="animate-fade-in space-y-6">
+              
+              <div className="mb-6">
+                <h3 className="text-[20px] font-medium text-text-primary mb-1">Ingredient Analysis</h3>
                 <p className="text-[14px] text-text-secondary">AI-powered biochemical breakdown and safety profiling.</p>
               </div>
 
               {(!fields.ingredient_analysis && !fields.ingredients) ? (
-                <div className="border border-border/50 border-dashed rounded-[2px] p-12 text-center text-text-muted uppercase tracking-widest text-[12px] font-mono">
-                  [ No Ingredient Data Detected ]
+                <div className="glass rounded-[20px] p-12 text-center text-text-secondary">
+                  No ingredient data was detected on this packaging.
                 </div>
               ) : (
-                <div className="flex flex-col gap-8">
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                   
-                  {/* Top Dashboard: Key Metrics */}
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    {/* Score / Clean Label */}
-                    <div className="col-span-1 border border-border/50 bg-[#050505] p-6 rounded-[4px] relative overflow-hidden group">
-                      <div className="absolute inset-0 bg-gradient-to-br from-accent/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                      <div className="text-[11px] font-mono tracking-widest text-text-muted uppercase mb-4">Purity Index</div>
-                      
+                  {/* Left Column: Health Profile (2/3 width on desktop) */}
+                  <div className="lg:col-span-2 space-y-6">
+                    
+                    {/* Clean Label Card */}
+                    <div className={`glass rounded-[20px] p-6 border-l-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4 ${fields.ingredient_analysis?.is_clean_label ? 'border-l-green-500' : 'border-l-amber-500'}`}>
                       <div className="flex items-center gap-4">
-                        <div className={`w-16 h-16 rounded-full border-4 flex items-center justify-center text-[22px] font-medium ${fields.ingredient_analysis?.is_clean_label ? 'border-green-500 text-green-500 shadow-[0_0_20px_rgba(34,197,94,0.2)]' : 'border-amber-500 text-amber-500 shadow-[0_0_20px_rgba(245,158,11,0.2)]'}`}>
-                          {fields.ingredient_analysis?.is_clean_label ? 'A+' : 'C-'}
+                        <div className={`w-12 h-12 rounded-full flex items-center justify-center text-[18px] font-bold bg-background/50 border ${fields.ingredient_analysis?.is_clean_label ? 'text-green-500 border-green-500/20' : 'text-amber-500 border-amber-500/20'}`}>
+                          {fields.ingredient_analysis?.is_clean_label ? 'A' : 'C'}
                         </div>
                         <div>
-                          <div className={`text-[16px] font-medium mb-1 ${fields.ingredient_analysis?.is_clean_label ? 'text-green-400' : 'text-amber-400'}`}>
-                            {fields.ingredient_analysis?.is_clean_label ? 'Clean Label' : 'Additives Present'}
-                          </div>
-                          <div className="text-[12px] text-text-secondary leading-tight">
-                            {fields.ingredient_analysis?.is_clean_label ? 'No synthetic chemicals or artificial preservatives detected.' : 'Contains synthetic or ultra-processed ingredients.'}
-                          </div>
+                          <h4 className="text-[16px] font-medium text-text-primary mb-0.5">
+                            {fields.ingredient_analysis?.is_clean_label ? 'Clean Label Certified' : 'Contains Artificial Additives'}
+                          </h4>
+                          <p className="text-[13px] text-text-secondary">
+                            {fields.ingredient_analysis?.is_clean_label ? 'No synthetic chemicals or artificial preservatives detected.' : 'The AI detected synthetic or ultra-processed ingredients in this product.'}
+                          </p>
                         </div>
                       </div>
                     </div>
 
                     {/* Chemical Flags */}
-                    <div className="col-span-1 md:col-span-2 border border-border/50 bg-black/20 p-6 rounded-[4px]">
-                      <div className="flex items-center justify-between mb-4">
-                        <div className="text-[11px] font-mono tracking-widest text-text-muted uppercase">Chemical Flags</div>
-                        <div className="text-[10px] font-mono text-red-500 bg-red-500/10 px-2 py-0.5 rounded-sm">High Priority</div>
-                      </div>
-                      
+                    <div className="glass rounded-[20px] p-6 border border-border">
+                      <h4 className="text-[14px] font-bold tracking-widest uppercase text-text-primary mb-4">Chemical Flags</h4>
                       {fields.ingredient_analysis?.harmful_additives_found?.length > 0 ? (
-                        <div className="flex flex-wrap gap-3">
+                        <div className="flex flex-wrap gap-2">
                           {fields.ingredient_analysis.harmful_additives_found.map((add, i) => (
-                            <div key={i} className="flex items-center gap-2 border border-red-500/30 bg-[#0A0000] px-3 py-2 rounded-[2px]">
-                              <div className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse"></div>
-                              <span className="text-[13px] font-mono text-red-400">{add}</span>
+                            <span key={i} className="px-3 py-1.5 bg-red-500/10 text-red-500 border border-red-500/20 rounded-lg text-[13px] font-medium">
+                              {add}
+                            </span>
+                          ))}
+                        </div>
+                      ) : (
+                        <div className="text-[13px] text-text-secondary">No harmful E-numbers or restricted additives detected.</div>
+                      )}
+                    </div>
+
+                    {/* Health Risks */}
+                    <div className="glass rounded-[20px] p-6 border border-border">
+                      <h4 className="text-[14px] font-bold tracking-widest uppercase text-text-primary mb-4">Health Risks</h4>
+                      {fields.ingredient_analysis?.health_risks?.length > 0 ? (
+                        <div className="space-y-3">
+                          {fields.ingredient_analysis.health_risks.map((risk, i) => (
+                            <div key={i} className="flex items-start gap-3 bg-background/40 p-3 rounded-xl border border-border/50">
+                              <span className="text-amber-500 mt-0.5">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+                              </span>
+                              <span className="text-[14px] text-text-primary leading-relaxed">{risk}</span>
                             </div>
                           ))}
                         </div>
                       ) : (
-                        <div className="flex items-center gap-3 mt-4">
-                          <div className="w-8 h-8 rounded-full bg-green-500/10 flex items-center justify-center">
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" className="text-green-500" strokeWidth="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
-                          </div>
-                          <span className="text-[14px] text-text-secondary">No harmful E-numbers or restricted additives detected.</span>
-                        </div>
+                        <div className="text-[13px] text-text-secondary">No immediate systemic health risks identified by the AI.</div>
                       )}
                     </div>
+
                   </div>
 
-                  {/* Detailed Analysis Section */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-2">
+                  {/* Right Column: Allergens & Raw Text (1/3 width on desktop) */}
+                  <div className="lg:col-span-1 space-y-6">
                     
-                    {/* Left: Health Risks & Allergens */}
-                    <div className="space-y-8">
-                      {/* Health Risks */}
-                      <div>
-                        <div className="text-[11px] font-mono tracking-widest text-text-muted uppercase mb-4 pb-2 border-b border-border/50">Epidemiological Risks</div>
-                        {fields.ingredient_analysis?.health_risks?.length > 0 ? (
-                          <div className="space-y-3">
-                            {fields.ingredient_analysis.health_risks.map((risk, i) => (
-                              <div key={i} className="flex items-start gap-3">
-                                <span className="text-amber-500 font-mono text-[10px] mt-1.5">[{String(i+1).padStart(2, '0')}]</span>
-                                <span className="text-[14px] text-text-primary leading-relaxed">{risk}</span>
-                              </div>
-                            ))}
-                          </div>
-                        ) : (
-                          <div className="text-[13px] text-text-secondary italic">No immediate systemic health risks identified.</div>
-                        )}
-                      </div>
-
-                      {/* Allergens */}
-                      <div>
-                        <div className="text-[11px] font-mono tracking-widest text-text-muted uppercase mb-4 pb-2 border-b border-border/50">Identified Allergens</div>
-                        {fields.ingredient_analysis?.allergen_warnings?.length > 0 ? (
-                          <div className="flex flex-wrap gap-2">
-                            {fields.ingredient_analysis.allergen_warnings.map((allergen, i) => (
-                              <span key={i} className="px-3 py-1 bg-blue-500/10 text-blue-400 border border-blue-500/20 text-[12px] font-medium tracking-wide">
-                                {allergen}
-                              </span>
-                            ))}
-                          </div>
-                        ) : (
-                          <div className="text-[13px] text-text-secondary italic">None declared.</div>
-                        )}
-                      </div>
+                    {/* Allergens */}
+                    <div className="glass rounded-[20px] p-6 border border-border">
+                      <h4 className="text-[14px] font-bold tracking-widest uppercase text-text-primary mb-4">Allergens</h4>
+                      {fields.ingredient_analysis?.allergen_warnings?.length > 0 ? (
+                        <div className="flex flex-wrap gap-2">
+                          {fields.ingredient_analysis.allergen_warnings.map((allergen, i) => (
+                            <span key={i} className="px-3 py-1.5 bg-blue-500/10 text-blue-400 border border-blue-500/20 rounded-lg text-[13px] font-medium">
+                              {allergen}
+                            </span>
+                          ))}
+                        </div>
+                      ) : (
+                        <div className="text-[13px] text-text-secondary">No common allergens declared.</div>
+                      )}
                     </div>
 
-                    {/* Right: The Raw Data Log */}
-                    <div className="bg-[#020205] border border-border/50 p-6 rounded-[2px] relative">
-                      <div className="absolute top-0 right-0 p-4 opacity-30">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1"><path d="M4 22h14a2 2 0 0 0 2-2V7.5L14.5 2H6a2 2 0 0 0-2 2v4"></path><polyline points="14 2 14 8 20 8"></polyline><path d="M2 15h10"></path><path d="M9 18l3-3-3-3"></path></svg>
-                      </div>
-                      <div className="text-[11px] font-mono tracking-widest text-text-muted uppercase mb-4">Raw Ingredient Manifest</div>
-                      <div className="text-[13px] font-mono text-text-secondary leading-loose max-h-[300px] overflow-y-auto pr-2 custom-scrollbar">
-                        {fields.ingredients ? fields.ingredients.split(',').map((ing, i) => (
-                          <div key={i} className="flex gap-4 border-b border-border/30 pb-2 mb-2 last:border-0 hover:bg-white/5 p-1 transition-colors">
-                            <span className="text-accent opacity-50">{String(i+1).padStart(2, '0')}</span>
-                            <span className="text-text-primary capitalize">{ing.trim()}</span>
-                          </div>
-                        )) : "Manifest unavailable."}
+                    {/* Raw Ingredients Text */}
+                    <div className="glass rounded-[20px] p-6 border border-border h-full min-h-[300px]">
+                      <h4 className="text-[14px] font-bold tracking-widest uppercase text-text-primary mb-4">Raw Ingredient Text</h4>
+                      <div className="text-[13px] text-text-secondary leading-relaxed bg-background/50 p-4 rounded-xl border border-border/50">
+                        {fields.ingredients ? fields.ingredients : "Raw ingredients text unavailable."}
                       </div>
                     </div>
 
