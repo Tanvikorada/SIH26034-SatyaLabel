@@ -484,6 +484,87 @@ function checkMRP(fields) {
   return { rule_id: R, rule_title: T, field: f, status: 'PASS', detail: 'Valid MRP with tax statement found.' };
 }
 
+  // C08 - Consumer Care Contact Details (Rule 6)
+  function checkConsumerCare(fields) {
+  const R = 'Rule 6';
+  const T = 'Consumer Care Contact Details';
+  const f = 'customer_care';
+
+  if (!isPresent(fields.customer_care)) {
+    return pnoc(R, T, f, 'medium',
+      'Consumer care contact details (helpline phone number or email address) are not declared on the label. ' +
+      'This is mandatory under Rule 6.');
+  }
+
+  // Basic format check: phone or email
+  const val = String(fields.customer_care);
+  const hasPhone = /[\d\s\-\+]{7,}/.test(val);
+  const hasEmail = /@/.test(val);
+  if (!hasPhone && !hasEmail) {
+    return pnoc(R, T, f, 'low',
+      `Consumer care value "${val.slice(0, 60)}" does not appear to contain a valid phone number or email address. ` +
+      'A functional contact is required.');
+  }
+
+  return pass(R, T, f);
+}
+
+// ─── RULE 12 — MISLEADING QUANTITY WORDING ───────────────────────────────────
+// blueprint §2 Rule 12 (P1 — High); Check C12
+// Quantity wording must not create a misleading or exaggerated impression.
+
+function checkMisleadingQuantityWording(fields) {
+  const R = 'Rule 12';
+  const T = 'Manner of Declaration of Quantity — No Misleading Wording';
+  const f = 'net_quantity';
+
+  if (!isPresent(fields.net_quantity)) return pass(R, T, f);
+
+  const qty = String(fields.net_quantity);
+
+  if (MISLEADING_QUALIFIERS.test(qty)) {
+    const match = qty.match(MISLEADING_QUALIFIERS);
+    return pnoc(R, T, f, 'high',
+      `Net quantity "${qty}" contains the qualifier "${match?.[0]}" which is prohibited under Rule 12. ` +
+      'Quantity declarations must not use words like "minimum", "not less than", "average", "about", "approximately" etc. ' +
+      'An exact quantity must be stated.');
+  }
+
+  // Vague marketing terms in place of a numeric quantity
+  if (/\b(family\s*size|jumbo|large|small|medium|regular|super|economy\s*pack)\b/i.test(qty)) {
+    return pnoc(R, T, f, 'high',
+      `Net quantity "${qty}" uses vague/non-numeric terms instead of a precise numeric quantity. ` +
+      'Rule 12 requires an exact quantity with a standard unit.');
+  }
+
+  return pass(R, T, f);
+}
+
+// ─── RULE 7 — PRINCIPAL DISPLAY PANEL & FONT SIZE ────────────────────────────
+// blueprint §2 Rule 7, CV checks C10, C11 (P1 — Critical)
+// CRITICAL: Pixels ≠ mm without calibration source. Return NOT VERIFIED if no scale.
+
+// Numeral height slab table (Rule 7 — blueprint §2)
+const NUMERAL_HEIGHT_MM = [
+  { maxRef: 50,       minMM: 1.0 },
+  { maxRef: 200,      minMM: 2.0 },
+  { maxRef: 1000,     minMM: 4.0 },
+  { maxRef: Infinity, minMM: 6.0 },
+];
+
+function getQtyRefValue(netQtyNorm) {
+  if (!netQtyNorm) return null;
+  const { value, unit } = netQtyNorm;
+  if (!value || !unit) return null;
+  const u = unit.toLowerCase();
+  if (['g','gm','gms','gram','grams'].includes(u))     return value;
+  if (['kg','kgs'].includes(u))                         return value * 1000;
+  if (['mg'].includes(u))                               return value / 1000;
+  if (['ml','milliliter','millilitre'].includes(u))     return value;
+  if (['l','ltr','litre','litres','liters'].includes(u)) return value * 1000;
+  return null;
+}
+
 function checkFontSize(fields) {
   const R = 'Rule 7';
   const T = 'Minimum Letter / Numeral Height on Principal Display Panel';
