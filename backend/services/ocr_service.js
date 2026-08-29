@@ -127,13 +127,13 @@ async function preprocessImage(imagePath) {
  *
  * @param {string} imagePath
  * @param {number} [attempt=1]
- * @param {string} [modelName='gemini-1.5-flash-latest']
+ * @param {string} [modelName='gemini-1.5-flash']
  * @returns {{ text, structuredData, confidence, engine }}
  */
 // --- STEP 3: GROQ VISION FALLBACK ---
 
 
-async function runGeminiVision(imagePaths, attempt = 1, modelName = 'gemini-1.5-flash-latest') {
+async function runGeminiVision(imagePaths, attempt = 1, modelName = 'gemini-1.5-flash') {
   if (!config.gemini?.enabled || !config.gemini?.apiKey) {
     throw new Error('Gemini API key not configured.');
   }
@@ -227,7 +227,7 @@ ${SCHEMA_HINT}`;
 
   } catch (err) {
     if (attempt < 2) {
-      const nextModel = modelName === 'gemini-1.5-flash-latest' ? 'gemini-1.5-pro-latest' : 'gemini-1.5-flash-latest';
+      const nextModel = modelName === 'gemini-1.5-flash' ? 'gemini-1.5-pro' : 'gemini-1.5-flash';
       err.attemptHistory = (err.attemptHistory || '') + `[Attempt ${attempt} ${modelName}: ${err.message}] `;
         console.warn(`[OCR] Gemini failed with ${modelName} (${err.message}) - retrying with ${nextModel}...`);
       await new Promise(r => setTimeout(r, 2000));
@@ -304,7 +304,7 @@ ${SCHEMA_HINT}`;
       model: modelName,
       messages: [{ role: "user", content }],
       temperature: 0.0,
-      max_tokens: 1024,
+      max_tokens: 4096,
     });
 
     const responseText = completion.choices[0]?.message?.content || '';
@@ -398,7 +398,7 @@ async function runOcrPipeline(imagePaths, metadata = {}) {
     if (config.gemini?.enabled && config.gemini?.apiKey) {
       console.log("[OCR] Attempting Gemini Vision...");
       try {
-        const geminiResult = await runGeminiVision(processedPaths, 1, 'gemini-1.5-flash-latest');
+        const geminiResult = await runGeminiVision(processedPaths, 1, 'gemini-1.5-flash');
         return {
           text: geminiResult.structuredData?.products?.[0]?.raw_text_transcript || geminiResult.text,
           engine: "gemini",
