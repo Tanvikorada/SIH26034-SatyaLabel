@@ -80,7 +80,7 @@ export default function BatchPage({ params }) {
         ) : batch?.status === 'failed' ? (
            <div className="flex flex-col items-center justify-center py-32 text-center">
              <h2 className="text-[22px] font-medium text-red-500 mb-2">Scan Failed</h2>
-             <p className="text-text-secondary mb-6">We could not process this image. Please try again.</p>
+             <p className="text-text-secondary mb-6">{batch?.error_message || "We could not process this image. Please try again."}</p>
              <button onClick={() => router.push('/upload')} className="mello-btn-secondary">Try Another Image</button>
            </div>
         ) : (
