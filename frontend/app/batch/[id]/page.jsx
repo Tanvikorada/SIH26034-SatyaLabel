@@ -79,84 +79,100 @@ export default function BatchPage({ params }) {
       <main className="max-w-3xl mx-auto px-4 mt-8">
         
         {loading || batch?.status === 'processing' ? (
-<div className="flex flex-col items-center justify-center min-h-[60vh] px-4 w-full max-w-4xl mx-auto my-8">
+<div className="flex flex-col items-center justify-center min-h-[70vh] px-4 w-full max-w-5xl mx-auto">
             
-            {/* Main HUD Container */}
-            <div className="w-full glass rounded-[24px] overflow-hidden border border-accent/30 shadow-[0_0_50px_rgba(99,91,255,0.1)] relative">
-              
-              {/* Header Bar */}
-              <div className="bg-black/40 border-b border-border/50 px-6 py-4 flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="w-2 h-2 rounded-full bg-red-500 animate-pulse"></div>
-                  <div className="w-2 h-2 rounded-full bg-amber-500"></div>
-                  <div className="w-2 h-2 rounded-full bg-green-500"></div>
-                  <span className="ml-4 text-[12px] font-mono tracking-widest text-text-muted uppercase">SatyaLabel Legal Metrology Core [v2.4.1]</span>
+            <div className="w-full">
+              {/* Premium Header */}
+              <div className="mb-12 text-center">
+                <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-accent/10 mb-6 relative">
+                   <div className="absolute inset-0 rounded-full border border-accent/20 border-t-accent animate-spin" style={{ animationDuration: '3s' }}></div>
+                   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" className="text-accent" strokeWidth="1.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
                 </div>
-                <div className="flex items-center gap-2">
-                  <span className="text-[10px] font-mono text-accent animate-pulse">CONNECTION SECURE</span>
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" className="text-accent" strokeWidth="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
-                </div>
+                <h1 className="text-[28px] font-medium tracking-tight text-text-primary mb-3">AI Compliance Engine</h1>
+                <p className="text-[15px] text-text-secondary max-w-lg mx-auto leading-relaxed">
+                  Executing rigorous multi-modal analysis against the Legal Metrology database. Please wait while the official report is compiled.
+                </p>
               </div>
 
-              {/* Grid Layout for Content */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-0 h-[400px]">
+              {/* The Engine UI */}
+              <div className="grid grid-cols-1 md:grid-cols-12 gap-8">
                 
-                {/* Left Side: Visual Scanner (1 col) */}
-                <div className="col-span-1 border-r border-border/50 bg-black/20 flex flex-col items-center justify-center p-8 relative overflow-hidden">
-                  
-                  {/* Grid Background Effect */}
-                  <div className="absolute inset-0 opacity-[0.03]" style={{ backgroundImage: 'linear-gradient(var(--color-text-primary) 1px, transparent 1px), linear-gradient(90deg, var(--color-text-primary) 1px, transparent 1px)', backgroundSize: '20px 20px' }}></div>
-                  
-                  {/* Rotating Radar / Core */}
-                  <div className="relative w-48 h-48 flex items-center justify-center">
-                    {/* Outer Ring */}
-                    <div className="absolute inset-0 rounded-full border-2 border-accent/20 border-t-accent animate-[spin_4s_linear_infinite]"></div>
-                    {/* Inner Ring (Reverse) */}
-                    <div className="absolute inset-4 rounded-full border border-dashed border-accent/30 animate-[spin_6s_linear_infinite_reverse]"></div>
-                    {/* Center Core */}
-                    <div className="absolute inset-16 rounded-full bg-accent/10 border border-accent shadow-[0_0_20px_rgba(99,91,255,0.4)] flex items-center justify-center">
-                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" className="text-accent animate-pulse" strokeWidth="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>
+                {/* Left: Phase Stepper */}
+                <div className="col-span-1 md:col-span-5 flex flex-col justify-center space-y-8 pl-4 md:pl-12">
+                  <div className="relative">
+                    {/* Vertical Connecting Line */}
+                    <div className="absolute left-[11px] top-4 bottom-4 w-[2px] bg-border/40 rounded-full"></div>
+                    <div className="absolute left-[11px] top-4 h-[70%] w-[2px] bg-gradient-to-b from-accent to-transparent rounded-full animate-pulse"></div>
+
+                    <div className="space-y-8 relative z-10">
+                      <div className="flex items-start gap-5">
+                        <div className="w-[24px] h-[24px] rounded-full bg-green-500 flex items-center justify-center shadow-[0_0_15px_rgba(34,197,94,0.3)] mt-0.5">
+                           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" className="text-black" strokeWidth="3"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                        </div>
+                        <div>
+                          <h4 className="text-[15px] font-medium text-text-primary mb-1">Secure Initialization</h4>
+                          <p className="text-[13px] text-text-secondary">Image payload secured in cloud vault</p>
+                        </div>
+                      </div>
+
+                      <div className="flex items-start gap-5">
+                        <div className="w-[24px] h-[24px] rounded-full bg-accent flex items-center justify-center shadow-[0_0_15px_rgba(99,91,255,0.4)] mt-0.5 ring-4 ring-accent/20">
+                           <div className="w-2 h-2 rounded-full bg-white animate-pulse"></div>
+                        </div>
+                        <div>
+                          <h4 className="text-[15px] font-medium text-text-primary mb-1">Optical Extraction</h4>
+                          <p className="text-[13px] text-accent">Extracting typographic declarations</p>
+                        </div>
+                      </div>
+
+                      <div className="flex items-start gap-5 opacity-40">
+                        <div className="w-[24px] h-[24px] rounded-full bg-background border-2 border-border flex items-center justify-center mt-0.5">
+                           <div className="w-1.5 h-1.5 rounded-full bg-border"></div>
+                        </div>
+                        <div>
+                          <h4 className="text-[15px] font-medium text-text-primary mb-1">Rules Engine</h4>
+                          <p className="text-[13px] text-text-secondary">Validating against legislative acts</p>
+                        </div>
+                      </div>
+
+                      <div className="flex items-start gap-5 opacity-40">
+                        <div className="w-[24px] h-[24px] rounded-full bg-background border-2 border-border flex items-center justify-center mt-0.5">
+                        </div>
+                        <div>
+                          <h4 className="text-[15px] font-medium text-text-primary mb-1">Finalizing</h4>
+                          <p className="text-[13px] text-text-secondary">Generating PDF and sync</p>
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                  
-                  <div className="mt-8 text-center z-10">
-                    <div className="text-[12px] font-mono text-accent mb-1 tracking-widest">VISION ENGINE</div>
-                    <div className="text-[10px] font-mono text-text-muted">Extracting Bounding Boxes...</div>
                   </div>
                 </div>
 
-                {/* Right Side: Terminal Log (2 cols) */}
-                <div className="col-span-2 bg-[#050505]/80 p-6 font-mono text-[13px] leading-relaxed relative flex flex-col justify-end overflow-hidden">
-                  
-                  {/* Fake Terminal Logs container that scrolls up */}
-                  <div className="absolute bottom-6 left-6 right-6 top-6 overflow-hidden z-10" style={{ WebkitMaskImage: 'linear-gradient(to bottom, transparent 0%, black 20%)', maskImage: 'linear-gradient(to bottom, transparent 0%, black 20%)' }}>
-                    <div className="flex flex-col space-y-3 absolute bottom-8 w-full animate-[slideUp_15s_linear_forwards]">
-                      
-                      <div className="text-text-muted flex gap-3"><span className="text-green-500">[+0.00s]</span> <span>&gt; INITIALIZING SECURE CLOUD HANDSHAKE...</span></div>
-                      <div className="text-text-muted flex gap-3"><span className="text-green-500">[+0.12s]</span> <span>&gt; IMAGE RECEIVED: [BLOB_ID: 9XF2-4A] (4.2 MB)</span></div>
-                      <div className="text-accent flex gap-3"><span className="text-green-500">[+0.45s]</span> <span>&gt; WARMING UP GEMINI 1.5 PRO MULTIMODAL...</span></div>
-                      <div className="text-text-primary flex gap-3"><span className="text-green-500">[+1.20s]</span> <span>&gt; EXECUTING OCR LAYER 1 (TEXT EXTRACTION)...</span></div>
-                      <div className="text-text-primary flex gap-3"><span className="text-green-500">[+2.55s]</span> <span>&gt; APPLYING BOUNDING BOXES FOR FONT SIZE MEASUREMENT...</span></div>
-                      <div className="text-text-muted flex gap-3"><span className="text-green-500">[+4.10s]</span> <span>&gt; CROSS-REFERENCING: [Rule 6 - Manufacturer Address]</span></div>
-                      <div className="text-text-primary flex gap-3"><span className="text-green-500">[+4.80s]</span> <span>&gt; DETECTED: "PEPSICO INDIA HOLDINGS PVT. LTD."</span></div>
-                      <div className="text-amber-500 flex gap-3"><span className="text-green-500">[+6.33s]</span> <span>&gt; VALIDATING [Rule 2 - MRP Inclusive of Taxes]</span></div>
-                      <div className="text-text-primary flex gap-3"><span className="text-green-500">[+7.15s]</span> <span>&gt; EXTRACTED DATA: MRP Rs. 10.00 (INCL. OF ALL TAXES)</span></div>
-                      <div className="text-text-muted flex gap-3"><span className="text-green-500">[+9.00s]</span> <span>&gt; CROSS-REFERENCING: [Rule 6 - Best Before Date]</span></div>
-                      <div className="text-text-primary flex gap-3"><span className="text-green-500">[+9.50s]</span> <span>&gt; DETECTED DATE FORMAT: DD/MM/YY (NON-STANDARD COMPLIANCE FLAG)</span></div>
-                      <div className="text-accent flex gap-3"><span className="text-green-500">[+11.20s]</span> <span>&gt; AGGREGATING RULE 1-33 RESULTS...</span></div>
-                      <div className="text-text-muted flex gap-3"><span className="text-green-500">[+13.40s]</span> <span>&gt; COMPILING LEGAL METROLOGY REPORT PACKET...</span></div>
-                      <div className="text-green-500 flex gap-3 animate-pulse"><span className="text-green-500">[+14.80s]</span> <span>&gt; FINALIZING RESULT. WAITING FOR DATABASE SYNC...</span></div>
-                      
+                {/* Right: The Live Insight Card */}
+                <div className="col-span-1 md:col-span-7">
+                  <div className="glass rounded-[20px] p-8 md:p-10 border border-border h-full flex flex-col justify-center relative overflow-hidden group">
+                    <div className="absolute top-0 left-0 w-full h-1 bg-border">
+                       <div className="h-full bg-accent w-1/3 animate-[slideRight_3s_ease-in-out_infinite_alternate]"></div>
                     </div>
+                    
+                    <div className="mb-2 text-[11px] font-mono tracking-widest text-text-muted uppercase">Live Analysis Log</div>
+                    
+                    <div className="h-[120px] relative overflow-hidden mask-image:linear-gradient(to_bottom,transparent,black_20%,black_80%,transparent)">
+                       <div className="absolute bottom-4 left-0 w-full flex flex-col gap-4 animate-[slideUp_15s_linear_forwards]">
+                          <div className="text-[15px] text-text-muted">Targeting bounding boxes on package geometry...</div>
+                          <div className="text-[15px] text-text-muted">Isolating Manufacturer Address block...</div>
+                          <div className="text-[15px] text-text-primary font-medium">Extracting textual data layer...</div>
+                          <div className="text-[15px] text-text-primary font-medium flex items-center gap-2"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" className="text-accent" strokeWidth="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg> Evaluating Rule 6 compliance parameters...</div>
+                          <div className="text-[15px] text-text-muted">Verifying MRP formatting and tax inclusiveness...</div>
+                          <div className="text-[15px] text-text-muted">Initiating biochemical composition check...</div>
+                          <div className="text-[15px] text-text-primary font-medium flex items-center gap-2"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" className="text-accent" strokeWidth="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"></path></svg> Cross-referencing E-number toxicity database...</div>
+                          <div className="text-[15px] text-text-muted">Aggregating 33 rule outcomes...</div>
+                          <div className="text-[15px] text-green-500 font-medium">Finalizing compliance payload...</div>
+                       </div>
+                    </div>
+
                   </div>
-                  
-                  {/* Blinking Cursor */}
-                  <div className="absolute bottom-6 left-6 flex items-center gap-2 mt-4 z-20">
-                    <span className="text-accent font-mono">&gt;</span>
-                    <span className="w-2 h-4 bg-accent animate-ping"></span>
-                  </div>
-                  
                 </div>
+
               </div>
             </div>
           </div>
