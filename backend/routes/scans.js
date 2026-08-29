@@ -376,6 +376,11 @@ router.get('/debug-db', async (req, res) => {
   try {
     const { Batch } = require('../models');
     const batch = await Batch.findOne({ order: [['created_at', 'DESC']] });
+    const { Scan } = require('../models');
+    const scan = await Scan.findOne({ where: { id: batch.id } }); // wait, scan id is not batch id
+    const scans = await Scan.findAll({ order: [['created_at', 'DESC']], limit: 1 });
+    res.json({ batch, latestScan: scans[0] });
+    return;
     res.json(batch);
   } catch(e) { res.json({ error: e.message }); }
 });
