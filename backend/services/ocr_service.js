@@ -228,9 +228,10 @@ ${SCHEMA_HINT}`;
   } catch (err) {
     if (attempt < 2) {
       const nextModel = modelName === 'gemini-1.5-flash-latest' ? 'gemini-1.5-pro-latest' : 'gemini-1.5-flash-latest';
-      console.warn(`[OCR] Gemini failed with ${modelName} (${err.message}) - retrying with ${nextModel}...`);
+      err.attemptHistory = (err.attemptHistory || '') + `[Attempt ${attempt} ${modelName}: ${err.message}] `;
+        console.warn(`[OCR] Gemini failed with ${modelName} (${err.message}) - retrying with ${nextModel}...`);
       await new Promise(r => setTimeout(r, 2000));
-      return runGeminiVision(imagePaths, attempt + 1, nextModel);
+      return runGeminiVision(imagePaths, attempt + 1, nextModel).catch(e => { e.message = err.attemptHistory + e.message; throw e; });
     }
     throw err;
   }
@@ -326,9 +327,10 @@ ${SCHEMA_HINT}`;
     if (attempt < 4) {
       const fallbackModels = ['qwen/qwen3.8-27b', 'llama-3.2-90b-vision-preview', 'llama-3.2-11b-vision-preview', 'qwen-vl-72b'];
       const nextModel = fallbackModels[attempt];
-      console.warn(`[OCR] Groq failed with ${modelName} (${err.message}) - retrying with ${nextModel}...`);
+      err.attemptHistory = (err.attemptHistory || '') + `[Attempt ${attempt} ${modelName}: ${err.message}] `;
+        console.warn(`[OCR] Groq failed with ${modelName} (${err.message}) - retrying with ${nextModel}...`);
       await new Promise(r => setTimeout(r, 2000));
-      return runGroqVision(imagePaths, attempt + 1, nextModel);
+      return runGroqVision(imagePaths, attempt + 1, nextModel).catch(e => { e.message = err.attemptHistory + e.message; throw e; });
     }
     throw err;
   }
