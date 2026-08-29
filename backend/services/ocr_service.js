@@ -19,7 +19,7 @@ const { z } = require('zod');
 
 // ─── CONSTANTS ────────────────────────────────────────────────────────────────
 
-const MAX_DIMENSION_PX = 1024;          // Spec: resize to max 2000px on longest edge
+const MAX_DIMENSION_PX = 720;          // Spec: resize to max 2000px on longest edge
 const MIN_DIMENSION_PX = 600;           // Spec: reject below 600px shortest edge
 const MIN_OCR_TEXT_LENGTH = 20;         // Below this = "no readable text"
 const OCR_CONFIDENCE_THRESHOLD = config.ocr?.confidenceThreshold ?? 50; // % below which Gemini kicks in
@@ -97,7 +97,8 @@ async function preprocessImage(imagePath) {
     .grayscale()                       // Remove color noise that confuses OCR
     .normalize()                       // Auto-stretch contrast (normalizes histogram)
     .sharpen({ sigma: 1.2, m1: 1.5 }) // Sharpen text edges
-    .linear(1.15, -(128 * 1.15 - 128)); // Mild contrast boost (helps on glossy packs)
+    .linear(1.15, -(128 * 1.15 - 128))
+      .jpeg({ quality: 50 }); // Aggressive compression to slash base64 size and LLM token usage
 
   await pipeline.toFile(processedPath);
 
