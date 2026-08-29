@@ -240,7 +240,7 @@ async function runBatchPipeline(batch, imagePath, metadata = {}) {
 //   brand_name   — optional hint
 router.post('/', requireAuth, (req, res, next) => {
   // Run multer first, then handle in callback to send 202 before pipeline
-  upload.single('image')(req, res, async (uploadErr) => {
+  upload.array('images', 4)(req, res, async (uploadErr) => {
     if (uploadErr) {
       if (uploadErr.code === 'LIMIT_FILE_SIZE') {
         return fail(res, 413, 'FILE_TOO_LARGE', 'File too large — maximum 10MB.');
@@ -296,7 +296,7 @@ router.post('/', requireAuth, (req, res, next) => {
 
         ok(res, { batch_id: batch.id, status: 'processing' }, 202);
 
-        setImmediate(() => runBatchPipeline(batch, req.file.path, { forceEngine: req.body.forceEngine }));
+        setImmediate(() => runBatchPipeline(batch, filePaths, { forceEngine: req.body.forceEngine }));
 
       } catch (err) {
       return fail(res, 500, 'INTERNAL_ERROR', err.message);

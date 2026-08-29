@@ -497,7 +497,7 @@ async function runOcrPipeline(imagePath, metadata = {}) {
       if (config.groq?.enabled && config.groq?.apiKey) {
         console.log("[OCR] Attempting Groq Vision fallback...");
         try {
-          const groqResult = await runGroqVision(processedPath, 1, 'qwen/qwen3.8-27b', safeHint);
+          const groqResult = await runGroqVision(processedPaths, 1, 'qwen/qwen3.8-27b', safeHint);
           return {
             text: ocrResult.text,
             engine: "groq",
@@ -514,7 +514,7 @@ async function runOcrPipeline(imagePath, metadata = {}) {
       if (config.gemini?.enabled && config.gemini?.apiKey) {
         console.log("[OCR] Attempting Gemini Vision fallback...");
         try {
-          const geminiResult = await runGeminiVision(processedPath, 1, 'gemini-1.5-flash-latest', safeHint);
+          const geminiResult = await runGeminiVision(processedPaths, 1, 'gemini-1.5-flash-latest', safeHint);
           return {
             text: ocrResult.text,
             engine: "gemini",
