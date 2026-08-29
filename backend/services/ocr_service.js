@@ -36,6 +36,8 @@ const GEMINI_RETRY_ONCE = true;
  * @throws {Error} "IMAGE_TOO_LOW_RES" if shortest edge < MIN_DIMENSION_PX
  */
 async function validateResolution(imagePath) {
+  console.log("validateResolution CALLED WITH:", imagePath, typeof imagePath, Array.isArray(imagePath));
+
   const meta = await sharp(imagePath).metadata();
   const { width, height } = meta;
 
