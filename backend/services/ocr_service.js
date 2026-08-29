@@ -198,15 +198,13 @@ async function runTesseract(imagePath) {
  */
 // --- STEP 3: GROQ VISION FALLBACK ---
 
-async function runGeminiVision(imagePath, attempt = 1, modelName = 'gemini-1.5-flash-latest', tesseractText = '') {
+async function runGeminiVision(imagePathss, attempt = 1, modelName = 'gemini-1.5-flash-latest', tesseractText = '') {
   if (!config.gemini?.enabled || !config.gemini?.apiKey) {
     throw new Error('Gemini API key not configured.');
   }
 
-  console.log(`[OCR] Calling Gemini REST API (${modelName}) (attempt ${attempt}/3).`);
-
-  const imageBuffer = require('fs').readFileSync(imagePath);
-  const base64Image = imageBuffer.toString('base64');
+  try {
+    const paths = Array.isArray(imagePaths) ? imagePaths : [imagePaths];
   const mimeType = 'image/jpeg';
 
   const STRUCTURED_PROMPT = `You are the core "AI Brain" of a Legal Metrology enforcement system.
@@ -314,7 +312,7 @@ ${tesseractText}` : '');
       const nextModel = modelName === 'gemini-1.5-flash-latest' ? 'gemini-1.5-pro-latest' : 'gemini-1.5-flash-latest';
       console.warn(`[OCR] Gemini failed with ${modelName} (${err.message}) - retrying with ${nextModel}...`);
       await new Promise(r => setTimeout(r, 2000));
-      return runGeminiVision(imagePath, attempt + 1, nextModel, tesseractText);
+      return runGeminiVision(imagePaths, attempt + 1, nextModel, tesseractText);
     }
     throw err;
   }
@@ -322,15 +320,13 @@ ${tesseractText}` : '');
   return { text: rawText, structuredData, confidence: 85, words: [], engine: 'gemini', _fontMetrics: null };
 }
 
-async function runGroqVision(imagePath, attempt = 1, modelName = 'qwen/qwen3.8-27b', tesseractText = '') {
+async function runGroqVision(imagePathss, attempt = 1, modelName = 'qwen/qwen3.8-27b', tesseractText = '') {
   if (!config.groq?.enabled || !config.groq?.apiKey) {
     throw new Error('Groq API key not configured.');
   }
 
-  console.log(`[OCR] Calling Groq Vision API (${modelName}) (attempt ${attempt}/3).`);
-
-  const imageBuffer = fs.readFileSync(imagePath);
-  const base64Image = imageBuffer.toString('base64');
+  try {
+    const paths = Array.isArray(imagePaths) ? imagePaths : [imagePaths];
   const mimeType = 'image/jpeg';
 
   const STRUCTURED_PROMPT = `You are the core "AI Brain" of a Legal Metrology enforcement system.
@@ -424,7 +420,7 @@ CRITICAL RULES FOR HALLUCINATION PREVENTION:
       const nextModel = fallbackModels[attempt];
       console.warn(`[OCR] Groq failed with ${modelName} (${err.message}) - retrying with ${nextModel}...`);
       await new Promise(r => setTimeout(r, 2000));
-      return runGroqVision(imagePath, attempt + 1, nextModel, tesseractText);
+      return runGroqVision(imagePaths, attempt + 1, nextModel, tesseractText);
     }
     throw err;
   }
@@ -477,11 +473,14 @@ const AIResponseSchema = z.object({
   products: z.array(ProductSchema).min(1, "Must detect at least one product")
 });
 
-async function runOcrPipeline(imagePath, metadata = {}) {
-  let processedPath = null;
-  try {
-      await validateResolution(imagePath);
-      processedPath = await preprocessImage(imagePath);
+async function runOcrPipeline(imagePaths, metadata = {}) {
+    let processedPaths = [];
+    try {
+        const paths = Array.isArray(imagePaths) ? imagePaths : [imagePaths];
+        for (const p of paths) {
+          await validateResolution(p);
+          processedPaths.push(await preprocessImage(p));
+        }
       
       console.log("[OCR] Running primary Tesseract extraction...");
       let ocrResult = await runTesseract(processedPath).catch(err => {
@@ -530,8 +529,10 @@ async function runOcrPipeline(imagePath, metadata = {}) {
       
       return ocrResult;
   } finally {
-    if (processedPath && fs.existsSync(processedPath)) {
-      try { fs.unlinkSync(processedPath); } catch (_) {}
+    for (const p of processedPaths) {
+      if (fs.existsSync(p)) {
+        try { fs.unlinkSync(p); } catch (_) {}
+      }
     }
   }
 }
