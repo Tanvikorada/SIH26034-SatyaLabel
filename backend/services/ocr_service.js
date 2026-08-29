@@ -375,7 +375,7 @@ async function runOcrPipeline(imagePaths, metadata = {}) {
       processedPaths.push(await preprocessImage(p));
     }
     
-    let groqResult = null;
+    let groqResult = null; let groqErrStr = ''; let geminiErrStr = '';
     if (config.groq?.enabled && config.groq?.apiKey) {
       console.log("[OCR] Attempting Groq Vision...");
       try {
@@ -389,7 +389,7 @@ async function runOcrPipeline(imagePaths, metadata = {}) {
           _jsonText: groqResult.text
         };
       } catch (groqErr) {
-        console.warn("[OCR] Groq failed: " + groqErr.message);
+        console.warn("[OCR] Groq failed: " + groqErr.message); groqErrStr = groqErr.message;
       }
     } 
     
@@ -406,11 +406,11 @@ async function runOcrPipeline(imagePaths, metadata = {}) {
           _jsonText: geminiResult.text
         };
       } catch (geminiErr) {
-        console.warn("[OCR] Gemini failed: " + geminiErr.message);
+        console.warn("[OCR] Gemini failed: " + geminiErr.message); geminiErrStr = geminiErr.message;
       }
     }
     
-    throw new Error('All OCR engines failed or are unconfigured.');
+    throw new Error('All OCR engines failed. Groq: ' + (groqErrStr || 'disabled') + ' | Gemini: ' + (geminiErrStr || 'disabled'));
   } finally {
     for (const p of processedPaths) {
       if (require('fs').existsSync(p)) {
