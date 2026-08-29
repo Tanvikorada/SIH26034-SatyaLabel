@@ -11,7 +11,7 @@ const sourceSerif = Source_Serif_4({ subsets: ['latin'], weight: ['400'], variab
 export const metadata = {
   title: 'SatyaLabel',
   description: 'Legal Metrology Compliance Checker',
-  manifest: '/manifest.json',
+  
   appleWebApp: {
     capable: true,
     statusBarStyle: 'black-translucent',
