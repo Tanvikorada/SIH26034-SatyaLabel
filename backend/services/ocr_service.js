@@ -158,6 +158,12 @@ async function runGeminiVision(imagePaths, attempt = 1, modelName = 'gemini-2.5-
     consumer_care_details: "string",
     batch_lot_number: "string",
     fssai_license: "string",
+    ingredient_analysis: {
+      harmful_additives_found: ["string"],
+      health_risks: ["string"],
+      allergen_warnings: ["string"],
+      is_clean_label: "boolean"
+    },
     country_of_origin: "string",
     ingredients: "string",
     veg_nonveg: "string"
@@ -271,6 +277,12 @@ async function runGroqVision(imagePaths, attempt = 1, modelName = 'qwen/qwen3.8-
     consumer_care_details: "string",
     batch_lot_number: "string",
     fssai_license: "string",
+    ingredient_analysis: {
+      harmful_additives_found: ["string"],
+      health_risks: ["string"],
+      allergen_warnings: ["string"],
+      is_clean_label: "boolean"
+    },
     country_of_origin: "string",
     ingredients: "string",
     veg_nonveg: "string"
@@ -362,6 +374,7 @@ const ProductSchema = z.object({
   mrp: z.union([z.string(), z.number()]).nullable().optional(),
   mrp_includes_tax_statement: z.union([z.boolean(), z.string()]).nullable().optional(),
   mfg_date: z.string().nullable().optional(),
+  ingredient_analysis: z.any().nullable().optional(),
   consumer_care_details: z.string().nullable().optional(),
 }).passthrough();
 
