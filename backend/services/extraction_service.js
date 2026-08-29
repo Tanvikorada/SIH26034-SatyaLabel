@@ -383,7 +383,8 @@ function extractFields(rawText, geminiStructuredData = null, ocrFontMetrics = nu
 
 /**
  * @deprecated
-eldsArray(rawText, geminiData = null) {
+ */
+function extractFieldsArray(rawText, geminiData = null) {
   const map = extractFields(rawText, geminiData);
   return Object.entries(map)
     .filter(([k]) => !k.startsWith('_'))
