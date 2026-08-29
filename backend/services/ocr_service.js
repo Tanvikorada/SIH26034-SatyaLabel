@@ -477,13 +477,15 @@ async function runOcrPipeline(imagePaths, metadata = {}) {
     let processedPaths = [];
     try {
         const paths = Array.isArray(imagePaths) ? imagePaths : [imagePaths];
+        console.log("[OCR] Type of paths:", typeof paths, Array.isArray(paths));
+        console.log("[OCR] paths array:", paths);
         for (const p of paths) {
           await validateResolution(p);
           processedPaths.push(await preprocessImage(p));
         }
       
       console.log("[OCR] Running primary Tesseract extraction...");
-      let ocrResult = await runTesseract(processedPath).catch(err => {
+      let ocrResult = await runTesseract(processedPaths[0]).catch(err => {
           console.warn("[OCR] Tesseract failed: " + err.message);
           return { text: '', confidence: 0, engine: 'tesseract', _fontMetrics: [] };
       });
