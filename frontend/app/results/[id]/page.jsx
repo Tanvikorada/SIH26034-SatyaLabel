@@ -357,6 +357,21 @@ export default function ResultsPage({ params }) {
 
         <div className="mt-8 flex flex-col md:flex-row gap-3 max-w-[400px] ml-auto print:hidden">
           <button onClick={downloadPDF} className="mello-btn-primary flex-1 shadow-lg">Download Official Notice PDF</button>
+          <button onClick={() => {
+            const fields = report.extractedFields || report.extracted_fields || {};
+            const csvRows = ['Field,Value'];
+            for (const [k, v] of Object.entries(fields)) {
+              if (!k.startsWith('_')) {
+                csvRows.push(`"${k}","${String(v).replace(/"/g, '""')}"`);
+              }
+            }
+            const blob = new Blob([csvRows.join('\n')], { type: 'text/csv' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `scan_export_${report.id}.csv`;
+            a.click();
+          }} className="mello-btn-secondary flex-1">Export Data (CSV)</button>
           {localStorage.getItem('role') === 'admin' && (
             <button onClick={handleDelete} className="mello-btn-secondary flex-1 text-red-500 border-red-900/30 hover:bg-red-500/10">Delete Record</button>
           )}
