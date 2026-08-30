@@ -5,6 +5,7 @@ import Script from 'next/script'
 import { ThemeProvider } from 'next-themes'
 import ThemeColorMeta from '../components/ThemeColorMeta'
 import BottomNav from '../components/BottomNav'
+import SplashScreen from '../components/SplashScreen'
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' })
 const sourceSerif = Source_Serif_4({ subsets: ['latin'], weight: ['400'], variable: '--font-display' })
@@ -36,8 +37,9 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en" suppressHydrationWarning>
       <head></head>
-      <body className={`${inter.variable} ${sourceSerif.variable} font-sans pb-24 md:pb-0`}>
-        <ThemeColorMeta />
+      <body className={`${inter.variable} ${sourceSerif.variable} font-sans pb-24 md:pb-0`}}>
+        <SplashScreen />
+<ThemeColorMeta />
         <ThemeProvider
           attribute="class"
           defaultTheme="system"
