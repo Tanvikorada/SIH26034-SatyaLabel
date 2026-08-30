@@ -700,7 +700,7 @@ export default function LandingPage() {
           </svg>
         </div>
         <div className="flex flex-col justify-center">
-          <span className="text-[9px] font-mono tracking-[0.15em] text-white/70 uppercase leading-none mb-1">Dept. of Consumer Affairs</span>
+          <span className="text-[10px] font-sans tracking-[0.05em] text-white/80 uppercase leading-none mb-1 font-medium">उपभोक्ता मामले विभाग • Dept. of Consumer Affairs</span>
           <span className="font-semibold tracking-tight text-[17px] text-white leading-none">SatyaLabel <span className="font-normal text-white/80 text-[15px]">Legal Metrology</span></span>
         </div>
       </div>
