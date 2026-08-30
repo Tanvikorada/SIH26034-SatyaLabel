@@ -48,7 +48,7 @@ export default function SplashScreen() {
     >
       
       {/* Mathematically anchor the emblem to the exact center of the viewport to prevent Flexbox shifting */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-[60px] sm:-translate-y-[80px]">
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
         {/* Glowing aura slowly fading in behind the static emblem */}
         <div className="absolute inset-0 bg-white/10 blur-[60px] rounded-full scale-[2.0] animate-pulse"></div>
         
