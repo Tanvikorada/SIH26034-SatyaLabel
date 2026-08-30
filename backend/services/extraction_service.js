@@ -367,6 +367,15 @@ function extractFields(rawText, geminiStructuredData = null, ocrFontMetrics = nu
     ingredients: g.ingredients || null,
     veg_nonveg: g.veg_nonveg || null,
     
+    // Extracted during 9 PM - 12 AM session
+    ai_summary: g.ai_summary || null,
+    ingredient_analysis: g.ingredient_analysis || null,
+    packer_name: g.packer_name || null,
+    packer_address: g.packer_address || null,
+    importer_name: g.importer_name || null,
+    importer_address: g.importer_address || null,
+    nutritional_info: g.nutritional_info || null,
+    
     _netQtyNormalized: g.net_quantity ? parseFloat(String(g.net_quantity).replace(/[^0-9.]/g, '')) : null,
     _confidence: {
       product_name: g.product_name ? 'high' : null,
