@@ -151,11 +151,11 @@ export default function UploadPage() {
         <h1 className="text-[32px] font-medium tracking-tight leading-[1.1] mb-2">Initialize Scan</h1>
         <p className="text-[15px] text-text-secondary mb-10 flex items-center gap-3"><span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> OCR Pipeline Active. Awaiting payload.</p>
 
-        <div className="grid grid-cols-1 md:grid-cols-5 gap-6">
-          <form onSubmit={handleUpload} className="mello-card p-8 col-span-3 flex flex-col gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-5 gap-0 md:gap-6 flex-1 md:flex-none h-[calc(100vh-140px)] md:h-auto">
+          <form onSubmit={handleUpload} className="mello-card p-4 md:p-8 col-span-3 flex flex-col gap-4 md:gap-6 h-full md:h-auto border-0 md:border md:shadow-sm bg-transparent md:bg-[var(--color-surface)]">
             <div className="flex flex-col gap-2">
               <label className="text-[10px] font-mono tracking-[0.2em] uppercase text-text-primary">Product Image</label>
-              <div className="relative w-full min-h-[240px] p-4 border border-dashed border-border/50 glass hover:border-primary/50 rounded-xl flex flex-col items-center justify-center bg-surface group hover:border-mist transition-colors">
+              <div className="relative w-full flex-1 md:min-h-[240px] p-4 border-2 border-dashed border-primary/30 md:border-border/50 bg-background/50 md:glass hover:border-primary/50 flex flex-col items-center justify-center rounded-2xl rounded-xl flex flex-col items-center justify-center bg-surface group hover:border-mist transition-colors">
                 {previews.length > 0 ? (
                   <div className="w-full flex flex-col gap-4">
                     <div className="text-[13px] text-text-secondary text-center">
@@ -224,7 +224,7 @@ export default function UploadPage() {
               </div>
             </div>
 
-            <button type="submit" className="mello-btn-primary w-full mt-2" disabled={loading}>
+            <button type="submit" className="mello-btn-primary w-full mt-auto md:mt-2 h-[56px] text-[16px] font-bold shadow-[0_10px_30px_rgba(11,31,58,0.3)] active-press md:h-auto md:text-[14px]" disabled={loading}>
               {loading ? 'Processing scan...' : 'Run Compliance Check'}
             </button>
           </form>

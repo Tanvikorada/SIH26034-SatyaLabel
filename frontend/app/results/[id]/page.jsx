@@ -155,7 +155,7 @@ export default function ResultsPage({ params }) {
           </div>
           
           {/* Action Buttons */}
-          <div className="flex flex-wrap gap-3 mt-8 pt-6 border-t border-border/50">
+          <div className="hidden md:flex flex-wrap gap-3 mt-8 pt-6 border-t border-border/50">
             <button onClick={downloadPDF} className="mello-btn-primary flex items-center gap-2">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
               Download Notice
@@ -166,6 +166,13 @@ export default function ResultsPage({ params }) {
             </button>
           </div>
         </div>
+          
+          {/* Mobile FABs */}
+          <div className="md:hidden fixed bottom-24 right-4 z-40 flex flex-col gap-3">
+            <button onClick={downloadPDF} className="w-14 h-14 bg-primary text-white rounded-full flex items-center justify-center shadow-[0_10px_25px_rgba(11,31,58,0.4)] active-press border-2 border-background">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+            </button>
+          </div>
 
         {/* TAB NAVIGATION */}
         <div className="flex space-x-1 border-b border-border mb-8">
