@@ -150,7 +150,7 @@ function PixelsToPenalty() {
   }, []);
 
   return (
-    <section className="py-32 px-6 md:px-12 relative z-10 bg-transparent border-y border-[var(--color-border)] overflow-hidden">
+    <section id="pipeline" className="py-32 px-6 md:px-12 relative z-10 bg-transparent border-y border-[var(--color-border)] overflow-hidden scroll-mt-16">
       <div className="max-w-[1200px] mx-auto">
         <h2 className="text-4xl md:text-5xl font-semibold tracking-tight mb-20 text-center bg-clip-text text-transparent bg-gradient-to-r from-text-primary to-text-secondary">From Pixels to Penalty</h2>
         
@@ -705,8 +705,9 @@ export default function LandingPage() {
         </div>
       </div>
       <div className="flex items-center gap-4">
-        <Link href="/login" className="text-[13px] font-medium text-white/80 hover:text-white transition-colors">Officer Login</Link>
-        <Link href="/login" className="bg-white text-[#1E3A8A] hover:bg-white/90 px-4 py-1.5 rounded-full text-[13px] font-bold shadow-sm transition-all hidden sm:block">Access Console</Link>
+        <ThemeToggle />
+        <a href="#pipeline" className="text-[13px] font-medium text-white/80 hover:text-white transition-colors hidden sm:block">How it Works</a>
+        <Link href="/login" className="bg-white text-[#1E3A8A] hover:bg-white/90 px-4 py-1.5 rounded-full text-[13px] font-bold shadow-sm transition-all">Access Console</Link>
       </div>
 </nav>
 
@@ -724,7 +725,7 @@ export default function LandingPage() {
 
             <KineticText
               text="Every declaration, checked against the law in seconds."
-              className="text-[44px] md:text-[58px] font-medium tracking-[-0.03em] leading-[1.06] mb-6"
+              className="text-[44px] md:text-[58px] font-medium tracking-[-0.03em] leading-[1.06] mb-6 text-balance"
             />
 
             <motion.p initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }}
@@ -736,7 +737,7 @@ export default function LandingPage() {
             <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.7 }}
               className="flex items-center gap-4 flex-wrap mb-8">
               <Link href="/login" className="mello-btn-primary !px-7 !py-3 !text-[15px] !rounded-lg shadow-[0_18px_38px_rgba(11,31,58,0.18)]">Start Scanning</Link>
-              <Link href="/dashboard" className="mello-btn-secondary !px-7 !py-3 !text-[15px] !rounded-lg">View Demo Flow</Link>
+              <a href="#pipeline" className="mello-btn-secondary !px-7 !py-3 !text-[15px] !rounded-lg flex items-center justify-center">Explore Pipeline</a>
             </motion.div>
 
             
