@@ -4,6 +4,7 @@ import { Toaster } from 'sonner'
 import Script from 'next/script'
 import { ThemeProvider } from 'next-themes'
 import ThemeColorMeta from '../components/ThemeColorMeta'
+import BottomNav from '../components/BottomNav'
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' })
 const sourceSerif = Source_Serif_4({ subsets: ['latin'], weight: ['400'], variable: '--font-display' })
@@ -54,6 +55,7 @@ export default function RootLayout({ children }) {
              <div className="absolute top-[40%] -right-[10%] w-[40%] h-[60%] bg-blue-500/10 rounded-full blur-[120px] mix-blend-screen animate-pulse-slow" style={{ animationDelay: '2s' }}></div>
           </div>
           {children}
+          <BottomNav />
 
         </ThemeProvider>
         <Toaster position="top-right" />
