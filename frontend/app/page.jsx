@@ -136,11 +136,7 @@ function HeroSeal() {
            <Image unoptimized={true} src="/emblem-transparent.png" alt="3D State Emblem of India" fill priority className="object-contain scale-[1.15]" sizes="(max-width: 768px) 100vw, 420px" />
         </div>
 
-        {/* Floating Verification Tag */}
-        <div className="absolute bottom-8 right-8 bg-background/80 backdrop-blur-md border border-[var(--color-border)] rounded-full px-4 py-2 flex items-center gap-2 shadow-xl transform translate-z-10">
-           <Shield size={14} className="text-emerald-500" />
-           <span className="text-[10px] font-mono tracking-widest uppercase text-text-primary">Official AI</span>
-        </div>
+        
       </div>
     </div>
   );
