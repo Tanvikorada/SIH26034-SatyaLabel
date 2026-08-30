@@ -58,7 +58,7 @@ export default function Dashboard() {
     return 'bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-400 border-slate-200 dark:border-slate-700';
   };
 
-  if (!stats) return <div className="min-h-screen bg-white dark:bg-[#090a0f] text-slate-900 dark:text-white"><NavBar /><div className="p-10 flex items-center justify-center h-[60vh] text-slate-500 font-mono text-sm"><Activity className="animate-pulse mr-3" /> INITIALIZING DASHBOARD...</div></div>;
+  if (!stats) return <div className="min-h-screen bg-white dark:bg-black text-slate-900 dark:text-white"><NavBar /><div className="p-10 flex items-center justify-center h-[60vh] text-slate-500 font-mono text-sm"><Activity className="animate-pulse mr-3" /> INITIALIZING DASHBOARD...</div></div>;
 
   const compliancePct = stats.total_scans ? Math.round(((stats.compliant_count ?? stats.compliant ?? 0) / (stats.total_scans || 1)) * 100) : 0;
   
@@ -76,7 +76,7 @@ export default function Dashboard() {
   });
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-[#090a0f] text-slate-900 dark:text-slate-100">
+    <div className="min-h-screen bg-slate-50 dark:bg-black text-slate-900 dark:text-slate-100">
       <NavBar />
       
       <main className="max-w-7xl mx-auto px-6 py-10">
