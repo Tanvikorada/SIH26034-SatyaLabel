@@ -86,8 +86,13 @@ const nv     = (id, title, field, detail) =>
 
 // ─── HELPERS ──────────────────────────────────────────────────────────────────
 
-const isPresent = (val) =>
-  val !== null && val !== undefined && String(val).trim().length > 0;
+const isPresent = (val) => {
+    if (val === null || val === undefined) return false;
+    const str = String(val).trim().toLowerCase();
+    if (str.length === 0) return false;
+    if (['null', 'none', 'n/a', 'na', 'not found', 'unspecified', 'not mentioned', 'unknown', 'missing', 'no detail provided.'].includes(str)) return false;
+    return true;
+  };
 
 // Standard SI units per LM(PC) Rules 2011 + Rule 13
 const STANDARD_UNITS = /(?:^|\s|\d)(g|gm|gms|gram|grams|kg|kgs|mg|ml|l|ltr|litre|litres|liters|liter|cm|m|mm|nos?\.?|pieces?|pcs?\.?|tablets?|tabs?|capsules?|caps?|sachets?|units?|pairs?|sets?|sheets?)(?=\b|$|\s)/i;
