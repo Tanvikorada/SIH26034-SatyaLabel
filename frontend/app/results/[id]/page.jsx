@@ -212,6 +212,15 @@ export default function ResultsPage({ params }) {
         {/* TAB 1: SUMMARY / VIOLATIONS */}
         {activeTab === 'summary' && (
           <div className="space-y-4 animate-fade-in">
+            
+            {/* AI EXECUTIVE SUMMARY */}
+            {fields.ai_summary && (
+              <div className="glass rounded-[20px] p-6 border-l-4 border-l-accent mb-8">
+                <h4 className="text-[10px] font-mono tracking-[0.2em] uppercase text-text-primary mb-3">AI Executive Summary</h4>
+                <p className="text-[14px] text-text-secondary leading-relaxed">{fields.ai_summary}</p>
+              </div>
+            )}
+
             <h3 className="text-[18px] font-medium text-text-primary mb-6">Legal Metrology Violations</h3>
             
             {/* FAILED RULES SECTION */}
