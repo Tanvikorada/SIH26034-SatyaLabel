@@ -234,15 +234,11 @@ export default function UploadPage() {
               <div className={`w-2 h-2 rounded-full ${loading ? 'bg-[#4ade80] animate-pulse' : 'bg-border'}`}></div>
               System Output
             </h3>
-            <div className="flex-1 font-mono text-[12px] leading-relaxed text-text-muted flex flex-col gap-2 overflow-y-auto bg-[#0A0A0A] rounded-lg p-4 border border-[#222]">
-              <div className="flex gap-1.5 mb-2 border-b border-[#333] pb-2">
-                <div className="w-2.5 h-2.5 rounded-full bg-red-500/80"></div>
-                <div className="w-2.5 h-2.5 rounded-full bg-yellow-500/80"></div>
-                <div className="w-2.5 h-2.5 rounded-full bg-green-500/80"></div>
-              </div>
+            <div className="flex-1 font-mono text-[12px] leading-relaxed text-text-muted flex flex-col gap-2 overflow-y-auto bg-slate-50 rounded-xl p-5 border border-slate-200 shadow-inner">
+              
               {!loading && logs.length === 0 && <span>Awaiting input payload...</span>}
               {logs.map((log, i) => (
-                <span key={i} className="text-text-primary animate-in fade-in slide-in-from-bottom-2 duration-300">{log}</span>
+                <span key={i} className="text-slate-700 font-medium animate-in fade-in slide-in-from-bottom-2 duration-300">{log}</span>
               ))}
             </div>
           </div>
