@@ -44,7 +44,7 @@ export default function SplashScreen() {
 
   return (
     <div 
-      className={`fixed inset-0 z-[9999] bg-[#1E3A8A] flex flex-col items-center justify-center transition-opacity duration-700 ease-in-out ${fade ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}
+      className={`fixed inset-0 z-[9999] bg-black flex flex-col items-center justify-center transition-opacity duration-700 ease-in-out ${fade ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}
     >
       <div className="relative flex flex-col items-center justify-center">
         {/* Glowing aura slowly fading in behind the static emblem */}
