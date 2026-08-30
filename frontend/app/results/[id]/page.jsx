@@ -189,7 +189,7 @@ export default function ResultsPage({ params }) {
             
             {/* FAILED RULES SECTION */}
             <div className="mb-8">
-              <h4 className="text-[14px] font-bold tracking-widest uppercase text-red-500 mb-4 flex items-center gap-2">
+              <h4 className="text-[10px] font-mono tracking-[0.2em] uppercase text-red-500 mb-4 flex items-center gap-2">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg>
                 Violations & Warnings
               </h4>
@@ -216,7 +216,7 @@ export default function ResultsPage({ params }) {
 
             {/* PASSED RULES SECTION */}
             <div>
-              <h4 className="text-[14px] font-bold tracking-widest uppercase text-green-500 mb-4 flex items-center gap-2">
+              <h4 className="text-[10px] font-mono tracking-[0.2em] uppercase text-green-500 mb-4 flex items-center gap-2">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
                 Compliant Checks
               </h4>
@@ -275,7 +275,7 @@ export default function ResultsPage({ params }) {
 
                     {/* Chemical Flags */}
                     <div className="glass rounded-[20px] p-6 border border-border">
-                      <h4 className="text-[14px] font-bold tracking-widest uppercase text-text-primary mb-4">Chemical Flags</h4>
+                      <h4 className="text-[10px] font-mono tracking-[0.2em] uppercase text-text-primary mb-4">Chemical Flags</h4>
                       {fields.ingredient_analysis?.harmful_additives_found?.length > 0 ? (
                         <div className="flex flex-wrap gap-2">
                           {fields.ingredient_analysis.harmful_additives_found.map((add, i) => (
@@ -291,7 +291,7 @@ export default function ResultsPage({ params }) {
 
                     {/* Health Risks */}
                     <div className="glass rounded-[20px] p-6 border border-border">
-                      <h4 className="text-[14px] font-bold tracking-widest uppercase text-text-primary mb-4">Health Risks</h4>
+                      <h4 className="text-[10px] font-mono tracking-[0.2em] uppercase text-text-primary mb-4">Health Risks</h4>
                       {fields.ingredient_analysis?.health_risks?.length > 0 ? (
                         <div className="space-y-3">
                           {fields.ingredient_analysis.health_risks.map((risk, i) => (
@@ -315,7 +315,7 @@ export default function ResultsPage({ params }) {
                     
                     {/* Allergens */}
                     <div className="glass rounded-[20px] p-6 border border-border">
-                      <h4 className="text-[14px] font-bold tracking-widest uppercase text-text-primary mb-4">Allergens</h4>
+                      <h4 className="text-[10px] font-mono tracking-[0.2em] uppercase text-text-primary mb-4">Allergens</h4>
                       {fields.ingredient_analysis?.allergen_warnings?.length > 0 ? (
                         <div className="flex flex-wrap gap-2">
                           {fields.ingredient_analysis.allergen_warnings.map((allergen, i) => (
@@ -331,7 +331,7 @@ export default function ResultsPage({ params }) {
 
                     {/* Raw Ingredients Text */}
                     <div className="glass rounded-[20px] p-6 border border-border h-full min-h-[300px]">
-                      <h4 className="text-[14px] font-bold tracking-widest uppercase text-text-primary mb-4">Raw Ingredient Text</h4>
+                      <h4 className="text-[10px] font-mono tracking-[0.2em] uppercase text-text-primary mb-4">Raw Ingredient Text</h4>
                       <div className="text-[13px] text-text-secondary leading-relaxed bg-background/50 p-4 rounded-xl border border-border/50">
                         {fields.ingredients ? fields.ingredients : "Raw ingredients text unavailable."}
                       </div>

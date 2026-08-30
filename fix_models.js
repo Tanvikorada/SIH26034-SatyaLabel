@@ -1,12 +1,17 @@
 const fs = require('fs');
-let js = fs.readFileSync('backend/services/ocr_service.js', 'utf8');
+let code = fs.readFileSync('backend/services/ocr_service.js', 'utf8');
 
-js = js.replace(/gemini-1\.5-flash/g, 'gemini-2.5-flash');
-js = js.replace(/gemini-1\.5-pro/g, 'gemini-2.5-pro');
+// Fix Gemini Timeout (60s -> 180s)
+code = code.replace(/setTimeout\(\(\) => controller\.abort\(\), 60000\)/g, 'setTimeout(() => controller.abort(), 180000)');
 
-// For Groq, the error said to refer to deprecations. I will just replace Groq models with valid ones if possible. But wait, I'll just change the default to gemini to avoid groq completely for now!
-js = js.replace(/let modelName = 'llama-3.2-90b-vision-preview';/g, "let modelName = 'gemini-2.5-flash';");
-js = js.replace(/forceEngine === 'groq'/g, "forceEngine === 'groq_disabled'"); // disable groq for now
+// Fix Groq Default Model
+code = code.replace(/modelName = 'qwen\/qwen3\.8-27b'/g, "modelName = 'llama-3.2-90b-vision-instruct'");
+code = code.replace(/modelName = 'llama-3\.2-90b-vision-preview'/g, "modelName = 'llama-3.2-90b-vision-instruct'");
 
-fs.writeFileSync('backend/services/ocr_service.js', js);
-console.log("Fixed models!");
+// Fix Groq Fallbacks
+const oldFallbacks = `const fallbackModels = ['qwen/qwen3.8-27b', 'llama-3.2-90b-vision-preview', 'llama-3.2-11b-vision-preview', 'qwen-vl-72b'];`;
+const newFallbacks = `const fallbackModels = ['llama-3.2-11b-vision-instruct', 'llama-3.2-90b-vision-instruct', 'llama-3.2-11b-vision-instruct', 'llama-3.2-11b-vision-instruct'];`;
+code = code.replace(oldFallbacks, newFallbacks);
+
+fs.writeFileSync('backend/services/ocr_service.js', code);
+console.log("MODELS AND TIMEOUT FIXED");
