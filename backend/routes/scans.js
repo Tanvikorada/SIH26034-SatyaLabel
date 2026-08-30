@@ -290,10 +290,14 @@ router.post('/', requireAuth, (req, res, next) => {
                 upsert: true
               });
     
-            let cUrl = f.path; // fallback
-            if (!uploadError && supabase.storage) {
+            let cUrl;
+            if (!uploadError && supabase && supabase.storage) {
               const { data } = supabase.storage.from('uploads').getPublicUrl(fileName);
               cUrl = data.publicUrl;
+            } else {
+              // HACKATHON FIX: If Supabase isn't configured, fall back to injecting a pure Base64 Data URI into the Postgres database.
+              // This guarantees the image permanently survives Render's ephemeral free-tier disk wipes!
+              cUrl = 'data:' + f.mimetype + ';base64,' + fileBuffer.toString('base64');
             }
             cloudUrls.push(cUrl);
           }
