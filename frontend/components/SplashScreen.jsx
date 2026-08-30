@@ -26,13 +26,13 @@ export default function SplashScreen() {
     // Start fade out after 2 seconds
     const timer1 = setTimeout(() => {
       setFade(true);
-    }, 2000);
+    }, 1000);
 
     // Remove from DOM after fade finishes
     const timer2 = setTimeout(() => {
       setShow(false);
       sessionStorage.setItem('splash_shown', 'true');
-    }, 2800);
+    }, 1500);
 
     return () => {
       clearTimeout(timer1);
@@ -44,7 +44,7 @@ export default function SplashScreen() {
 
   return (
     <div 
-      className={`fixed inset-0 z-[9999] bg-[#1E3A8A] flex flex-col items-center justify-center transition-opacity duration-700 ease-in-out ${fade ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}
+      className={`fixed inset-0 z-[9999] bg-[#1E3A8A] flex flex-col items-center justify-center transition-opacity duration-500 ease-in-out ${fade ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}
     >
       
       {/* Mathematically anchor the emblem to the exact center of the viewport to prevent Flexbox shifting */}
