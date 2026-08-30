@@ -271,6 +271,7 @@ async function runGroqVision(imagePaths, attempt = 1, modelName = 'llama-3.3-70b
 
   const SCHEMA_HINT = JSON.stringify({
   products: [{
+    ai_summary: "string (A strictly detailed 4-6 sentence executive summary. You MUST explicitly state exactly WHICH rules passed and exactly WHY any rules failed. Do not sugarcoat. Be precise about legal metrology compliance.)",
     raw_text_transcript: "string",
     product_name: "string",
     brand_name: "string",
@@ -282,23 +283,25 @@ async function runGroqVision(imagePaths, attempt = 1, modelName = 'llama-3.3-70b
     best_before: "string",
     manufacturer_name: "string",
     manufacturer_address: "string",
+    packer_name: "string",
+    packer_address: "string",
+    importer_name: "string",
+    importer_address: "string",
+    country_of_origin: "string",
     consumer_care_details: "string",
     batch_lot_number: "string",
     fssai_license: "string",
     ingredient_analysis: {
-      harmful_additives_found: ["string"],
-      health_risks: ["string"],
-      allergen_warnings: ["string"],
-      is_clean_label: "boolean"
-    },
-    country_of_origin: "string",
-    ingredients: "string",
-    veg_nonveg: "string"
+      harmful_additives_found: ["array of strings"],
+      health_risks: ["array of strings"],
+      allergens_detected: ["array of strings"],
+      ingredient_dictionary: [{ name: "string", description: "string (1-2 sentence detailed scientific explanation of this ingredient's purpose and safety)" }]
+    }
   }]
 }, null, 2);
 
-const STRUCTURED_PROMPT = `You are the core "AI Brain" of a Legal Metrology enforcement system.
-You are analyzing one or more images that represent different angles (front, back, sides) of a SINGLE consumer packaged good. Synthesize the text across all angles into ONE single product JSON output.
+const STRUCTURED_PROMPT = `You are an expert AI Food Inspector and Legal Metrology Compliance Auditor.
+Your task is to analyze this product packaging image and extract EXACT structured data.
 
 CRITICAL INSTRUCTIONS:
 - You must extract the exact data from the packaging.
@@ -367,6 +370,7 @@ ${SCHEMA_HINT}`;
 }
 
 const ProductSchema = z.object({
+  ai_summary: z.string().nullable().optional(),
   raw_text_transcript: z.string().nullable().optional(),
   reasoning_log: z.string().nullable().optional(),
   meta_image_quality: z.string().nullable().optional(),
@@ -388,8 +392,7 @@ const ProductSchema = z.object({
   mrp_includes_tax_statement: z.union([z.boolean(), z.string()]).nullable().optional(),
   mfg_date: z.string().nullable().optional(),
   ingredient_analysis: z.any().nullable().optional(),
-  consumer_care_details: z.string().nullable().optional(),
-}).passthrough();
+  consumer_care_details: z.string().nullable().optional(),}).passthrough();
 
 const AIResponseSchema = z.object({
   products: z.array(ProductSchema).min(1, "Must detect at least one product")
