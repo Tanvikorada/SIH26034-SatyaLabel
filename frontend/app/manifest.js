@@ -4,7 +4,7 @@ export default function manifest() {
     short_name: 'SatyaLabel',
     description: 'Legal Metrology AI Compliance Engine',
     start_url: '/dashboard',
-    display: 'standalone',
+    display: 'fullscreen',
     background_color: '#1E3A8A',
     theme_color: '#1E3A8A',
     icons: [
