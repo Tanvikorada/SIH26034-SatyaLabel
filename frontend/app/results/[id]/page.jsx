@@ -388,7 +388,7 @@ export default function ResultsPage({ params }) {
                 if (images.length === 0) return <div className="text-[14px] text-text-muted">No evidence attached.</div>;
                 return images.map((img, idx) => (
                   <div key={idx} className="w-full aspect-square flex items-center justify-center">
-                    <EvidenceImage src={img.startsWith('http') ? img : API.replace('/api/v1', '') + '/' + img} />
+                    <EvidenceImage src={img.startsWith('http') || img.startsWith('data:') ? img : API.replace('/api/v1', '') + '/' + img} />
                   </div>
                 ));
               })()}
