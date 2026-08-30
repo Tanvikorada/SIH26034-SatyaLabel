@@ -353,3 +353,12 @@ input, textarea, [contenteditable="true"], .allow-select {
   -webkit-user-select: text;
   user-select: text;
 }
+
+@layer utilities {
+  .pb-safe {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  .pt-safe {
+    padding-top: env(safe-area-inset-top);
+  }
+}
