@@ -144,6 +144,7 @@ async function runGeminiVision(imagePaths, attempt = 1, modelName = 'gemini-2.5-
 
   const SCHEMA_HINT = JSON.stringify({
   products: [{
+    ai_summary: "string (A 3-4 sentence detailed executive summary of the product's compliance state and overall health profile)",
     raw_text_transcript: "string",
     product_name: "string",
     brand_name: "string",
