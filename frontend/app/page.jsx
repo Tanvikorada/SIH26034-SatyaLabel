@@ -139,10 +139,7 @@ function HeroSeal() {
              src="/emblem-3d.jpg" 
              alt="3D State Emblem of India" 
              className="w-full h-full object-cover scale-110"
-             style={{
-               maskImage: 'radial-gradient(circle at center, black 40%, transparent 80%)',
-               WebkitMaskImage: 'radial-gradient(circle at center, black 50%, transparent 95%)'
-             }}
+             
            />
         </div>
 
