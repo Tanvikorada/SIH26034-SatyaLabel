@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
+import { triggerHaptic } from '@/utils/haptics';
 import { openDB } from 'idb';
 import NavBar from '@/components/NavBar';
 
@@ -37,6 +38,7 @@ export default function UploadPage() {
   };
 
   const handleFile = (e) => {
+    triggerHaptic('medium');
     const selected = e.target.files?.[0];
     if (selected && files.length < 3) {
       setFiles(prev => [...prev, selected]);
