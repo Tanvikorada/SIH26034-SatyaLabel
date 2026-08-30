@@ -128,13 +128,13 @@ async function preprocessImage(imagePath) {
  *
  * @param {string} imagePath
  * @param {number} [attempt=1]
- * @param {string} [modelName='gemini-2.5-flash']
+ * @param {string} [modelName='gemini-3.1-pro-preview']
  * @returns {{ text, structuredData, confidence, engine }}
  */
 // --- STEP 3: GROQ VISION FALLBACK ---
 
 
-async function runGeminiVision(imagePaths, attempt = 1, modelName = 'gemini-2.5-flash') {
+async function runGeminiVision(imagePaths, attempt = 1, modelName = 'gemini-3.1-pro-preview') {
   if (!config.gemini?.enabled || !config.gemini?.apiKey) {
     throw new Error('Gemini API key not configured.');
   }
@@ -234,7 +234,7 @@ ${SCHEMA_HINT}`;
 
   } catch (err) {
     if (attempt < 2) {
-      const nextModel = modelName === 'gemini-2.5-flash' ? 'gemini-2.5-pro' : 'gemini-2.5-flash';
+      const nextModel = modelName === 'gemini-3.1-pro-preview' ? 'gemini-3.1-pro-preview' : 'gemini-3.1-pro-preview';
       err.attemptHistory = (err.attemptHistory || '') + `[Attempt ${attempt} ${modelName}: ${err.message}] `;
         console.warn(`[OCR] Gemini failed with ${modelName} (${err.message}) - retrying with ${nextModel}...`);
       await new Promise(r => setTimeout(r, 2000));
@@ -253,7 +253,7 @@ ${SCHEMA_HINT}`;
   };
 }
 
-async function runGroqVision(imagePaths, attempt = 1, modelName = 'llama-3.2-90b-vision-instruct') {
+async function runGroqVision(imagePaths, attempt = 1, modelName = 'llama-3.2-90b-vision-preview') {
   if (!config.groq?.enabled || !config.groq?.apiKey) {
     throw new Error('Groq API key not configured.');
   }
@@ -338,7 +338,7 @@ ${SCHEMA_HINT}`;
 
   } catch (err) {
     if (attempt < 4) {
-      const fallbackModels = ['llama-3.2-11b-vision-instruct', 'llama-3.2-90b-vision-instruct', 'llama-3.2-11b-vision-instruct', 'llama-3.2-11b-vision-instruct'];
+      const fallbackModels = ['llama-3.2-11b-vision-preview', 'llama-3.2-90b-vision-preview', 'llama-3.2-11b-vision-preview', 'llama-3.2-11b-vision-preview'];
       const nextModel = fallbackModels[attempt];
       err.attemptHistory = (err.attemptHistory || '') + `[Attempt ${attempt} ${modelName}: ${err.message}] `;
         console.warn(`[OCR] Groq failed with ${modelName} (${err.message}) - retrying with ${nextModel}...`);
@@ -412,7 +412,7 @@ async function runOcrPipeline(imagePaths, metadata = {}) {
     if (config.gemini?.enabled && config.gemini?.apiKey) {
       console.log("[OCR] Attempting Gemini Vision...");
       try {
-        const geminiResult = await runGeminiVision(processedPaths, 1, 'gemini-2.5-flash');
+        const geminiResult = await runGeminiVision(processedPaths, 1, 'gemini-3.1-pro-preview');
         return {
           text: geminiResult.structuredData?.products?.[0]?.raw_text_transcript || geminiResult.text,
           engine: "gemini",
