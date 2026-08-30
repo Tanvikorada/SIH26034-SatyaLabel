@@ -144,7 +144,7 @@ async function runGeminiVision(imagePaths, attempt = 1, modelName = 'gemini-2.5-
 
   const SCHEMA_HINT = JSON.stringify({
   products: [{
-    ai_summary: "string (A 3-4 sentence detailed executive summary of the product's compliance state and overall health profile)",
+    ai_summary: "string (A strictly detailed 4-6 sentence executive summary. You MUST explicitly state exactly WHICH rules passed and exactly WHY any rules failed. Do not sugarcoat. Be precise about legal metrology compliance.)",
     raw_text_transcript: "string",
     product_name: "string",
     brand_name: "string",
@@ -170,9 +170,10 @@ async function runGeminiVision(imagePaths, attempt = 1, modelName = 'gemini-2.5-
     veg_nonveg: "string",
     ingredient_analysis: {
       is_clean_label: "boolean (true if no synthetic chemicals or artificial preservatives)",
-      harmful_additives_found: ["array of strings (e.g. E-numbers, INS codes, artificial colors)"],
-      health_risks: ["array of strings (e.g. 'High sodium may cause hypertension', 'Contains trans fats')"],
-      allergens_detected: ["array of strings (e.g. Milk, Peanuts, Soy)"]
+      harmful_additives_found: ["array of strings"],
+      health_risks: ["array of strings"],
+      allergens_detected: ["array of strings"],
+      ingredient_dictionary: [{ name: "string", description: "string (1-2 sentence detailed scientific explanation of this ingredient's purpose and safety)" }]
     }
   }]
 }, null, 2);
