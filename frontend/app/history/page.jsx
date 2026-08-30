@@ -2,6 +2,7 @@
 import { useEffect, useState } from 'react';
 import NavBar from '@/components/NavBar';
 import { useRouter } from 'next/navigation';
+import { toast } from 'sonner';
 
 export default function HistoryPage() {
   const [scans, setScans] = useState([]);
@@ -20,7 +21,7 @@ export default function HistoryPage() {
 
   // CSV Export Function
   const exportToCSV = () => {
-    if (scans.length === 0) return alert('No data to export');
+    if (scans.length === 0) return toast.error('No data to export');
     const headers = ['Scan ID', 'Product Name', 'Date', 'Overall Compliance'];
     const csvContent = [
       headers.join(','),
