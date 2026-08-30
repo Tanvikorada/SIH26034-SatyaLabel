@@ -700,12 +700,7 @@ function TechStack() {
 }
 
 export default function LandingPage() {
-  const heroStats = [
-    { label: 'Rules checked', value: '15+' },
-    { label: 'OCR confidence', value: '94.7%' },
-    { label: 'Review time', value: '< 10s' },
-    { label: 'Compliance score', value: '98%' },
-  ];
+  
 
   return (
     <div className="min-h-screen flex flex-col relative overflow-hidden"
@@ -767,15 +762,7 @@ export default function LandingPage() {
               <Link href="/dashboard" className="mello-btn-secondary !px-7 !py-3 !text-[15px] !rounded-lg">View Demo Flow</Link>
             </motion.div>
 
-            <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.9 }}
-              className="grid grid-cols-2 gap-3 w-full max-w-[420px]">
-              {heroStats.map((stat) => (
-                <div key={stat.label} className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)]/80 backdrop-blur-sm p-3 shadow-[0_10px_30px_rgba(0,0,0,0.04)]">
-                  <div className="text-[11px] uppercase tracking-[0.12em] text-[var(--color-text-muted)] mb-2">{stat.label}</div>
-                  <div className="text-[22px] font-medium tracking-tight text-[var(--color-text-primary)]">{stat.value}</div>
-                </div>
-              ))}
-            </motion.div>
+            
           </div>
 
           <motion.div className="flex items-center justify-center relative z-0"
