@@ -230,9 +230,9 @@ function PixelsToPenalty() {
             <div className="w-full max-w-[140px] font-mono text-[9px] text-[var(--color-primary)] bg-transparent p-3 border border-[var(--color-border)] rounded-lg shadow-inner">
                <motion.div key={`f2-${loop}`} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.6, duration: 0.1 }}>
                  {"{"}<br/>
-                 &nbsp;&nbsp;"mrp": "Rs. 250",<br/>
-                 &nbsp;&nbsp;"net_qty": "100g",<br/>
-                 &nbsp;&nbsp;"mfg_date": "08/2025"<br/>
+                 &nbsp;&nbsp;{'"mrp": "Rs. 250",'}<br/>
+                 &nbsp;&nbsp;{'"net_qty": "100g",'}<br/>
+                 &nbsp;&nbsp;{'"mfg_date": "08/2025"'}<br/>
                  {"}"}
                </motion.div>
             </div>
@@ -353,9 +353,9 @@ function OCRMicroApp() {
         )}
         {state === 'done' && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="h-full flex flex-col bg-[#0d1117] text-[#c9d1d9] rounded p-3 font-mono text-[10px] border border-[#30363d] overflow-hidden">
-             <div className="text-[#79c0ff]">"extracted_data": {"{"}</div>
-             <div className="pl-4"><span className="text-[#a5d6ff]">"mrp"</span>: <span className="text-[#a5d6ff]">"Rs 50"</span>,</div>
-             <div className="pl-4"><span className="text-[#a5d6ff]">"qty"</span>: <span className="text-[#a5d6ff]">"100g"</span></div>
+             <div className="text-[#79c0ff]">{"\"extracted_data\": {"}</div>
+             <div className="pl-4"><span className="text-[#a5d6ff]">{"\"mrp\""}</span>: <span className="text-[#a5d6ff]">{"\"Rs 50\""}</span>,</div>
+             <div className="pl-4"><span className="text-[#a5d6ff]">{"\"qty\""}</span>: <span className="text-[#a5d6ff]">{"\"100g\""}</span></div>
              <div className="text-[#79c0ff]">{"}"}</div>
              <div className="mt-auto text-[8px] text-[#8b949e]">✔ Confidence: 98.4%</div>
           </motion.div>
