@@ -7,7 +7,15 @@ import { Activity, CheckCircle, AlertTriangle, Clock, FileText, ArrowUpRight, Tr
 
 export default function Dashboard() {
   const [stats, setStats] = useState(null);
+  const [isMobile, setIsMobile] = useState(false);
   const router = useRouter();
+
+  useEffect(() => {
+    setIsMobile(window.innerWidth < 640);
+    const handleResize = () => setIsMobile(window.innerWidth < 640);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   useEffect(() => {
     if (!localStorage.getItem('token')) return router.push('/login');
@@ -92,14 +100,14 @@ export default function Dashboard() {
         </header>
 
         {/* KPI Cards Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
+        <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6 mb-10">
           {[
             { label: 'Total Inspections', value: stats.total_scans || 0, icon: <Activity size={20}/>, color: 'text-blue-600 dark:text-blue-400', bg: 'bg-white dark:bg-[#11131a]', border: 'border-blue-200 dark:border-blue-900/50' },
             { label: 'Verified Compliant', value: stats.compliant_count ?? stats.compliant ?? 0, icon: <CheckCircle size={20}/>, color: 'text-emerald-600 dark:text-emerald-400', bg: 'bg-white dark:bg-[#11131a]', border: 'border-emerald-200 dark:border-emerald-900/50' },
             { label: 'Violations Detected', value: stats.non_compliant_count ?? stats.violations ?? 0, icon: <AlertTriangle size={20}/>, color: 'text-red-600 dark:text-red-400', bg: 'bg-white dark:bg-[#11131a]', border: 'border-red-200 dark:border-red-900/50' },
             { label: 'Awaiting Review', value: stats.needs_review_count ?? stats.manual_review ?? 0, icon: <Clock size={20}/>, color: 'text-amber-600 dark:text-amber-400', bg: 'bg-white dark:bg-[#11131a]', border: 'border-amber-200 dark:border-amber-900/50' },
           ].map((card, i) => (
-            <div key={i} className={`p-6 rounded-xl border ${card.border} ${card.bg} shadow-sm hover:shadow-md transition-shadow relative overflow-hidden group`}>
+            <div key={i} className={`p-4 sm:p-6 rounded-xl border ${card.border} ${card.bg} shadow-sm hover:shadow-md transition-shadow relative overflow-hidden group`}>
               <div className="flex justify-between items-start mb-4">
                 <div className={`p-2.5 rounded-lg bg-slate-50 dark:bg-[#1c1f2b] ${card.color}`}>
                   {card.icon}
@@ -111,8 +119,8 @@ export default function Dashboard() {
                 )}
               </div>
               <div>
-                <h3 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white mb-1">{card.value.toLocaleString()}</h3>
-                <p className="text-sm font-medium text-slate-500 dark:text-slate-400">{card.label}</p>
+                <h3 className="text-xl sm:text-3xl font-bold tracking-tight text-slate-900 dark:text-white mb-1">{card.value.toLocaleString()}</h3>
+                <p className="text-[11px] sm:text-sm font-medium leading-tight text-slate-500 dark:text-slate-400">{card.label}</p>
               </div>
               <div className={`absolute bottom-0 left-0 w-full h-1 opacity-0 group-hover:opacity-100 transition-opacity ${card.color.split(' ')[0].replace('text-', 'bg-')} dark:${card.color.split(' ')[1]?.replace('text-', 'bg-') || ''}`} />
             </div>
@@ -136,20 +144,10 @@ export default function Dashboard() {
             
             <div className="h-[320px] w-full">
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={graphData} margin={{ top: 10, right: 10, left: -20, bottom: 20 }}>
+                <BarChart data={graphData} margin={{ top: 10, right: 10, left: isMobile ? -60 : -20, bottom: isMobile ? 10 : 20 }}>
                   <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="currentColor" className="text-slate-200 dark:text-slate-800" />
-                  <XAxis 
-                    dataKey="rule_id" 
-                    axisLine={false} 
-                    tickLine={false} 
-                    tick={{ fill: '#64748b', fontSize: 12, fontWeight: 500 }} 
-                    dy={16}
-                  />
-                  <YAxis 
-                    axisLine={false} 
-                    tickLine={false} 
-                    tick={{ fill: '#94a3b8', fontSize: 12 }} 
-                  />
+                  <XAxis dataKey="rule_id" axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: isMobile ? 9 : 12, fontWeight: 500 }} dy={isMobile ? 8 : 16} interval={isMobile ? "preserveStartEnd" : 0} />
+                  <YAxis axisLine={false} tickLine={false} tick={{ fill: '#94a3b8', fontSize: 12 }} width={isMobile ? 1 : 60} tickFormatter={(val) => isMobile ? '' : val} />
                   <Tooltip 
                     cursor={{ fill: 'rgba(30,58,138,0.04)' }} 
                     contentStyle={{ 
