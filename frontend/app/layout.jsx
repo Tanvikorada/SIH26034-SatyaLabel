@@ -27,15 +27,7 @@ export const metadata = {
 }
 
 export const viewport = {
-  viewportFit: 'cover',
   themeColor: '#1E3A8A',
-  width: 'device-width',
-  initialScale: 1,
-  maximumScale: 1,
-  userScalable: false,
-},
-    { media: '(prefers-color-scheme: dark)', color: '#090a0f' }
-  ],
   width: 'device-width',
   initialScale: 1,
   maximumScale: 1,
