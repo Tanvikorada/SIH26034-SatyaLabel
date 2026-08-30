@@ -775,7 +775,7 @@ function normalizeLegacyStatus(status) {
   const s = String(status).trim().toLowerCase();
   if (s === 'pass') return 'pass';
   if (s.includes('potential non-compliance') || s.includes('fail')) return 'fail';
-  if (s.includes('manual review') || s.includes('not verified') || s.includes('not applicable') || s.includes('review') || s.includes('estimated')) return 'estimated';
+  if (s.includes('manual review') || s.includes('not verified') || s.includes('not applicable') || s.includes('review') || s.includes('estimated')) return 'MANUAL REVIEW';
   if (s.includes('na')) return 'pass';
   return 'pass';
 }
@@ -783,7 +783,7 @@ function normalizeLegacyStatus(status) {
 function normalizeLegacyConfidence(confidence) {
   if (!confidence) return 'high';
   const c = String(confidence).trim().toLowerCase();
-  if (c === 'estimated') return 'estimated';
+  if (c === 'estimated') return 'MANUAL REVIEW';
   return 'high';
 }
 
@@ -934,11 +934,11 @@ function checkRule7_3_letterHeight(fields = {}) {
   const fontHeight = fields._fontHeightPixels;
   const dpi = fields._imageDPI;
   if (fontHeight === undefined || dpi === undefined || dpi === 0) {
-    return { rule_id: 'Rule 7(3)', rule_title: 'Letter Height', field: 'font_size', status: 'estimated', severity: 'low', detail: 'Estimated letter height is not confirmed because the image does not provide calibrated scale data. Physical verification is required.', confidence: 'estimated' };
+    return { rule_id: 'Rule 7(3)', rule_title: 'Letter Height', field: 'font_size', status: 'MANUAL REVIEW', severity: 'low', detail: 'Estimated letter height is not confirmed because the image does not provide calibrated scale data. Physical verification is required.', confidence: 'estimated' };
   }
   const heightMM = (Number(fontHeight) / Number(dpi)) * 25.4;
   if (heightMM < 1) {
-    return { rule_id: 'Rule 7(3)', rule_title: 'Letter Height', field: 'font_size', status: 'estimated', severity: 'medium', detail: `Estimated letter height is ${heightMM.toFixed(2)}mm, below the minimum 1.0mm requirement. Physical verification is required before enforcement.`, confidence: 'estimated' };
+    return { rule_id: 'Rule 7(3)', rule_title: 'Letter Height', field: 'font_size', status: 'MANUAL REVIEW', severity: 'medium', detail: `Estimated letter height is ${heightMM.toFixed(2)}mm, below the minimum 1.0mm requirement. Physical verification is required before enforcement.`, confidence: 'estimated' };
   }
   return { rule_id: 'Rule 7(3)', rule_title: 'Letter Height', field: 'font_size', status: 'pass', severity: 'low', detail: `Estimated letter height is ${heightMM.toFixed(2)}mm, which meets the minimum requirement.`, confidence: 'estimated' };
 }
@@ -954,7 +954,7 @@ function checkRule7_pdp(fields = {}) {
   if (fields._pdpConfirmed === true) {
     return { rule_id: 'Rule 7 (PDP)', rule_title: 'Placement on Principal Display Panel', field: 'layout', status: 'pass', severity: 'low', detail: 'Officer confirms mandatory declarations are placed on the principal display panel.', confidence: 'estimated' };
   }
-  return { rule_id: 'Rule 7 (PDP)', rule_title: 'Placement on Principal Display Panel', field: 'layout', status: 'estimated', severity: 'medium', detail: 'PDP placement requires manual verification; image alone cannot conclusively confirm compliance.', confidence: 'estimated' };
+  return { rule_id: 'Rule 7 (PDP)', rule_title: 'Placement on Principal Display Panel', field: 'layout', status: 'MANUAL REVIEW', severity: 'medium', detail: 'PDP placement requires manual verification; image alone cannot conclusively confirm compliance.', confidence: 'estimated' };
 }
 
 function checkContradictoryDeclarationsCompatibility(fields = {}) {
