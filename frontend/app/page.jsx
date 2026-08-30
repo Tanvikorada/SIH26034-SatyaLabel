@@ -131,12 +131,9 @@ function HeroSeal() {
       <div className="relative z-10 w-full aspect-square flex items-center justify-center transform-gpu transition-all duration-700 hover:scale-105 hover:rotate-y-6 hover:rotate-x-6"
            style={{ transformStyle: 'preserve-3d' }}>
         
-        {/* The generated 3D image with a radial mask to blend the square edges into the background */}
-        <div className="absolute inset-0 rounded-3xl overflow-hidden shadow-2xl border border-white/10 dark:border-white/5"
-             style={{
-               background: 'linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 100%)',
-             }}>
-           <Image unoptimized={true} src="/emblem-official-v2.jpg" alt="3D State Emblem of India" fill priority className="object-cover scale-110 shadow-2xl" sizes="(max-width: 768px) 100vw, 420px" />
+        {/* Transparent Float via mix-blend-mode */}
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+           <Image unoptimized={true} src="/emblem-cutout.jpg" alt="3D State Emblem of India" fill priority className="object-contain scale-[1.15] mix-blend-multiply dark:invert dark:mix-blend-screen" sizes="(max-width: 768px) 100vw, 420px" />
         </div>
 
         {/* Floating Verification Tag */}
