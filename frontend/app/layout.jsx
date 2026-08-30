@@ -36,7 +36,7 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en" suppressHydrationWarning>
       <head></head>
-      <body className={`${inter.variable} ${sourceSerif.variable} font-sans`}>
+      <body className={`${inter.variable} ${sourceSerif.variable} font-sans pb-24 md:pb-0`}>
         <ThemeColorMeta />
         <ThemeProvider
           attribute="class"
