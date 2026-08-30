@@ -133,7 +133,7 @@ function HeroSeal() {
         
         {/* Transparent Float via mix-blend-mode */}
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-           <Image unoptimized={true} src="/emblem-cutout.jpg" alt="3D State Emblem of India" fill priority className="object-contain scale-[1.15] mix-blend-multiply dark:invert dark:mix-blend-screen" sizes="(max-width: 768px) 100vw, 420px" />
+           <Image unoptimized={true} src="/emblem-transparent.png" alt="3D State Emblem of India" fill priority className="object-contain scale-[1.15]" sizes="(max-width: 768px) 100vw, 420px" />
         </div>
 
         {/* Floating Verification Tag */}
