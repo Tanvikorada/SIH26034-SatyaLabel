@@ -198,7 +198,7 @@ ${SCHEMA_HINT}`;
     };
 
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 60000);
+    const timeoutId = setTimeout(() => controller.abort(), 180000);
 
     const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${config.gemini.apiKey}`, {
       method: 'POST',
@@ -253,7 +253,7 @@ ${SCHEMA_HINT}`;
   };
 }
 
-async function runGroqVision(imagePaths, attempt = 1, modelName = 'qwen/qwen3.8-27b') {
+async function runGroqVision(imagePaths, attempt = 1, modelName = 'llama-3.2-90b-vision-instruct') {
   if (!config.groq?.enabled || !config.groq?.apiKey) {
     throw new Error('Groq API key not configured.');
   }
@@ -338,7 +338,7 @@ ${SCHEMA_HINT}`;
 
   } catch (err) {
     if (attempt < 4) {
-      const fallbackModels = ['qwen/qwen3.8-27b', 'llama-3.2-90b-vision-preview', 'llama-3.2-11b-vision-preview', 'qwen-vl-72b'];
+      const fallbackModels = ['llama-3.2-11b-vision-instruct', 'llama-3.2-90b-vision-instruct', 'llama-3.2-11b-vision-instruct', 'llama-3.2-11b-vision-instruct'];
       const nextModel = fallbackModels[attempt];
       err.attemptHistory = (err.attemptHistory || '') + `[Attempt ${attempt} ${modelName}: ${err.message}] `;
         console.warn(`[OCR] Groq failed with ${modelName} (${err.message}) - retrying with ${nextModel}...`);
