@@ -124,8 +124,7 @@ function HeroSeal() {
   return (
     <div className="relative w-[280px] sm:w-[360px] md:w-[420px] aspect-square flex items-center justify-center mx-auto mt-8 md:mt-0 perspective-1000">
       
-      {/* Outer ambient glow */}
-      <div className="absolute inset-0 bg-blue-500/20 dark:bg-blue-400/10 rounded-full blur-[80px] animate-pulse" style={{ animationDuration: '4s' }} />
+      
 
       {/* 3D Rendered Emblem Container */}
       <div className="relative z-10 w-full aspect-square flex items-center justify-center transform-gpu transition-all duration-700 hover:scale-105 hover:rotate-y-6 hover:rotate-x-6"
