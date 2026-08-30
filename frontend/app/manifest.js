@@ -9,7 +9,7 @@ export default function manifest() {
     theme_color: '#1E3A8A',
     icons: [
       {
-        src: '/emblem-transparent.png',
+        src: '/icon-with-text.png',
         sizes: '1024x1024',
         type: 'image/png',
         purpose: 'maskable any'
