@@ -6,7 +6,7 @@ Here is the exact status of the deployment automation.
 - [x] **Backend `.env.example`**: Generated with clear comments for all required variables (`DB_USER`, `DB_PASSWORD`, `DB_NAME`, `DB_PORT`, `DATABASE_URL`, `GEMINI_API_KEY`, `PORT`, `JWT_SECRET`, etc.).
 - [x] **Setup Scripts**: Created `setup.sh` (Mac/Linux) and `setup.ps1` (Windows) at the root to check dependencies (PostgreSQL, Tesseract), install npm packages, and output clear instructions.
 - [x] **Database Seed Script**: Verified `backend/scripts/seedDatabase.js` seeds 12+ products, scans, and violations. Confirmed it's wired in `package.json` as `npm run db:seed`.
-- [x] **Render config**: Verified `render.yaml` exists at `backend/render.yaml` with the `apt-get install -y tesseract-ocr` build command.
+- [x] **Render config**: Verified the root `render.yaml` is valid for Render, points at the backend Docker service, and keeps API keys out of source control.
 - [x] **Frontend API connection**: Verified `frontend/lib/api.js` correctly falls back to `http://localhost:5000/api/v1` locally but prioritizes `process.env.NEXT_PUBLIC_API_URL` when deployed. Generated `vercel.json`.
 - [x] **Rule Citation Verification**: Cross-checked `backend/rules_engine.js`.
 - [x] **GitHub Repo Creation**: Executed `gh repo create` to push the codebase to GitHub.
