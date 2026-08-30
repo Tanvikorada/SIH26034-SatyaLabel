@@ -714,7 +714,24 @@ export default function LandingPage() {
       <section className="pt-16 pb-8 px-6 md:px-12 max-w-[1200px] mx-auto w-full relative z-10 border-b border-[var(--color-border)]">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-16 items-center min-h-[58vh]">
           <div className="flex flex-col items-start relative z-10">
-            <motion.div initial={{ opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.45 }}
+            
+          {/* Government / Ministry Badge */}
+          <motion.div 
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+            className="flex flex-col items-center md:items-start gap-1 mb-8">
+            <div className="flex items-center gap-3 border-b-2 border-[#Eab308] pb-2">
+              <span className="text-[14px] md:text-[15px] font-bold tracking-wide" style={{ color: 'var(--color-text-primary)' }}>भारत सरकार</span>
+              <span className="w-1 h-1 rounded-full bg-text-muted" style={{ background: 'var(--color-text-muted)' }}></span>
+              <span className="text-[14px] md:text-[15px] font-bold tracking-wider" style={{ color: 'var(--color-text-primary)' }}>GOVERNMENT OF INDIA</span>
+            </div>
+            <p className="text-[12px] md:text-[13px] tracking-widest uppercase font-medium" style={{ color: 'var(--color-text-secondary)' }}>
+              Ministry of Consumer Affairs, Food & Public Distribution
+            </p>
+          </motion.div>
+
+          <motion.div initial={{ opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.45 }}
               className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-[12px] font-mono mb-8 border border-[var(--color-border)] shadow-[0_0_0_1px_rgba(255,255,255,0.02)]"
               style={{ background: 'color-mix(in srgb, var(--color-surface) 90%, transparent)', color: 'var(--color-text-muted)' }}>
               <span className="w-1.5 h-1.5 rounded-full" style={{ background: 'var(--color-pass)', animation: 'typewriter-blink 2s ease-in-out infinite' }} />
