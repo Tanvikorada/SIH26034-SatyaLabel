@@ -148,14 +148,14 @@ export default function UploadPage() {
     <div className="min-h-screen bg-background text-text-primary">
       <NavBar />
       <div className="max-w-[1000px] mx-auto px-6 py-12">
-        <h1 className="text-[32px] font-medium tracking-tight leading-[1.1] mb-2">Upload Scan</h1>
-        <p className="text-[15px] text-text-secondary mb-10">Submit physical or ecommerce labels for AI compliance checking.</p>
+        <h1 className="text-[32px] font-medium tracking-tight leading-[1.1] mb-2">Initialize Scan</h1>
+        <p className="text-[15px] text-text-secondary mb-10 flex items-center gap-3"><span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> OCR Pipeline Active. Awaiting payload.</p>
 
         <div className="grid grid-cols-1 md:grid-cols-5 gap-6">
           <form onSubmit={handleUpload} className="mello-card p-8 col-span-3 flex flex-col gap-6">
             <div className="flex flex-col gap-2">
-              <label className="text-[13px] font-medium text-text-primary">Product Image</label>
-              <div className="relative w-full min-h-[240px] p-4 border border-dashed border-border rounded-xl flex flex-col items-center justify-center bg-surface group hover:border-mist transition-colors">
+              <label className="text-[10px] font-mono tracking-[0.2em] uppercase text-text-primary">Product Image</label>
+              <div className="relative w-full min-h-[240px] p-4 border border-dashed border-border/50 glass hover:border-primary/50 rounded-xl flex flex-col items-center justify-center bg-surface group hover:border-mist transition-colors">
                 {previews.length > 0 ? (
                   <div className="w-full flex flex-col gap-4">
                     <div className="text-[13px] text-text-secondary text-center">
@@ -189,7 +189,7 @@ export default function UploadPage() {
                   </div>
                 ) : (
                   <div className="flex flex-col items-center gap-4 relative z-10 w-full py-8">
-                     <span className="text-[14px] text-text-secondary font-medium mb-2">Take photos of the front, side, and back of the label.</span>
+                     <span className="text-[11px] font-mono tracking-widest uppercase text-text-secondary mb-2">Capture label perspectives (Front/Back)</span>
                      <div className="flex gap-4 w-full justify-center px-4">
                        
                        <div className="relative overflow-hidden mello-btn-secondary !bg-surface !border-border !px-4 !py-3 flex flex-col items-center gap-2 hover:!border-primary cursor-pointer w-[140px] shadow-sm">
@@ -212,11 +212,11 @@ export default function UploadPage() {
 
             <div className="grid grid-cols-2 gap-4">
               <div className="flex flex-col gap-2">
-                <label className="text-[13px] font-medium text-text-primary">Product Name (Optional)</label>
+                <label className="text-[10px] font-mono tracking-[0.2em] uppercase text-text-primary">Product Name (Optional)</label>
                 <input type="text" className="mello-input" placeholder="e.g. Organic Honey" value={productName} onChange={e => setProductName(e.target.value)} />
               </div>
               <div className="flex flex-col gap-2">
-                <label className="text-[13px] font-medium text-text-primary">Source Type</label>
+                <label className="text-[10px] font-mono tracking-[0.2em] uppercase text-text-primary">Source Type</label>
                 <select className="mello-input appearance-none" value={sourceType} onChange={e => setSourceType(e.target.value)}>
                   <option value="physical_label">Physical Label (Package)</option>
                   <option value="ecommerce_listing">E-Commerce Listing</option>
@@ -234,7 +234,12 @@ export default function UploadPage() {
               <div className={`w-2 h-2 rounded-full ${loading ? 'bg-[#4ade80] animate-pulse' : 'bg-border'}`}></div>
               System Output
             </h3>
-            <div className="flex-1 font-mono text-[12px] leading-relaxed text-text-muted flex flex-col gap-2 overflow-y-auto bg-background rounded-lg p-4 border border-border">
+            <div className="flex-1 font-mono text-[12px] leading-relaxed text-text-muted flex flex-col gap-2 overflow-y-auto bg-[#0A0A0A] rounded-lg p-4 border border-[#222]">
+              <div className="flex gap-1.5 mb-2 border-b border-[#333] pb-2">
+                <div className="w-2.5 h-2.5 rounded-full bg-red-500/80"></div>
+                <div className="w-2.5 h-2.5 rounded-full bg-yellow-500/80"></div>
+                <div className="w-2.5 h-2.5 rounded-full bg-green-500/80"></div>
+              </div>
               {!loading && logs.length === 0 && <span>Awaiting input payload...</span>}
               {logs.map((log, i) => (
                 <span key={i} className="text-text-primary animate-in fade-in slide-in-from-bottom-2 duration-300">{log}</span>

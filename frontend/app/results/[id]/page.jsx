@@ -134,7 +134,7 @@ export default function ResultsPage({ params }) {
             <div>
               <div className="flex items-center gap-3 mb-3">
                 <span className="text-[12px] font-mono text-text-muted tracking-wider">ID: {report.id}</span>
-                <span className={`text-[11px] font-bold tracking-widest uppercase px-3 py-1 rounded-full ${badgeClass}`}>
+                <span className={`text-[10px] font-mono tracking-[0.2em] uppercase px-3 py-1 rounded-full ${badgeClass}`}>
                   {report.overallStatus || report.overall_compliance}
                 </span>
               </div>
@@ -147,8 +147,8 @@ export default function ResultsPage({ params }) {
             </div>
             
             <div className="flex flex-col items-end">
-              <div className="text-[12px] text-text-muted font-bold tracking-widest uppercase mb-1">AI Compliance Score</div>
-              <div className={`text-[48px] font-medium tracking-tighter leading-none ${scoreColor}`}>
+              <div className="text-[10px] text-text-muted font-mono tracking-[0.2em] uppercase mb-1">AI Compliance Score</div>
+              <div className={`text-[56px] font-medium tracking-tighter leading-none ${scoreColor} drop-shadow-sm`}>
                 {report.compliance_score || report.complianceScore}%
               </div>
             </div>
