@@ -166,7 +166,13 @@ async function runGeminiVision(imagePaths, attempt = 1, modelName = 'gemini-2.5-
     },
     country_of_origin: "string",
     ingredients: "string",
-    veg_nonveg: "string"
+    veg_nonveg: "string",
+    ingredient_analysis: {
+      is_clean_label: "boolean (true if no synthetic chemicals or artificial preservatives)",
+      harmful_additives_found: ["array of strings (e.g. E-numbers, INS codes, artificial colors)"],
+      health_risks: ["array of strings (e.g. 'High sodium may cause hypertension', 'Contains trans fats')"],
+      allergens_detected: ["array of strings (e.g. Milk, Peanuts, Soy)"]
+    }
   }]
 }, null, 2);
 
