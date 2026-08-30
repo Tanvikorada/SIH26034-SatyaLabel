@@ -121,7 +121,8 @@ function KineticText({ text, className }) {
 
 function HeroSeal() {
   return (
-    <style>{`
+    <>
+      <style>{`
         @keyframes scan {
           0% { top: -5%; opacity: 0; }
           10% { opacity: 1; }
@@ -180,6 +181,7 @@ function HeroSeal() {
         
       </div>
     </div>
+    </>
   );
 }
 
