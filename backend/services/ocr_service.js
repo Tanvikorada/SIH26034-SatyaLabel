@@ -412,7 +412,7 @@ async function runOcrPipeline(imagePaths, metadata = {}) {
     if (config.gemini?.enabled && config.gemini?.apiKey) {
       console.log("[OCR] Attempting Gemini Vision...");
       try {
-        const geminiResult = await runGeminiVision(processedPaths, attempt + 1, nextModel);
+        const geminiResult = await runGeminiVision(processedPaths, 1, 'gemini-1.5-pro');
         return {
           text: geminiResult.structuredData?.products?.[0]?.raw_text_transcript || geminiResult.text,
           engine: "gemini",
