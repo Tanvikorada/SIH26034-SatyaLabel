@@ -783,7 +783,7 @@ function normalizeLegacyStatus(status) {
 function normalizeLegacyConfidence(confidence) {
   if (!confidence) return 'high';
   const c = String(confidence).trim().toLowerCase();
-  if (c === 'estimated') return 'MANUAL REVIEW';
+  if (c === 'estimated') return 'estimated';
   return 'high';
 }
 
