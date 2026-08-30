@@ -155,7 +155,7 @@ export default function UploadPage() {
           <form onSubmit={handleUpload} className="mello-card p-4 md:p-8 col-span-3 flex flex-col gap-4 md:gap-6 h-full md:h-auto border-0 md:border md:shadow-sm bg-transparent md:bg-[var(--color-surface)]">
             <div className="flex flex-col gap-2">
               <label className="text-[10px] font-mono tracking-[0.2em] uppercase text-text-primary">Product Image</label>
-              <div className="relative w-full flex-1 md:min-h-[240px] p-4 border-2 border-dashed border-primary/30 md:border-border/50 bg-background/50 md:glass hover:border-primary/50 flex flex-col items-center justify-center rounded-2xl rounded-xl flex flex-col items-center justify-center bg-surface group hover:border-mist transition-colors">
+              <div className="relative w-full flex-1 min-h-[200px] border-none sm:border-2 sm:border-dashed sm:border-slate-300 sm:hover:border-primary bg-transparent sm:bg-slate-50 flex flex-col items-center justify-center rounded-2xl transition-colors">
                 {previews.length > 0 ? (
                   <div className="w-full flex flex-col gap-4">
                     <div className="text-[13px] text-text-secondary text-center">
@@ -189,7 +189,7 @@ export default function UploadPage() {
                   </div>
                 ) : (
                   <div className="flex flex-col items-center gap-4 relative z-10 w-full py-8">
-                     <span className="text-[11px] font-mono tracking-widest uppercase text-text-secondary mb-2">Capture label perspectives (Front/Back)</span>
+                     <span className="text-sm font-semibold text-slate-500 mb-4 text-center px-4">Capture product label clearly. Make sure all text is readable.</span>
                      <div className="flex gap-4 w-full justify-center px-4">
                        
                        <div className="relative overflow-hidden mello-btn-secondary !bg-surface !border-border !px-4 !py-3 flex flex-col items-center gap-2 hover:!border-primary cursor-pointer w-[140px] shadow-sm">
