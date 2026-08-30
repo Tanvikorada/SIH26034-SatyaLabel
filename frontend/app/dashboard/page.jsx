@@ -146,7 +146,15 @@ export default function Dashboard() {
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={graphData} margin={{ top: 10, right: 10, left: isMobile ? -60 : -20, bottom: isMobile ? 10 : 20 }}>
                   <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="currentColor" className="text-slate-200 dark:text-slate-800" />
-                  <XAxis dataKey="rule_id" axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: isMobile ? 9 : 12, fontWeight: 500 }} dy={isMobile ? 8 : 16} interval={isMobile ? "preserveStartEnd" : 0} />
+                  <XAxis 
+                    dataKey="rule_id" 
+                    axisLine={false} 
+                    tickLine={false} 
+                    tick={{ fill: '#64748b', fontSize: isMobile ? 9 : 11, fontWeight: 500 }} 
+                    dy={isMobile ? 8 : 12} 
+                    interval="preserveStartEnd" 
+                    tickFormatter={(val) => val.replace(/Rule /g, 'R')}
+                  />
                   <YAxis axisLine={false} tickLine={false} tick={{ fill: '#94a3b8', fontSize: 12 }} width={isMobile ? 1 : 60} tickFormatter={(val) => isMobile ? '' : val} />
                   <Tooltip 
                     cursor={{ fill: 'rgba(30,58,138,0.04)' }} 
@@ -164,7 +172,7 @@ export default function Dashboard() {
                   />
                   <Bar dataKey="count" radius={[6, 6, 0, 0]} barSize={40}>
                     {graphData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={index === 0 ? '#1E3A8A' : '#3B82F6'} className="dark:opacity-90 hover:opacity-80 transition-opacity" />
+                      <Cell key={`cell-${index}`} fill={index === 0 ? '#0f172a' : '#64748b'} className="dark:opacity-90 hover:opacity-80 transition-opacity" />
                     ))}
                   </Bar>
                 </BarChart>
