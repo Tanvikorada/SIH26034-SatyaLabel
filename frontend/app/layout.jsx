@@ -26,17 +26,7 @@ export const metadata = {
   },
 }
 
-export const viewport = {
-  themeColor: [
-    { media: '(prefers-color-scheme: light)', color: '#1E3A8A' },
-    { media: '(prefers-color-scheme: dark)', color: '#000000' }
-  ],
-  width: 'device-width',
-  initialScale: 1,
-  maximumScale: 1,
-  userScalable: false,
-  viewportFit: 'cover',
-};
+
 
 export default function RootLayout({ children }) {
   return (
@@ -64,6 +54,7 @@ export default function RootLayout({ children }) {
           {children}
           <BottomNav />
 
+        <ClientThemeSync />
         </ThemeProvider>
         <Toaster position="top-right" />
         <Script
