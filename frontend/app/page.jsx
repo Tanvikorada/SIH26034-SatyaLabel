@@ -136,7 +136,7 @@ function HeroSeal() {
              style={{
                background: 'linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 100%)',
              }}>
-           <Image unoptimized={true} src="/emblem-3d.jpg" alt="3D State Emblem of India" fill priority className="object-cover scale-110 shadow-2xl" sizes="(max-width: 768px) 100vw, 420px" />
+           <Image unoptimized={true} src="/emblem-official-v2.jpg" alt="3D State Emblem of India" fill priority className="object-cover scale-110 shadow-2xl" sizes="(max-width: 768px) 100vw, 420px" />
         </div>
 
         {/* Floating Verification Tag */}
