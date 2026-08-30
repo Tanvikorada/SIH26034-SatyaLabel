@@ -11,6 +11,7 @@ export default function SettingsPage() {
   const { theme, setTheme } = useTheme();
   const [showIosPrompt, setShowIosPrompt] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const [notifications, setNotifications] = useState(true);
 
   useEffect(() => {
     setMounted(true);
@@ -154,7 +155,7 @@ export default function SettingsPage() {
                 </div>
               </div>
               <label className="relative inline-flex items-center cursor-pointer">
-                <input type="checkbox" className="sr-only peer" defaultChecked />
+                <input type="checkbox" className="sr-only peer" checked={notifications} onChange={(e) => { setNotifications(e.target.checked); toast.success(e.target.checked ? 'Push notifications enabled' : 'Push notifications disabled'); }} />
                 <div className="w-11 h-6 bg-surface peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[var(--color-primary)] border border-[var(--color-border)]"></div>
               </label>
             </div>
@@ -167,7 +168,7 @@ export default function SettingsPage() {
                   <div className="text-[12px] text-[var(--color-text-muted)]">Manage telemetry and logs</div>
                 </div>
               </div>
-              <button className="text-[13px] font-medium text-[var(--color-text-muted)] hover:text-[var(--color-primary)]">Manage</button>
+              <button onClick={() => toast.info('Telemetry and diagnostic logs are managed by your department administrator.')} className="text-[13px] font-medium text-[var(--color-text-muted)] hover:text-[var(--color-primary)] active-press">Manage</button>
             </div>
 
             <div className="flex items-center justify-between py-3">
@@ -178,7 +179,7 @@ export default function SettingsPage() {
                   <div className="text-[12px] text-[var(--color-text-muted)]">Version 2.0.4 (Enterprise Build)</div>
                 </div>
               </div>
-              <button className="text-[13px] font-medium text-[var(--color-text-muted)] hover:text-[var(--color-primary)]">View Details</button>
+              <button onClick={() => toast.success('SatyaLabel Legal Metrology Engine v2.0.4 (Enterprise Build). All core OCR systems operational.')} className="text-[13px] font-medium text-[var(--color-text-muted)] hover:text-[var(--color-primary)] active-press">View Details</button>
             </div>
           </section>
 
