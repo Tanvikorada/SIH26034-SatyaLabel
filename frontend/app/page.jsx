@@ -121,43 +121,63 @@ function KineticText({ text, className }) {
 
 function HeroSeal() {
   return (
-    <div className="relative w-full max-w-[320px] aspect-square flex items-center justify-center group cursor-default mx-auto mt-12 md:mt-0">
+    <style>{`
+        @keyframes scan {
+          0% { top: -5%; opacity: 0; }
+          10% { opacity: 1; }
+          90% { opacity: 1; }
+          100% { top: 105%; opacity: 0; }
+        }
+      `}</style>
+      <div className="relative w-full max-w-[380px] aspect-square flex items-center justify-center mx-auto mt-12 md:mt-0 perspective-1000">
       
-      {/* Outer ambient glow */}
-      <div className="absolute inset-0 bg-blue-600/10 dark:bg-blue-500/5 rounded-full blur-[60px] group-hover:bg-blue-600/20 transition-all duration-700" />
-      
-      {/* Official Government Aesthetic Container */}
-      <div className="relative z-10 w-[260px] h-[260px] rounded-full bg-surface border-4 border-double border-[#000080] dark:border-[#1E3A8A] shadow-[0_10px_40px_-10px_rgba(0,0,128,0.2)] flex flex-col items-center justify-center overflow-hidden transition-transform duration-700 hover:scale-[1.03]">
-        
-        {/* Inner concentric ring */}
-        <div className="absolute inset-2 rounded-full border border-dashed border-[#000080]/30 dark:border-[#1E3A8A]/50" />
-        <div className="absolute inset-4 rounded-full border border-solid border-[#000080]/10 dark:border-[#1E3A8A]/20" />
-        
-        {/* Subtle radial backdrop */}
-        <div className="absolute inset-0 bg-gradient-to-b from-transparent to-[#000080]/5 dark:to-[#1E3A8A]/10" />
+      {/* Premium Ambient Orbs */}
+      <div className="absolute top-1/4 -right-4 w-48 h-48 bg-blue-500/10 rounded-full blur-[80px] animate-pulse" style={{ animationDuration: '4s' }} />
+      <div className="absolute bottom-1/4 -left-4 w-56 h-56 bg-indigo-500/10 rounded-full blur-[80px] animate-pulse" style={{ animationDuration: '6s' }} />
 
-        {/* Central State Emblem of India */}
-        <div className="relative z-20 flex flex-col items-center justify-center mt-4">
-          <img 
-            src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/55/Emblem_of_India.svg/240px-Emblem_of_India.svg.png" 
-            alt="State Emblem of India"
-            className="w-[85px] h-[auto] object-contain drop-shadow-md mb-2 brightness-75 dark:brightness-110 dark:invert transition-all duration-500"
-          />
-          <span className="font-bold text-[11px] tracking-[0.1em] text-[#000080] dark:text-[#60A5FA]">सत्यमेव जयते</span>
+      {/* Main Glass Floating Container */}
+      <div className="relative z-10 w-[280px] h-[340px] rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)]/40 backdrop-blur-xl shadow-2xl overflow-hidden flex flex-col items-center justify-start p-6 transform-gpu transition-all duration-700 hover:rotate-y-6 hover:rotate-x-6 hover:scale-105"
+           style={{ transformStyle: 'preserve-3d', boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.15)' }}>
+        
+        {/* Top Header - Official Title */}
+        <div className="w-full flex items-center justify-between border-b border-[var(--color-border)] pb-4 mb-6">
+          <div className="flex items-center gap-2">
+            <Scale size={16} className="text-blue-600 dark:text-blue-400" />
+            <span className="text-[10px] font-mono tracking-[0.2em] uppercase text-[var(--color-text-secondary)]">Legal Metrology</span>
+          </div>
+          <div className="flex gap-1.5">
+            <div className="w-2 h-2 rounded-full bg-red-500/80"></div>
+            <div className="w-2 h-2 rounded-full bg-yellow-500/80"></div>
+            <div className="w-2 h-2 rounded-full bg-green-500/80"></div>
+          </div>
         </div>
 
-        {/* Circular Text (SVG path for perfect text wrapping) */}
-        <div className="absolute inset-0 z-30 pointer-events-none animate-[spin_30s_linear_infinite]">
-          <svg viewBox="0 0 200 200" className="w-full h-full">
-            <path id="textPath" d="M 100, 100 m -85, 0 a 85,85 0 1,1 170,0 a 85,85 0 1,1 -170,0" fill="none" />
-            <text className="text-[12.5px] font-bold tracking-[0.2em] uppercase fill-[#000080] dark:fill-[#60A5FA]">
-              <textPath href="#textPath" startOffset="0%">
-                ★ DEPT. OF CONSUMER AFFAIRS ★ LEGAL METROLOGY DIVISION 
-              </textPath>
-            </text>
-          </svg>
+        {/* Abstract Product Label */}
+        <div className="relative w-full h-[180px] rounded-xl border border-[var(--color-border)] bg-background/50 overflow-hidden mb-4 shadow-inner">
+           {/* Skeleton Lines representing Label Text */}
+           <div className="absolute top-4 left-4 right-4 flex flex-col gap-3">
+             <div className="w-3/4 h-3 bg-[var(--color-border)] rounded-full"></div>
+             <div className="w-1/2 h-2 bg-[var(--color-border)]/60 rounded-full"></div>
+             <div className="w-full h-2 bg-[var(--color-border)]/40 rounded-full mt-4"></div>
+             <div className="w-5/6 h-2 bg-[var(--color-border)]/40 rounded-full"></div>
+           </div>
+           
+           {/* Packaged Goods Symbol */}
+           <div className="absolute bottom-4 right-4 w-12 h-12 border-2 border-[var(--color-border)] rounded-md flex items-center justify-center opacity-50">
+             <Layers size={20} className="text-[var(--color-text-muted)]" />
+           </div>
+
+           {/* Animated Scanning Laser */}
+           <div className="absolute left-0 right-0 h-1 bg-blue-500/60 shadow-[0_0_15px_rgba(59,130,246,0.6)] animate-[scan_3s_ease-in-out_infinite]" 
+                style={{ top: '0%' }} />
         </div>
 
+        {/* Official Verification Badge */}
+        <div className="w-full flex items-center justify-center gap-2 py-2 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400">
+           <CheckCircle2 size={14} />
+           <span className="text-[11px] font-bold tracking-widest uppercase">Dept. Verified</span>
+        </div>
+        
       </div>
     </div>
   );
