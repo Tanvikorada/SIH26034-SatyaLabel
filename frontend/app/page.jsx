@@ -1,5 +1,6 @@
 "use client";
 import Link from 'next/link';
+import Image from 'next/image';
 import { useRef, useEffect, useState, useCallback } from 'react';
 import { useTheme } from 'next-themes';
 import {
@@ -135,12 +136,7 @@ function HeroSeal() {
              style={{
                background: 'linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 100%)',
              }}>
-           <img 
-             src="/emblem-3d.jpg" 
-             alt="3D State Emblem of India" 
-             className="w-full h-full object-cover scale-110"
-             
-           />
+           <Image src="/emblem-3d.jpg" alt="3D State Emblem of India" fill priority className="object-cover scale-110 shadow-2xl" sizes="(max-width: 768px) 100vw, 420px" />
         </div>
 
         {/* Floating Verification Tag */}
