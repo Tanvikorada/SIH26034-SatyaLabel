@@ -44,13 +44,13 @@ export default function Dashboard() {
   }, [router]);
 
   const getBadgeClass = (s) => {
-    if (s === 'PASS') return 'bg-emerald-100 text-emerald-800 border-emerald-200';
-    if (s === 'MANUAL REVIEW') return 'bg-amber-100 text-amber-800 border-amber-200';
-    if (s === 'POTENTIAL NON-COMPLIANCE') return 'bg-red-100 text-red-800 border-red-200';
-    return 'bg-slate-100 text-slate-800 border-slate-200';
+    if (s === 'PASS') return 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800/50';
+    if (s === 'MANUAL REVIEW') return 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400 border-amber-200 dark:border-amber-800/50';
+    if (s === 'POTENTIAL NON-COMPLIANCE') return 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400 border-red-200 dark:border-red-800/50';
+    return 'bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-400 border-slate-200 dark:border-slate-700';
   };
 
-  if (!stats) return <div className="min-h-screen bg-white text-slate-900"><NavBar /><div className="p-10 flex items-center justify-center h-[60vh] text-slate-500 font-mono text-sm"><Activity className="animate-pulse mr-3" /> INITIALIZING DASHBOARD...</div></div>;
+  if (!stats) return <div className="min-h-screen bg-white dark:bg-[#090a0f] text-slate-900 dark:text-white"><NavBar /><div className="p-10 flex items-center justify-center h-[60vh] text-slate-500 font-mono text-sm"><Activity className="animate-pulse mr-3" /> INITIALIZING DASHBOARD...</div></div>;
 
   const compliancePct = stats.total_scans ? Math.round(((stats.compliant_count ?? stats.compliant ?? 0) / (stats.total_scans || 1)) * 100) : 0;
   
@@ -68,7 +68,7 @@ export default function Dashboard() {
   });
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900">
+    <div className="min-h-screen bg-slate-50 dark:bg-[#090a0f] text-slate-900 dark:text-slate-100">
       <NavBar />
       
       <main className="max-w-7xl mx-auto px-6 py-10">
@@ -76,13 +76,13 @@ export default function Dashboard() {
         <header className="mb-10 flex flex-col md:flex-row md:items-end justify-between gap-4">
           <div>
             <div className="flex items-center gap-3 mb-2">
-              <span className="inline-flex items-center justify-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-[#1E3A8A]/10 text-[#1E3A8A] border border-[#1E3A8A]/20">
-                <span className="w-1.5 h-1.5 rounded-full bg-[#1E3A8A] mr-1.5 animate-pulse" />
+              <span className="inline-flex items-center justify-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-[#1E3A8A]/10 text-[#1E3A8A] dark:bg-blue-900/30 dark:text-blue-400 border border-[#1E3A8A]/20 dark:border-blue-800/50">
+                <span className="w-1.5 h-1.5 rounded-full bg-[#1E3A8A] dark:bg-blue-400 mr-1.5 animate-pulse" />
                 Live Telemetry
               </span>
-              <span className="text-sm font-medium text-slate-500">Department of Consumer Affairs</span>
+              <span className="text-sm font-medium text-slate-500 dark:text-slate-400">Department of Consumer Affairs</span>
             </div>
-            <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-slate-900">Central Operations</h1>
+            <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-slate-900 dark:text-white">Central Operations</h1>
           </div>
           <div className="flex items-center gap-4">
             <button onClick={() => router.push('/upload')} className="bg-[#1E3A8A] hover:bg-[#16335C] text-white px-5 py-2.5 rounded-lg text-sm font-medium transition-colors shadow-sm flex items-center gap-2">
@@ -94,27 +94,27 @@ export default function Dashboard() {
         {/* KPI Cards Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
           {[
-            { label: 'Total Inspections', value: stats.total_scans || 0, icon: <Activity size={20}/>, color: 'text-blue-600', bg: 'bg-white', border: 'border-blue-200' },
-            { label: 'Verified Compliant', value: stats.compliant_count ?? stats.compliant ?? 0, icon: <CheckCircle size={20}/>, color: 'text-emerald-600', bg: 'bg-white', border: 'border-emerald-200' },
-            { label: 'Violations Detected', value: stats.non_compliant_count ?? stats.violations ?? 0, icon: <AlertTriangle size={20}/>, color: 'text-red-600', bg: 'bg-white', border: 'border-red-200' },
-            { label: 'Awaiting Review', value: stats.needs_review_count ?? stats.manual_review ?? 0, icon: <Clock size={20}/>, color: 'text-amber-600', bg: 'bg-white', border: 'border-amber-200' },
+            { label: 'Total Inspections', value: stats.total_scans || 0, icon: <Activity size={20}/>, color: 'text-blue-600 dark:text-blue-400', bg: 'bg-white dark:bg-[#11131a]', border: 'border-blue-200 dark:border-blue-900/50' },
+            { label: 'Verified Compliant', value: stats.compliant_count ?? stats.compliant ?? 0, icon: <CheckCircle size={20}/>, color: 'text-emerald-600 dark:text-emerald-400', bg: 'bg-white dark:bg-[#11131a]', border: 'border-emerald-200 dark:border-emerald-900/50' },
+            { label: 'Violations Detected', value: stats.non_compliant_count ?? stats.violations ?? 0, icon: <AlertTriangle size={20}/>, color: 'text-red-600 dark:text-red-400', bg: 'bg-white dark:bg-[#11131a]', border: 'border-red-200 dark:border-red-900/50' },
+            { label: 'Awaiting Review', value: stats.needs_review_count ?? stats.manual_review ?? 0, icon: <Clock size={20}/>, color: 'text-amber-600 dark:text-amber-400', bg: 'bg-white dark:bg-[#11131a]', border: 'border-amber-200 dark:border-amber-900/50' },
           ].map((card, i) => (
             <div key={i} className={`p-6 rounded-xl border ${card.border} ${card.bg} shadow-sm hover:shadow-md transition-shadow relative overflow-hidden group`}>
               <div className="flex justify-between items-start mb-4">
-                <div className={`p-2.5 rounded-lg bg-slate-50 ${card.color}`}>
+                <div className={`p-2.5 rounded-lg bg-slate-50 dark:bg-[#1c1f2b] ${card.color}`}>
                   {card.icon}
                 </div>
                 {i === 1 && (
-                   <span className="text-xs font-bold px-2 py-1 bg-emerald-50 text-emerald-600 rounded-md">
+                   <span className="text-xs font-bold px-2 py-1 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 rounded-md">
                      {compliancePct}% Rate
                    </span>
                 )}
               </div>
               <div>
-                <h3 className="text-3xl font-bold tracking-tight text-slate-900 mb-1">{card.value.toLocaleString()}</h3>
-                <p className="text-sm font-medium text-slate-500">{card.label}</p>
+                <h3 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white mb-1">{card.value.toLocaleString()}</h3>
+                <p className="text-sm font-medium text-slate-500 dark:text-slate-400">{card.label}</p>
               </div>
-              <div className={`absolute bottom-0 left-0 w-full h-1 opacity-0 group-hover:opacity-100 transition-opacity ${card.color.split(' ')[0].replace('text-', 'bg-')} `} />
+              <div className={`absolute bottom-0 left-0 w-full h-1 opacity-0 group-hover:opacity-100 transition-opacity ${card.color.split(' ')[0].replace('text-', 'bg-')} dark:${card.color.split(' ')[1]?.replace('text-', 'bg-') || ''}`} />
             </div>
           ))}
         </div>
@@ -123,21 +123,21 @@ export default function Dashboard() {
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
           
           {/* Analytics Chart */}
-          <div className="lg:col-span-3 bg-white rounded-xl border border-slate-200 shadow-sm p-6 lg:p-8">
+          <div className="lg:col-span-3 bg-white dark:bg-[#11131a] rounded-xl border border-slate-200 dark:border-slate-800/80 shadow-sm p-6 lg:p-8">
             <div className="flex items-center justify-between mb-8">
               <div>
-                <h2 className="text-lg font-bold text-slate-900 flex items-center gap-2">
-                  <TrendingUp size={18} className="text-[#1E3A8A]" />
+                <h2 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                  <TrendingUp size={18} className="text-[#1E3A8A] dark:text-blue-400" />
                   Primary Violation Vectors
                 </h2>
-                <p className="text-sm text-slate-500 mt-1">Volume of non-compliance events by specific metrology rules.</p>
+                <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">Volume of non-compliance events by specific metrology rules.</p>
               </div>
             </div>
             
             <div className="h-[320px] w-full">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={graphData} margin={{ top: 10, right: 10, left: -20, bottom: 20 }}>
-                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="currentColor" className="text-slate-200" />
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="currentColor" className="text-slate-200 dark:text-slate-800" />
                   <XAxis 
                     dataKey="rule_id" 
                     axisLine={false} 
@@ -166,7 +166,7 @@ export default function Dashboard() {
                   />
                   <Bar dataKey="count" radius={[6, 6, 0, 0]} barSize={40}>
                     {graphData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={index === 0 ? '#1E3A8A' : '#3B82F6'} className=" hover:opacity-80 transition-opacity" />
+                      <Cell key={`cell-${index}`} fill={index === 0 ? '#1E3A8A' : '#3B82F6'} className="dark:opacity-90 hover:opacity-80 transition-opacity" />
                     ))}
                   </Bar>
                 </BarChart>
@@ -175,10 +175,10 @@ export default function Dashboard() {
           </div>
 
           {/* Activity Feed */}
-          <div className="lg:col-span-2 bg-white rounded-xl border border-slate-200 shadow-sm p-6 lg:p-8 flex flex-col">
+          <div className="lg:col-span-2 bg-white dark:bg-[#11131a] rounded-xl border border-slate-200 dark:border-slate-800/80 shadow-sm p-6 lg:p-8 flex flex-col">
             <div className="flex items-center justify-between mb-6">
-              <h2 className="text-lg font-bold text-slate-900">Recent Log</h2>
-              <button onClick={() => router.push('/history')} className="text-sm font-medium text-[#1E3A8A] hover:underline flex items-center gap-1">
+              <h2 className="text-lg font-bold text-slate-900 dark:text-white">Recent Log</h2>
+              <button onClick={() => router.push('/history')} className="text-sm font-medium text-[#1E3A8A] dark:text-blue-400 hover:underline flex items-center gap-1">
                 View All <ArrowUpRight size={14} />
               </button>
             </div>
@@ -193,17 +193,17 @@ export default function Dashboard() {
                   <div 
                     key={i} 
                     onClick={() => router.push(`/results/${scan.id || 'mock'}`)}
-                    className="flex flex-col p-4 rounded-lg border border-slate-100 bg-slate-50/50 hover:bg-slate-100:bg-slate-800/50 hover:border-slate-200:border-slate-700 cursor-pointer transition-all"
+                    className="flex flex-col p-4 rounded-lg border border-slate-100 dark:border-slate-800/60 bg-slate-50/50 dark:bg-slate-900/20 hover:bg-slate-100 dark:hover:bg-slate-800/50 hover:border-slate-200 dark:hover:border-slate-700 cursor-pointer transition-all"
                   >
                     <div className="flex justify-between items-start mb-2">
-                      <span className="font-semibold text-slate-900 truncate pr-4 text-sm">{scan.product_name || 'Unidentified Package'}</span>
+                      <span className="font-semibold text-slate-900 dark:text-slate-100 truncate pr-4 text-sm">{scan.product_name || 'Unidentified Package'}</span>
                       <span className="text-xs font-mono text-slate-400 shrink-0">{timeStr}</span>
                     </div>
                     <div className="flex items-center justify-between">
                       <span className={`px-2.5 py-1 text-[10px] uppercase font-bold tracking-wider rounded-md border ${getBadgeClass(statusStr)}`}>
                         {statusStr}
                       </span>
-                      <span className="text-xs text-slate-400 group-hover:text-slate-600:text-slate-300">ID: {scan.id?.substring(0,6) || '---'}</span>
+                      <span className="text-xs text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-300">ID: {scan.id?.substring(0,6) || '---'}</span>
                     </div>
                   </div>
                 );

@@ -328,3 +328,7 @@
   .mello-table-mobile-card td { padding: 4px 0 !important; border: none !important; display: flex; flex-direction: column; gap: 2px; }
   .mello-table-mobile-card td::before { content: attr(data-label); font-size: 10px; font-family: monospace; letter-spacing: 0.1em; text-transform: uppercase; color: var(--color-text-muted); }
 }
+
+
+/* Force Tailwind v4 to use class-based dark mode for next-themes */
+@custom-variant dark (&:where(.dark, .dark *));
