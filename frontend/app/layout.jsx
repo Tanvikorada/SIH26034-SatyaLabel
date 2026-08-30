@@ -11,6 +11,15 @@ import SplashScreen from '../components/SplashScreen'
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' })
 const sourceSerif = Source_Serif_4({ subsets: ['latin'], weight: ['400'], variable: '--font-display' })
 
+
+export const viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+  viewportFit: 'cover',
+};
+
 export const metadata = {
   title: 'SatyaLabel',
   description: 'Legal Metrology Compliance Checker',

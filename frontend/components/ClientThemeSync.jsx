@@ -24,13 +24,7 @@ export default function ClientThemeSync() {
     }
     appleMeta.content = resolvedTheme === 'dark' ? 'black-translucent' : 'default';
 
-    let viewportMeta = document.querySelector('meta[name="viewport"]');
-    if (!viewportMeta) {
-      viewportMeta = document.createElement('meta');
-      viewportMeta.name = 'viewport';
-      document.head.appendChild(viewportMeta);
-    }
-    viewportMeta.content = 'width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0, viewport-fit=cover';
+    
 
     document.documentElement.style.backgroundColor = resolvedTheme === 'dark' ? '#000000' : '#ffffff';
     document.body.style.backgroundColor = resolvedTheme === 'dark' ? '#000000' : '#ffffff';
