@@ -27,5 +27,11 @@ jobs:
         node-version: ${{ matrix.node-version }}
         cache: 'npm'
     - run: npm ci
-    - run: npm run build --if-present
-    - run: npm test
+    - name: Install frontend dependencies
+      run: npm install --prefix frontend
+    - name: Install backend dependencies
+      run: npm install --prefix backend
+    - name: Build frontend
+      run: npm --prefix frontend run build
+    - name: Run backend tests
+      run: npm --prefix backend test -- --runInBand

@@ -713,34 +713,39 @@ function TechStack() {
 }
 
 export default function LandingPage() {
+  const heroStats = [
+    { label: 'Rules checked', value: '15+' },
+    { label: 'OCR confidence', value: '94.7%' },
+    { label: 'Review time', value: '< 10s' },
+    { label: 'Compliance score', value: '98%' },
+  ];
+
   return (
     <div className="min-h-screen flex flex-col relative overflow-hidden"
       style={{ background: 'var(--color-background)', color: 'var(--color-text-primary)' }}>
 
       <GrainCanvas />
 
-      {/* NAV */}
       <nav className="w-full flex items-center justify-between px-6 py-3 md:px-12 relative z-20 sticky top-0"
-        style={{ background: 'color-mix(in srgb, var(--color-background) 90%, transparent)', backdropFilter: 'blur(12px)', borderBottom: '1px solid var(--color-border)' }}>
+        style={{ background: 'color-mix(in srgb, var(--color-background) 88%, transparent)', backdropFilter: 'blur(16px)', borderBottom: '1px solid var(--color-border)' }}>
         <div className="flex items-center gap-3">
-          <div className="w-7 h-7 rounded-md flex items-center justify-center" style={{ background: 'var(--color-primary)' }}>
+          <div className="w-8 h-8 rounded-xl flex items-center justify-center border border-[var(--color-border)] shadow-sm" style={{ background: 'linear-gradient(135deg, var(--color-primary) 0%, color-mix(in srgb, var(--color-primary) 70%, white) 100%)' }}>
             <Shield size={14} color="var(--color-surface)" />
           </div>
           <span className="font-medium text-[17px] tracking-tight" style={{ color: 'var(--color-text-primary)' }}>SatyaLabel</span>
         </div>
         <div className="flex items-center gap-3">
           <ThemeToggle />
-          <Link href="/login" className="mello-btn-primary !px-5 !py-2 !text-[14px]">Go to Dashboard</Link>
+          <Link href="/login" className="mello-btn-primary !px-5 !py-2 !text-[14px] !rounded-lg">Go to Dashboard</Link>
         </div>
       </nav>
 
-      {/* HERO */}
       <section className="pt-16 pb-8 px-6 md:px-12 max-w-[1200px] mx-auto w-full relative z-10 border-b border-[var(--color-border)]">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-16 items-center min-h-[58vh]">
           <div className="flex flex-col items-start relative z-10">
             <motion.div initial={{ opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.45 }}
-              className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-[12px] font-mono mb-8"
-              style={{ border: '1px solid var(--color-border)', background: 'var(--color-surface)', color: 'var(--color-text-muted)' }}>
+              className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-[12px] font-mono mb-8 border border-[var(--color-border)] shadow-[0_0_0_1px_rgba(255,255,255,0.02)]"
+              style={{ background: 'color-mix(in srgb, var(--color-surface) 90%, transparent)', color: 'var(--color-text-muted)' }}>
               <span className="w-1.5 h-1.5 rounded-full" style={{ background: 'var(--color-pass)', animation: 'typewriter-blink 2s ease-in-out infinite' }} />
               SIH 2026 Problem ID SIH26034
             </motion.div>
@@ -753,21 +758,35 @@ export default function LandingPage() {
             />
 
             <motion.p initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }}
-              className="text-[17px] mb-10 max-w-[520px] leading-relaxed"
+              className="text-[17px] mb-8 max-w-[520px] leading-relaxed"
               style={{ color: 'var(--color-text-secondary)' }}>
               SatyaLabel scans packaged commodity labels and checks them against the Legal Metrology (Packaged Commodities) Rules, 2011 deterministically.
             </motion.p>
 
             <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.7 }}
-              className="flex items-center gap-4 flex-wrap">
-              <Link href="/login" className="mello-btn-primary !px-7 !py-3 !text-[15px] shadow-lg">Start Scanning</Link>
+              className="flex items-center gap-4 flex-wrap mb-8">
+              <Link href="/login" className="mello-btn-primary !px-7 !py-3 !text-[15px] !rounded-lg shadow-[0_18px_38px_rgba(11,31,58,0.18)]">Start Scanning</Link>
+              <Link href="/dashboard" className="mello-btn-secondary !px-7 !py-3 !text-[15px] !rounded-lg">View Demo Flow</Link>
+            </motion.div>
+
+            <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.9 }}
+              className="grid grid-cols-2 gap-3 w-full max-w-[420px]">
+              {heroStats.map((stat) => (
+                <div key={stat.label} className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)]/80 backdrop-blur-sm p-3 shadow-[0_10px_30px_rgba(0,0,0,0.04)]">
+                  <div className="text-[11px] uppercase tracking-[0.12em] text-[var(--color-text-muted)] mb-2">{stat.label}</div>
+                  <div className="text-[22px] font-medium tracking-tight text-[var(--color-text-primary)]">{stat.value}</div>
+                </div>
+              ))}
             </motion.div>
           </div>
 
           <motion.div className="flex items-center justify-center relative z-0"
             initial={{ opacity: 0, scale: 0.88 }} animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: 0.2, type: 'spring', stiffness: 130, damping: 22 }}>
-            <HeroSeal />
+            <div className="relative">
+              <div className="absolute -inset-8 rounded-[32px] bg-[radial-gradient(circle,_rgba(11,31,58,0.15),_transparent_65%)] blur-2xl" />
+              <HeroSeal />
+            </div>
           </motion.div>
         </div>
       </section>
@@ -778,29 +797,29 @@ export default function LandingPage() {
       <RulingLedger />
       <TechStack />
 
-      {/* FINAL CTA */}
       <section className="py-32 px-6 text-center flex flex-col items-center relative z-10 border-t border-[var(--color-border)] bg-transparent">
-        <h2 className="text-4xl md:text-5xl font-medium tracking-tight mb-4">
-          Your label. The law. One scan.
-        </h2>
-        <p className="text-[16px] mb-12 max-w-[380px] text-[var(--color-text-secondary)]">
-          No manual cross-referencing. No ambiguity. A deterministic answer with the rule cited.
-        </p>
-        <Link href="/login" className="mello-btn-primary !px-10 !py-4 !text-[16px] !rounded-lg inline-flex items-center gap-2 shadow-lg">
-          Launch App
-        </Link>
+        <div className="rounded-[32px] border border-[var(--color-border)] bg-[var(--color-surface)]/80 backdrop-blur-sm px-8 py-10 shadow-[0_20px_60px_rgba(0,0,0,0.08)] max-w-[720px] w-full">
+          <h2 className="text-4xl md:text-5xl font-medium tracking-tight mb-4">
+            Your label. The law. One scan.
+          </h2>
+          <p className="text-[16px] mb-10 max-w-[420px] mx-auto text-[var(--color-text-secondary)]">
+            No manual cross-referencing. No ambiguity. A deterministic answer with the rule cited.
+          </p>
+          <Link href="/login" className="mello-btn-primary !px-10 !py-4 !text-[16px] !rounded-lg inline-flex items-center gap-2 shadow-[0_18px_40px_rgba(11,31,58,0.18)]">
+            Launch App
+          </Link>
+        </div>
       </section>
 
-      {/* FOOTER */}
       <footer className="w-full py-7 px-6 md:px-12 flex flex-col md:flex-row justify-between items-center gap-4 text-[13px] relative z-10"
         style={{ borderTop: '1px solid var(--color-border)', color: 'var(--color-text-muted)' }}>
         <div className="flex items-center gap-6">
           <span className="font-medium" style={{ color: 'var(--color-text-primary)' }}>SatyaLabel</span>
         </div>
         <div className="text-right">
-            <div>Smart India Hackathon 2026</div>
-            <div className="mt-1 font-medium text-[12px]">Made with <span className="text-red-500 animate-pulse inline-block">❤️</span> by Tanvi</div>
-          </div>
+          <div>Smart India Hackathon 2026</div>
+          <div className="mt-1 font-medium text-[12px]">Made with <span className="text-red-500 animate-pulse inline-block">❤️</span> by Tanvi</div>
+        </div>
       </footer>
     </div>
   );

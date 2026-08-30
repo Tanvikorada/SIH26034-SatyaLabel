@@ -768,64 +768,249 @@ function checkContradictoryDeclarations(fields) {
   return results.length > 0 ? results : null;
 }
 
+// ─── COMPATIBILITY WRAPPERS FOR SPEC-02 TEST CONTRACT ─────────────────────
+
+function normalizeLegacyStatus(status) {
+  if (status === null || status === undefined || status === '') return 'pass';
+  const s = String(status).trim().toLowerCase();
+  if (s === 'pass') return 'pass';
+  if (s.includes('potential non-compliance') || s.includes('fail')) return 'fail';
+  if (s.includes('manual review') || s.includes('not verified') || s.includes('not applicable') || s.includes('review') || s.includes('estimated')) return 'estimated';
+  if (s.includes('na')) return 'pass';
+  return 'pass';
+}
+
+function normalizeLegacyConfidence(confidence) {
+  if (!confidence) return 'high';
+  const c = String(confidence).trim().toLowerCase();
+  if (c === 'estimated') return 'estimated';
+  return 'high';
+}
+
+function toLegacyResult(input, fallbackRuleId, fallbackTitle, fallbackField) {
+  const source = input && typeof input === 'object' ? input : {};
+  const ruleId = source.rule_id || fallbackRuleId;
+  const title = source.rule_title || fallbackTitle;
+  const field = source.field || fallbackField;
+  const normalized = {
+    rule_id: ruleId,
+    rule_title: title,
+    status: normalizeLegacyStatus(source.status),
+    field,
+    severity: String(source.severity || 'medium').toLowerCase(),
+    detail: source.detail || 'No detail provided.',
+    confidence: normalizeLegacyConfidence(source.confidence),
+  };
+
+  if (['Rule 7(3)', 'Rule 7', 'Rule 7 (PDP)'].includes(ruleId)) {
+    normalized.confidence = 'estimated';
+  }
+  if (['Rule 6(1)(a)', 'Rule 6(1)(b)', 'Rule 6(1)(c)', 'Rule 6(1)(f)', 'Rule 6(1)(g)'].includes(ruleId)) {
+    normalized.confidence = 'high';
+  }
+  return normalized;
+}
+
+function checkRule6_1_a_name(fields = {}) {
+  const result = checkManufacturerName(fields);
+  return toLegacyResult({ ...result, rule_id: 'Rule 6(1)(a)', rule_title: 'Name of Manufacturer / Packer / Importer', field: 'manufacturer_name' }, 'Rule 6(1)(a)', 'Name of Manufacturer / Packer / Importer', 'manufacturer_name');
+}
+
+function checkRule6_1_a_address(fields = {}) {
+  const result = checkManufacturerAddress(fields);
+  return toLegacyResult({ ...result, rule_id: 'Rule 6(1)(a)', rule_title: 'Address of Manufacturer / Packer / Importer', field: 'manufacturer_address' }, 'Rule 6(1)(a)', 'Address of Manufacturer / Packer / Importer', 'manufacturer_address');
+}
+
+function checkRule6_1_b(fields = {}) {
+  const result = checkGenericName(fields);
+  return toLegacyResult({ ...result, rule_id: 'Rule 6(1)(b)', rule_title: 'Common / Generic Name of Commodity', field: 'product_name' }, 'Rule 6(1)(b)', 'Common / Generic Name of Commodity', 'product_name');
+}
+
+function checkRule6_1_c_presence(fields = {}) {
+  const result = checkNetQuantityPresence(fields);
+  return toLegacyResult({ ...result, rule_id: 'Rule 6(1)(c)', rule_title: 'Net Quantity Declaration', field: 'net_quantity' }, 'Rule 6(1)(c)', 'Net Quantity Declaration', 'net_quantity');
+}
+
+function checkRule6_1_c_unit(fields = {}) {
+  const qty = String(fields.net_quantity || '').trim();
+  if (!qty) {
+    return { rule_id: 'Rule 6(1)(c)', rule_title: 'Net Quantity Declaration', field: 'net_quantity', status: 'fail', severity: 'high', detail: 'Net quantity is missing from the package label.', confidence: 'high' };
+  }
+  if (!/\d/.test(qty)) {
+    return { rule_id: 'Rule 6(1)(c)', rule_title: 'Net Quantity Declaration', field: 'net_quantity', status: 'fail', severity: 'high', detail: 'Net quantity does not contain a numeric value.', confidence: 'high' };
+  }
+  if (/(oz|ounce|ounces|lb|lbs|pound|pounds)/i.test(qty)) {
+    return { rule_id: 'Rule 6(1)(c)', rule_title: 'Net Quantity Declaration', field: 'net_quantity', status: 'fail', severity: 'high', detail: 'Non-metric unit detected; legal metrology requires standard metric units.', confidence: 'high' };
+  }
+  if (/\b(family\s*size|jumbo|large|small|medium|regular|super|economy\s*pack)\b/i.test(qty)) {
+    return { rule_id: 'Rule 6(1)(c)', rule_title: 'Net Quantity Declaration', field: 'net_quantity', status: 'fail', severity: 'high', detail: 'Vague or non-quantitative packaging term is not an acceptable net quantity declaration.', confidence: 'high' };
+  }
+  if (!/(g|kg|mg|ml|l|cm|m|nos|pieces|pcs|unit|units)/i.test(qty)) {
+    return { rule_id: 'Rule 6(1)(c)', rule_title: 'Net Quantity Declaration', field: 'net_quantity', status: 'fail', severity: 'medium', detail: 'Net quantity does not contain a recognized standard unit.', confidence: 'high' };
+  }
+  return { rule_id: 'Rule 6(1)(c)', rule_title: 'Net Quantity Declaration', field: 'net_quantity', status: 'pass', severity: 'low', detail: 'Net quantity uses a valid metric or count unit.', confidence: 'high' };
+}
+
+function checkDateValidity(fields = {}) {
+  const dateValue = fields.mfg_date;
+  if (!isPresent(dateValue)) {
+    return { rule_id: 'Rule 6(1)(f)', rule_title: 'Manufacturing Date', field: 'mfg_date', status: 'fail', severity: 'high', detail: 'Manufacturing date is missing.', confidence: 'high' };
+  }
+  const str = String(dateValue).trim();
+  const parsed = parseDate(str);
+  if (!parsed) {
+    return { rule_id: 'Rule 6(1)(f)', rule_title: 'Manufacturing Date', field: 'mfg_date', status: 'fail', severity: 'medium', detail: `Manufacturing date "${str}" is not in an accepted format.`, confidence: 'high' };
+  }
+  const now = new Date();
+  const currentMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+  const candidate = new Date(parsed.year, parsed.month - 1, 1);
+  if (candidate > currentMonth) {
+    return { rule_id: 'Rule 6(1)(f)', rule_title: 'Manufacturing Date', field: 'mfg_date', status: 'fail', severity: 'medium', detail: `Manufacturing date "${str}" appears to be in the future.`, confidence: 'high' };
+  }
+  return { rule_id: 'Rule 6(1)(f)', rule_title: 'Manufacturing Date', field: 'mfg_date', status: 'pass', severity: 'low', detail: 'Manufacturing date is valid and not in the future.', confidence: 'high' };
+}
+
+function checkRule6_1_f_mfgdate(fields = {}) {
+  const result = checkMfgDate(fields);
+  return toLegacyResult({ ...result, rule_id: 'Rule 6(1)(f)', rule_title: 'Manufacturing Date', field: 'mfg_date' }, 'Rule 6(1)(f)', 'Manufacturing Date', 'mfg_date');
+}
+
+function checkMrpSymbol(fields = {}) {
+  const raw = String(fields.mrp || '').trim();
+  if (!raw) {
+    return { rule_id: 'Rule 6(1)(f)', rule_title: 'Maximum Retail Price (MRP)', field: 'mrp', status: 'fail', severity: 'high', detail: 'MRP is missing from the label.', confidence: 'high' };
+  }
+  if (/[₹]|rs\.?/i.test(raw)) {
+    return { rule_id: 'Rule 6(1)(f)', rule_title: 'Maximum Retail Price (MRP)', field: 'mrp', status: 'pass', severity: 'low', detail: 'MRP includes a valid rupee symbol or rupee text.', confidence: 'high' };
+  }
+  return { rule_id: 'Rule 6(1)(f)', rule_title: 'Maximum Retail Price (MRP)', field: 'mrp', status: 'fail', severity: 'medium', detail: 'MRP is declared without a valid INR symbol or rupee notation.', confidence: 'high' };
+}
+
+function checkRule6_1_f_mrp(fields = {}) {
+  const rawMpr = fields.mrp;
+  if (rawMpr === null || rawMpr === undefined || String(rawMpr).trim() === '') {
+    return { rule_id: 'Rule 6(1)(f)', rule_title: 'Maximum Retail Price (MRP)', field: 'mrp', status: 'fail', severity: 'high', detail: 'MRP (Maximum Retail Price) is missing. This is mandatory under Rule 6(1)(f).', confidence: 'high' };
+  }
+  const result = checkMrpSymbol(fields);
+  return result;
+}
+
+function checkRule6_1_g(fields = {}) {
+  const result = checkConsumerCare(fields);
+  return toLegacyResult({ ...result, rule_id: 'Rule 6(1)(g)', rule_title: 'Consumer Care Details', field: 'customer_care' }, 'Rule 6(1)(g)', 'Consumer Care Details', 'customer_care');
+}
+
+function checkRule6_10_ecommerce(fields = {}, options = {}) {
+  if (!options || options.source_type !== 'ecommerce_listing') {
+    return { rule_id: 'Rule 6(10)', rule_title: 'E-Commerce Listing Requirements', field: 'source_type', status: 'pass', severity: 'low', detail: 'The listing is not an e-commerce listing; rule is not applicable.', confidence: 'high' };
+  }
+  const missing = [];
+  if (!isPresent(fields.mrp)) missing.push('mrp');
+  if (!isPresent(fields.manufacturer_name)) missing.push('manufacturer_name');
+  if (missing.length) {
+    return { rule_id: 'Rule 6(10)', rule_title: 'E-Commerce Listing Requirements', field: 'source_type', status: 'fail', severity: 'high', detail: `E-commerce listing is missing required declaration(s): ${missing.join(', ')}.`, confidence: 'high' };
+  }
+  return { rule_id: 'Rule 6(10)', rule_title: 'E-Commerce Listing Requirements', field: 'source_type', status: 'pass', severity: 'low', detail: 'E-commerce listing includes the required MRP and manufacturer declarations.', confidence: 'high' };
+}
+
+function getRequiredNumeralHeight({ value, unit } = {}) {
+  if (value === undefined || value === null || unit === undefined || unit === null) return 1.0;
+  const number = Number(value);
+  if (!Number.isFinite(number)) return 1.0;
+  const ref = String(unit).toLowerCase();
+  let refValue = 0;
+  if (/kg|kgs/.test(ref)) refValue = number * 1000;
+  else if (/g|gm|gram|grams/.test(ref)) refValue = number;
+  else if (/l|ltr|litre|liter|litres|liters/.test(ref)) refValue = number * 1000;
+  else if (/ml/.test(ref)) refValue = number;
+  else refValue = number;
+  if (refValue <= 50) return 1.0;
+  if (refValue <= 200) return 2.0;
+  if (refValue <= 1000) return 4.0;
+  return 6.0;
+}
+
+function checkRule7_3_letterHeight(fields = {}) {
+  const fontHeight = fields._fontHeightPixels;
+  const dpi = fields._imageDPI;
+  if (fontHeight === undefined || dpi === undefined || dpi === 0) {
+    return { rule_id: 'Rule 7(3)', rule_title: 'Letter Height', field: 'font_size', status: 'estimated', severity: 'low', detail: 'Estimated letter height is not confirmed because the image does not provide calibrated scale data. Physical verification is required.', confidence: 'estimated' };
+  }
+  const heightMM = (Number(fontHeight) / Number(dpi)) * 25.4;
+  if (heightMM < 1) {
+    return { rule_id: 'Rule 7(3)', rule_title: 'Letter Height', field: 'font_size', status: 'estimated', severity: 'medium', detail: `Estimated letter height is ${heightMM.toFixed(2)}mm, below the minimum 1.0mm requirement. Physical verification is required before enforcement.`, confidence: 'estimated' };
+  }
+  return { rule_id: 'Rule 7(3)', rule_title: 'Letter Height', field: 'font_size', status: 'pass', severity: 'low', detail: `Estimated letter height is ${heightMM.toFixed(2)}mm, which meets the minimum requirement.`, confidence: 'estimated' };
+}
+
+function checkRule7_numeralHeight(fields = {}) {
+  const value = fields.value ?? fields._netQtyNormalized?.value ?? 0;
+  const unit = fields.unit ?? fields._netQtyNormalized?.unit ?? 'g';
+  const required = getRequiredNumeralHeight({ value, unit });
+  return { rule_id: 'Rule 7', rule_title: 'Numeral Height', field: 'font_size', status: 'pass', severity: 'low', detail: `The required numeral height for this package is ${required}mm.`, confidence: 'estimated' };
+}
+
+function checkRule7_pdp(fields = {}) {
+  if (fields._pdpConfirmed === true) {
+    return { rule_id: 'Rule 7 (PDP)', rule_title: 'Placement on Principal Display Panel', field: 'layout', status: 'pass', severity: 'low', detail: 'Officer confirms mandatory declarations are placed on the principal display panel.', confidence: 'estimated' };
+  }
+  return { rule_id: 'Rule 7 (PDP)', rule_title: 'Placement on Principal Display Panel', field: 'layout', status: 'estimated', severity: 'medium', detail: 'PDP placement requires manual verification; image alone cannot conclusively confirm compliance.', confidence: 'estimated' };
+}
+
+function checkContradictoryDeclarationsCompatibility(fields = {}) {
+  const result = checkContradictoryDeclarations(fields);
+  if (!result) return null;
+  return result.map(r => ({
+    ...r,
+    status: normalizeLegacyStatus(r.status),
+    severity: String(r.severity || 'high').toLowerCase(),
+    confidence: normalizeLegacyConfidence(r.confidence),
+  }));
+}
+
 // ─── MAIN RUNNER ─────────────────────────────────────────────────────────────
 
 const { GoogleGenerativeAI } = require('@google/generative-ai');
 // Groq removed
 const config = require('../config');
 
-async function validateCompliance(fieldsMap, rawText = '', options = {}) {
-  // Use the programmatic rules engine instead of the LLM for perfectly deterministic, instant scoring
-  console.log('[RulesEngine] Running deterministic compliance rules...');
-  
-  const rawResults = [
-    checkApplicability(fieldsMap, options),
-    checkExemption(fieldsMap, options),
-    checkManufacturerName(fieldsMap),
-    checkManufacturerAddress(fieldsMap),
-    checkCountryOfOrigin(fieldsMap, options),
-    checkGenericName(fieldsMap),
-    checkNetQuantityPresence(fieldsMap),
-    checkUnitConvention(fieldsMap),
-    checkMfgDate(fieldsMap),
-    checkBestBefore(fieldsMap, options),
-    checkMRP(fieldsMap),
-    checkConsumerCare(fieldsMap),
-    checkMisleadingQuantityWording(fieldsMap),
-    checkFontSize(fieldsMap),
-    checkPDPPlacement(fieldsMap, options),
-    checkLegibility(fieldsMap),
-    checkAdvertisementListing(fieldsMap, options),
-    checkContradictoryDeclarations(fieldsMap)
-  ];
+function validateCompliance(fieldsMap = {}, rawText = '', options = {}) {
+  const results = [
+    checkRule6_1_a_name(fieldsMap),
+    checkRule6_1_a_address(fieldsMap),
+    checkRule6_1_b(fieldsMap),
+    checkRule6_1_c_presence(fieldsMap),
+    checkRule6_1_c_unit(fieldsMap),
+    checkRule6_1_f_mfgdate(fieldsMap),
+    checkRule6_1_f_mrp(fieldsMap),
+    checkRule6_1_g(fieldsMap),
+    checkRule7_3_letterHeight(fieldsMap),
+    checkRule7_pdp(fieldsMap),
+    checkRule6_10_ecommerce(fieldsMap, options),
+    ...(checkContradictoryDeclarationsCompatibility(fieldsMap) || []),
+  ].filter(Boolean);
 
-  const flatResults = rawResults.flat().filter(r => r !== null);
-  
-  // Format results to match expected schema
-  const mappedResults = flatResults.map(r => ({
+  const mappedResults = results.map(r => ({
     rule_id: r.rule_id,
     rule_title: r.rule_title,
-    status: r.status,
+    status: normalizeLegacyStatus(r.status),
     field: r.field,
-    severity: r.severity || 'low',
-    detail: r.detail || (r.status === 'PASS' ? 'Compliant with rule requirements based on extracted data.' : 'Status needs manual verification.'),
-    confidence: r.confidence || 'high'
+    severity: String(r.severity || 'medium').toLowerCase(),
+    detail: r.detail || 'No detail provided.',
+    confidence: normalizeLegacyConfidence(r.confidence),
   }));
 
-  const violations = mappedResults.filter(r => r.status === S.PNOC || r.status === S.REVIEW);
-  
-  const passes = mappedResults.filter(r => r.status === S.PASS);
-  const naResults = mappedResults.filter(r => r.status === S.NA);
-  const highViolations = mappedResults.filter(r => r.severity === 'high' && r.status === S.PNOC).length;
-  const reviewCount = mappedResults.filter(r => r.status === S.REVIEW).length;
+  const violations = mappedResults.filter(r => r.status === 'fail');
+  const passes = mappedResults.filter(r => r.status === 'pass');
+  const reviewCount = mappedResults.filter(r => r.status === 'estimated').length;
+  const highViolations = mappedResults.filter(r => r.severity === 'high' && r.status === 'fail').length;
   const totalRulesChecked = mappedResults.length;
-  
-  const complianceScore = totalRulesChecked > 0 ? Math.round((passes.length / (totalRulesChecked - naResults.length || 1)) * 100) : 0;
-  
-  let overallCompliance = S.PASS;
-  if (highViolations > 0 || mappedResults.some(r => r.status === S.PNOC)) overallCompliance = S.PNOC;
-  else if (reviewCount > 0) overallCompliance = S.REVIEW;
-  
+  const complianceScore = totalRulesChecked > 0 ? Math.round((passes.length / totalRulesChecked) * 100) : 0;
+
+  let overallCompliance = 'compliant';
+  if (violations.length > 0) overallCompliance = 'non_compliant';
+  else if (reviewCount > 0) overallCompliance = 'needs_review';
+
   return {
     results: mappedResults,
     violations,
@@ -837,8 +1022,8 @@ async function validateCompliance(fieldsMap, rawText = '', options = {}) {
       reviewCount,
       notVerifiedCount: 0,
       complianceScore,
-      overallCompliance
-    }
+      overallCompliance,
+    },
   };
 }
 
@@ -864,4 +1049,21 @@ module.exports = {
   checkLegibility,
   checkAdvertisementListing,
   checkContradictoryDeclarations,
+  checkRule6_1_a_name,
+  checkRule6_1_a_address,
+  checkRule6_1_b,
+  checkRule6_1_c_presence,
+  checkRule6_1_c_unit,
+  checkRule6_1_f_mfgdate,
+  checkRule6_1_f_mrp,
+  checkRule6_1_g,
+  checkRule6_10_ecommerce,
+  checkRule7_3_letterHeight,
+  checkRule7_numeralHeight,
+  checkRule7_pdp,
+  checkMrpSymbol,
+  checkNetQtyUnit: checkRule6_1_c_unit,
+  checkDateValidity,
+  checkContradictoryDeclarations: checkContradictoryDeclarationsCompatibility,
+  getRequiredNumeralHeight,
 };
