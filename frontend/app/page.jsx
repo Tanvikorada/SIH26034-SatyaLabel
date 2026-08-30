@@ -122,7 +122,7 @@ function KineticText({ text, className }) {
 
 function HeroSeal() {
   return (
-    <div className="relative w-full max-w-[420px] aspect-square flex items-center justify-center mx-auto mt-8 md:mt-0 perspective-1000">
+    <div className="relative w-[280px] sm:w-[360px] md:w-[420px] aspect-square flex items-center justify-center mx-auto mt-8 md:mt-0 perspective-1000">
       
       {/* Outer ambient glow */}
       <div className="absolute inset-0 bg-blue-500/20 dark:bg-blue-400/10 rounded-full blur-[80px] animate-pulse" style={{ animationDuration: '4s' }} />
