@@ -1,5 +1,6 @@
 import { Inter, Source_Serif_4 } from 'next/font/google'
 import './globals.css'
+import ClientThemeSync from '../components/ClientThemeSync'
 import { Toaster } from 'sonner'
 import Script from 'next/script'
 import { ThemeProvider } from 'next-themes'
