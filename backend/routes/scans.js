@@ -41,7 +41,7 @@ router.get('/debug-ocr', async (req, res) => {
 // Temporary debug route to list models
 router.get('/debug-models', async (req, res) => {
   try {
-    const response = await fetch("https://generativelanguage.googleapis.com/v1beta/models?key=" + process.env.GEMINI_API_KEY);
+    const response = await fetch(""https://api.groq.com/openai/v1/models", { headers: { "Authorization": "Bearer " + process.env.GROQ_API_KEY } });
     const data = await response.json();
     res.json(data);
   } catch (error) {
@@ -648,7 +648,7 @@ router.post('/:id/report', requireAuth, async (req, res) => {
 // Temporary debug route to list models
 router.get('/debug-models', async (req, res) => {
   try {
-    const response = await fetch("https://generativelanguage.googleapis.com/v1beta/models?key=" + process.env.GEMINI_API_KEY);
+    const response = await fetch(""https://api.groq.com/openai/v1/models", { headers: { "Authorization": "Bearer " + process.env.GROQ_API_KEY } });
     const data = await response.json();
     res.json(data);
   } catch (error) {
