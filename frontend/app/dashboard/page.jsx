@@ -143,43 +143,44 @@ export default function Dashboard() {
               </div>
             </div>
             
-            <div className="h-[320px] w-full">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={graphData} margin={{ top: 10, right: 10, left: isMobile ? -30 : -20, bottom: isMobile ? 25 : 20 }}>
-                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="currentColor" className="text-slate-200 dark:text-slate-800" />
-                  <XAxis 
-                    dataKey="rule_id" 
-                    axisLine={false} 
-                    tickLine={false} 
-                    tick={{ fill: '#64748b', fontSize: isMobile ? 9 : 11, fontWeight: 500 }} 
-                    dy={isMobile ? 12 : 12} 
-                    interval="preserveStartEnd" 
-                    tickFormatter={(val) => val.replace(/Rule /g, 'R')}
-                  />
-                  <YAxis axisLine={false} tickLine={false} tick={{ fill: '#94a3b8', fontSize: 12 }} width={isMobile ? 1 : 60} tickFormatter={(val) => isMobile ? '' : val} />
-                  <Tooltip 
-                    cursor={{ fill: 'rgba(30,58,138,0.04)' }} 
-                    contentStyle={{ 
-                      backgroundColor: 'rgba(255,255,255,0.95)', 
-                      backdropFilter: 'blur(8px)',
-                      border: '1px solid #e2e8f0', 
-                      borderRadius: '8px', 
-                      color: '#0f172a',
-                      boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)',
-                      fontWeight: 600,
-                      fontSize: '14px'
-                    }} 
-                    itemStyle={{ color: '#1E3A8A' }}
-                  />
-                  <Bar dataKey="count" radius={[6, 6, 0, 0]} barSize={40}>
-                    {graphData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={index === 0 ? '#0f172a' : '#64748b'} className="dark:opacity-90 hover:opacity-80 transition-opacity" />
-                    ))}
-                  </Bar>
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-          </div>
+            <div className="h-[320px] w-full overflow-x-auto hide-scrollbar">
+              <div className="min-w-[500px] h-full pr-4">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={graphData} margin={{ top: 10, right: 10, left: -20, bottom: 20 }}>
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" className="dark:stroke-slate-800" />
+                    <XAxis 
+                      dataKey="rule_id" 
+                      axisLine={false} 
+                      tickLine={false} 
+                      tick={{ fill: '#64748b', fontSize: 11, fontWeight: 500 }} 
+                      dy={12} 
+                      interval={0} 
+                      tickFormatter={(val) => val.replace(/Rule /g, 'R')}
+                    />
+                    <YAxis axisLine={false} tickLine={false} tick={{ fill: '#94a3b8', fontSize: 12 }} width={40} />
+                    <Tooltip 
+                      cursor={{ fill: 'rgba(30,58,138,0.04)' }} 
+                      contentStyle={{ 
+                        backgroundColor: 'rgba(255,255,255,0.95)', 
+                        backdropFilter: 'blur(8px)',
+                        border: '1px solid #e2e8f0', 
+                        borderRadius: '8px', 
+                        color: '#0f172a',
+                        boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)',
+                        fontWeight: 600,
+                        fontSize: '14px'
+                      }} 
+                      itemStyle={{ color: '#1E3A8A' }}
+                    />
+                    <Bar dataKey="count" radius={[6, 6, 0, 0]} barSize={40}>
+                      {graphData.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={index === 0 ? '#1E3A8A' : '#94a3b8'} className="dark:opacity-90 hover:opacity-80 transition-opacity" />
+                      ))}
+                    </Bar>
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </div>          </div>
 
           {/* Activity Feed */}
           <div className="lg:col-span-2 bg-white dark:bg-[#11131a] rounded-xl border border-slate-200 dark:border-slate-800/80 shadow-sm p-6 lg:p-8 flex flex-col">

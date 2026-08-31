@@ -1,32 +1,63 @@
 const fs = require('fs');
 let code = fs.readFileSync('components/SplashScreen.jsx', 'utf8');
 
-const target = `<div className="relative w-28 h-28 sm:w-32 sm:h-32 mb-6">
-          <Image unoptimized={true} src="/emblem-transparent.png" alt="State Emblem of India" fill priority className="object-contain" sizes="(max-width: 768px) 112px, 128px" />
-        </div>`;
-const newText = `<div className="relative w-28 h-28 sm:w-32 sm:h-32 mb-8">
-          <Image unoptimized={true} src="/emblem-transparent.png" alt="State Emblem of India" fill priority className="object-contain drop-shadow-xl" sizes="(max-width: 768px) 112px, 128px" />
-        </div>
-        
-        <div className="flex flex-col items-center animate-fade-in" style={{ animationDelay: '0.2s' }}>
-          <h1 className="text-3xl font-bold tracking-tight text-white mb-2" style={{ fontFamily: 'var(--font-outfit)' }}>
-            SatyaLabel
-          </h1>
-          <p className="text-[13px] tracking-widest text-white/70 uppercase font-medium mb-6">
-            Legal Metrology
-          </p>
-          
-          <div className="flex items-center gap-1.5">
-            <div className="w-2 h-2 rounded-full bg-white/80 animate-bounce" style={{ animationDelay: '0s' }}></div>
-            <div className="w-2 h-2 rounded-full bg-white/80 animate-bounce" style={{ animationDelay: '0.15s' }}></div>
-            <div className="w-2 h-2 rounded-full bg-white/80 animate-bounce" style={{ animationDelay: '0.3s' }}></div>
-          </div>
-        </div>`;
+const newSplash = `"use client";
+import { useEffect, useState } from 'react';
+import { usePathname } from 'next/navigation';
 
-if (code.includes(target)) {
-  code = code.replace(target, newText);
-  fs.writeFileSync('components/SplashScreen.jsx', code);
-  console.log("RESTORED SPLASH SCREEN TEXT AND DOTS");
-} else {
-  console.log("TARGET NOT FOUND");
-}
+export default function SplashScreen() {
+  const [show, setShow] = useState(true);
+  const [fade, setFade] = useState(false);
+  const pathname = usePathname();
+
+  useEffect(() => {
+    if (sessionStorage.getItem('splash_shown')) {
+      setShow(false);
+      return;
+    }
+
+    const isMobile = window.innerWidth < 768;
+    if (pathname !== '/' && pathname !== '/dashboard' && !isMobile) {
+      setShow(false);
+      return;
+    }
+
+    const timer1 = setTimeout(() => {
+      setFade(true);
+    }, 1500);
+
+    const timer2 = setTimeout(() => {
+      setShow(false);
+      sessionStorage.setItem('splash_shown', 'true');
+    }, 2000);
+
+    return () => {
+      clearTimeout(timer1);
+      clearTimeout(timer2);
+    };
+  }, [pathname]);
+
+  if (!show) return null;
+
+  return (
+    <div 
+      className={\`fixed inset-0 z-[9999] bg-[#1E3A8A] flex flex-col items-center justify-center transition-opacity duration-500 ease-in-out \${fade ? 'opacity-0 pointer-events-none' : 'opacity-100'}\`}
+    >
+      <div className="flex flex-col items-center justify-center -mt-10">
+        <img 
+          src="/icon-with-text.png" 
+          alt="SatyaLabel Logo" 
+          className="w-48 h-auto object-contain z-10"
+        />
+        <div className="flex items-center gap-2 mt-8 opacity-0 animate-[fadeIn_1s_ease-in-out_0.2s_forwards]">
+          <div className="w-2.5 h-2.5 rounded-full bg-white/80 animate-bounce" style={{ animationDelay: '0s' }}></div>
+          <div className="w-2.5 h-2.5 rounded-full bg-white/80 animate-bounce" style={{ animationDelay: '0.15s' }}></div>
+          <div className="w-2.5 h-2.5 rounded-full bg-white/80 animate-bounce" style={{ animationDelay: '0.3s' }}></div>
+        </div>
+      </div>
+    </div>
+  );
+}`;
+
+fs.writeFileSync('components/SplashScreen.jsx', newSplash);
+console.log("SPLASH FIXED");
