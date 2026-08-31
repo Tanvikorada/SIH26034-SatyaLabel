@@ -1,9 +1,8 @@
 const fs = require('fs');
 let code = fs.readFileSync('components/BottomNav.jsx', 'utf8');
 
-code = code.replace('bg-white border-t border-slate-200', 'bg-[var(--color-surface)] border-t border-[var(--color-border)]');
-code = code.replace(/text-slate-400/g, 'text-[var(--color-text-muted)]');
-code = code.replace(/border-4 border-white/g, 'border-4 border-[var(--color-background)]');
-
+// The BottomNav background is bg-[var(--color-surface)].
+// Let's make it explicitly bg-white dark:bg-[#090a0f] and perfectly opaque
+code = code.replace('bg-[var(--color-surface)]', 'bg-white dark:bg-[#090a0f]');
 fs.writeFileSync('components/BottomNav.jsx', code);
-console.log("BOTTOM NAV UPDATED FOR DARK MODE");
+console.log("BOTTOMNAV FIXED");
