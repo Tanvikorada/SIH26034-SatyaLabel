@@ -119,7 +119,7 @@ export default function ResultsPage({ params }) {
     csvRows.push("--- RULE VIOLATIONS ---");
     csvRows.push("Rule ID,Status,Severity,Details");
     for (const v of violations) {
-      if(v.status !== 'PASS' && v.status !== 'NOT APPLICABLE') {
+      if(String(v.status).toUpperCase() !== 'PASS' && String(v.status).toUpperCase() !== 'NOT APPLICABLE') {
         csvRows.push(`"${v.rule_id}","${v.status}","${v.severity || 'high'}","${String(v.detail_text || v.detail || '').replace(/"/g, '""')}"`);
       }
     }
@@ -230,7 +230,7 @@ export default function ResultsPage({ params }) {
                 Violations & Warnings
               </h4>
               <div className="space-y-4">
-                {(report.violations || []).filter(v => v.status !== 'PASS' && v.status !== 'NOT APPLICABLE').map((v, i) => (
+                {(report.violations || []).filter(v => String(v.status).toUpperCase() !== 'PASS' && String(v.status).toUpperCase() !== 'NOT APPLICABLE').map((v, i) => (
                   <div key={'fail-'+i} className="glass rounded-[12px] md:rounded-[16px] p-4 md:p-6 border-l-4 border-l-red-500">
                     <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-3">
                       <div className="flex items-center gap-3">
@@ -244,7 +244,7 @@ export default function ResultsPage({ params }) {
                     </p>
                   </div>
                 ))}
-                {(report.violations || []).filter(v => v.status !== 'PASS' && v.status !== 'NOT APPLICABLE').length === 0 && (
+                {(report.violations || []).filter(v => String(v.status).toUpperCase() !== 'PASS' && String(v.status).toUpperCase() !== 'NOT APPLICABLE').length === 0 && (
                   <div className="text-[14px] text-text-muted italic px-2">No violations found. Product is fully compliant.</div>
                 )}
               </div>
@@ -257,7 +257,7 @@ export default function ResultsPage({ params }) {
                 Compliant Checks
               </h4>
               <div className="space-y-3">
-                {(report.violations || []).filter(v => v.status === 'PASS' || v.status === 'NOT APPLICABLE').map((v, i) => (
+                {(report.violations || []).filter(v => String(v.status).toUpperCase() === 'PASS' || String(v.status).toUpperCase() === 'NOT APPLICABLE').map((v, i) => (
                   <div key={'pass-'+i} className="glass rounded-[12px] p-3 border-l-2 border-l-green-500 opacity-70 hover:opacity-100 transition-opacity">
                     <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                       <div className="flex items-center gap-3">
