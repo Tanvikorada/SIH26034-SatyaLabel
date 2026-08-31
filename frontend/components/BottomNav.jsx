@@ -39,12 +39,11 @@ export default function BottomNav() {
           <span className="text-[10px] font-semibold tracking-wide text-[#1E3A8A] mt-8">Scan</span>
         </Link>
         
-        {role === 'admin' && (
+        
           <Link onClick={() => triggerHaptic('light')} href="/rules" className="flex flex-col items-center justify-center w-full h-full gap-1 active:scale-95 transition-transform">
             <ShieldAlert size={20} className={pathname.includes('/rules') ? 'text-[#1E3A8A]' : 'text-[var(--color-text-muted)]'} />
             <span className={`text-[10px] font-semibold tracking-wide ${pathname.includes('/rules') ? 'text-[#1E3A8A]' : 'text-[var(--color-text-muted)]'}`}>Rules</span>
           </Link>
-        )}
         
         <Link onClick={() => triggerHaptic('light')} href="/settings" className="flex flex-col items-center justify-center w-full h-full gap-1 active:scale-95 transition-transform">
           <Settings size={20} className={pathname.includes('/settings') ? 'text-[#1E3A8A]' : 'text-[var(--color-text-muted)]'} />
