@@ -42,7 +42,7 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en" suppressHydrationWarning>
       <head></head>
-      <body className={`${inter.variable} ${sourceSerif.variable} font-sans pb-24 md:pb-0`}>
+      <body className={`${inter.variable} ${sourceSerif.variable} font-sans pb-24 md:pb-0 overflow-x-hidden w-full`}>
         <SplashScreen />
 <ThemeColorMeta />
         <ThemeProvider

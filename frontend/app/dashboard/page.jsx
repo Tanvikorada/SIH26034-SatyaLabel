@@ -132,7 +132,7 @@ export default function Dashboard() {
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
           
           {/* Analytics Chart */}
-          <div className="lg:col-span-3 bg-white dark:bg-[#11131a] rounded-xl border border-slate-200 dark:border-slate-800/80 shadow-sm p-6 lg:p-8">
+          <div className="lg:col-span-3 bg-white dark:bg-[#11131a] rounded-xl border border-slate-200 dark:border-slate-800/80 shadow-sm p-4 md:p-6 lg:p-8 min-w-0 overflow-hidden">
             <div className="flex items-center justify-between mb-8">
               <div>
                 <h2 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">

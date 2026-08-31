@@ -23,16 +23,16 @@ export default function SplashScreen() {
       return;
     }
 
-    // Start fade out after 2 seconds
+    // Start fade out after 500ms
     const timer1 = setTimeout(() => {
       setFade(true);
-    }, 1000);
+    }, 500);
 
     // Remove from DOM after fade finishes
     const timer2 = setTimeout(() => {
       setShow(false);
       sessionStorage.setItem('splash_shown', 'true');
-    }, 1500);
+    }, 1000);
 
     return () => {
       clearTimeout(timer1);
@@ -46,33 +46,12 @@ export default function SplashScreen() {
     <div 
       className={`fixed inset-0 z-[9999] bg-[#1E3A8A] flex flex-col items-center justify-center transition-opacity duration-500 ease-in-out ${fade ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}
     >
-      
-      {/* Mathematically anchor the emblem to the exact center of the viewport to prevent Flexbox shifting */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
-        {/* Glowing aura slowly fading in behind the static emblem */}
-        <div className="absolute inset-0 bg-white/10 blur-[60px] rounded-full scale-[2.0] animate-pulse"></div>
-        
+      <div className="flex flex-col items-center justify-center">
         <img 
-          src="/emblem-transparent.png" 
-          alt="Ashoka Lions" 
-          className="w-32 h-32 sm:w-40 sm:h-40 object-contain z-10 drop-shadow-2xl"
+          src="/icon-with-text.png" 
+          alt="SatyaLabel Logo" 
+          className="w-48 h-auto object-contain z-10"
         />
-      </div>
-
-      {/* Text and Dots positioned absolutely BELOW the center so they don't push the emblem upwards */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 translate-y-[80px] sm:translate-y-[100px] flex flex-col items-center animate-fade-in-up z-20 w-full" style={{ animationDelay: '0.3s', animationFillMode: 'both' }}>
-        <h1 className="text-3xl font-bold tracking-tight text-white mb-2" style={{ fontFamily: 'var(--font-outfit)' }}>
-          SatyaLabel
-        </h1>
-        <p className="text-[13px] tracking-widest text-white/70 uppercase font-medium mb-6">
-          Legal Metrology
-        </p>
-        
-        <div className="flex items-center gap-2">
-          <div className="w-2.5 h-2.5 rounded-full bg-white/80 animate-bounce" style={{ animationDelay: '0s' }}></div>
-          <div className="w-2.5 h-2.5 rounded-full bg-white/80 animate-bounce" style={{ animationDelay: '0.15s' }}></div>
-          <div className="w-2.5 h-2.5 rounded-full bg-white/80 animate-bounce" style={{ animationDelay: '0.3s' }}></div>
-        </div>
       </div>
     </div>
   );
