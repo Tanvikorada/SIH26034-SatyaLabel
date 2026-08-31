@@ -147,34 +147,39 @@ export default function ResultsPage({ params }) {
       
       <main className="max-w-[1000px] mx-auto px-4 md:px-6 mt-4 md:mt-8">
         {/* HERO SECTION */}
-        <div className="glass rounded-[20px] md:rounded-[24px] p-5 md:p-8 mb-6 md:mb-8 relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-64 h-64 bg-accent/5 rounded-full blur-[80px] -mr-32 -mt-32"></div>
-          
-          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 md:gap-6 relative z-10">
-            <div>
-              <div className="flex items-center gap-3 mb-3">
-                <span className="text-[12px] font-mono text-text-muted tracking-wider">ID: {report.id}</span>
-                <span className={`text-[10px] font-mono tracking-[0.2em] uppercase px-3 py-1 rounded-full ${badgeClass}`}>
-                  {report.overallStatus || report.overall_compliance}
-                </span>
-              </div>
-              <h1 className="text-[24px] md:text-[40px] font-medium tracking-tight mb-1 text-text-primary">
-                {report.product?.product_name || fields.product_name || 'Unknown Product'}
-              </h1>
-              <p className="text-text-secondary text-[16px]">
-                {report.product?.brand_name || fields.brand_name || 'Brand Unspecified'}
-              </p>
+          <div className="glass rounded-[20px] md:rounded-[24px] p-4 md:p-8 mb-6 md:mb-8 relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-64 h-64 bg-accent/5 rounded-full blur-[80px] -mr-32 -mt-32"></div>
+            
+            {/* Top row: Badge and ID */}
+            <div className="flex flex-wrap items-center gap-2 mb-3 relative z-10">
+              <span className={`text-[10px] font-mono tracking-[0.1em] uppercase px-3 py-1 rounded-full ${badgeClass}`}>
+                {report.overallStatus || report.overall_compliance}
+              </span>
+              <span className="text-[10px] font-mono text-text-muted tracking-wider truncate max-w-[150px] md:max-w-xs">
+                ID: {report.id}
+              </span>
             </div>
             
-            <div className="flex flex-col items-end">
-              <div className="text-[10px] text-text-muted font-mono tracking-[0.2em] uppercase mb-1">AI Compliance Score</div>
-              <div className={`text-[40px] md:text-[56px] font-medium tracking-tighter leading-none ${scoreColor} drop-shadow-sm`}>
-                {report.compliance_score || report.complianceScore}%
+            {/* Main Content: Name/Brand (Left) & Score (Right) */}
+            <div className="flex flex-row justify-between items-center gap-4 relative z-10">
+              <div className="flex-1 min-w-0">
+                <h1 className="text-[20px] md:text-[40px] font-bold tracking-tight mb-1 text-text-primary leading-tight line-clamp-3">
+                  {report.product?.product_name || fields.product_name || 'Unknown Product'}
+                </h1>
+                <p className="text-text-secondary text-[13px] md:text-[16px] truncate">
+                  {report.product?.brand_name || fields.brand_name || 'Brand Unspecified'}
+                </p>
+              </div>
+              
+              <div className="flex flex-col items-center justify-center shrink-0 bg-background/50 border border-border/50 rounded-xl p-3 shadow-sm min-w-[80px] md:min-w-[120px]">
+                <div className="text-[8px] md:text-[10px] text-text-muted font-bold tracking-[0.1em] uppercase mb-1">Score</div>
+                <div className={`text-[32px] md:text-[56px] font-black tracking-tighter leading-none ${scoreColor}`}>
+                  {report.compliance_score || report.complianceScore}%
+                </div>
               </div>
             </div>
-          </div>
-          
-          {/* Action Buttons */}
+            
+            {/* Action Buttons */}
           <div className="flex flex-wrap gap-3 mt-8 pt-6 border-t border-border/50">
             <button onClick={downloadPDF} className="mello-btn-primary flex items-center gap-2">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
