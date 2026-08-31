@@ -145,12 +145,12 @@ export default function ResultsPage({ params }) {
     <div className="min-h-screen bg-background text-text-primary pb-24">
       <NavBar />
       
-      <main className="max-w-[1000px] mx-auto px-6 mt-8">
+      <main className="max-w-[1000px] mx-auto px-4 md:px-6 mt-4 md:mt-8">
         {/* HERO SECTION */}
-        <div className="glass rounded-[24px] p-8 mb-8 relative overflow-hidden">
+        <div className="glass rounded-[20px] md:rounded-[24px] p-5 md:p-8 mb-6 md:mb-8 relative overflow-hidden">
           <div className="absolute top-0 right-0 w-64 h-64 bg-accent/5 rounded-full blur-[80px] -mr-32 -mt-32"></div>
           
-          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 relative z-10">
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 md:gap-6 relative z-10">
             <div>
               <div className="flex items-center gap-3 mb-3">
                 <span className="text-[12px] font-mono text-text-muted tracking-wider">ID: {report.id}</span>
@@ -158,7 +158,7 @@ export default function ResultsPage({ params }) {
                   {report.overallStatus || report.overall_compliance}
                 </span>
               </div>
-              <h1 className="text-[32px] md:text-[40px] font-medium tracking-tight mb-1 text-text-primary">
+              <h1 className="text-[24px] md:text-[40px] font-medium tracking-tight mb-1 text-text-primary">
                 {report.product?.product_name || fields.product_name || 'Unknown Product'}
               </h1>
               <p className="text-text-secondary text-[16px]">
@@ -168,7 +168,7 @@ export default function ResultsPage({ params }) {
             
             <div className="flex flex-col items-end">
               <div className="text-[10px] text-text-muted font-mono tracking-[0.2em] uppercase mb-1">AI Compliance Score</div>
-              <div className={`text-[56px] font-medium tracking-tighter leading-none ${scoreColor} drop-shadow-sm`}>
+              <div className={`text-[40px] md:text-[56px] font-medium tracking-tighter leading-none ${scoreColor} drop-shadow-sm`}>
                 {report.compliance_score || report.complianceScore}%
               </div>
             </div>
@@ -215,7 +215,7 @@ export default function ResultsPage({ params }) {
             
             {/* AI EXECUTIVE SUMMARY */}
             {fields.ai_summary && (
-              <div className="glass rounded-[20px] p-6 border-l-4 border-l-accent mb-8">
+              <div className="glass rounded-[16px] md:rounded-[20px] p-5 md:p-6 border-l-4 border-l-accent mb-6 md:mb-8">
                 <h4 className="text-[10px] font-mono tracking-[0.2em] uppercase text-text-primary mb-3">AI Executive Summary</h4>
                 <p className="text-[14px] text-text-secondary leading-relaxed">{fields.ai_summary}</p>
               </div>
@@ -231,7 +231,7 @@ export default function ResultsPage({ params }) {
               </h4>
               <div className="space-y-4">
                 {(report.violations || []).filter(v => v.status !== 'PASS' && v.status !== 'NOT APPLICABLE').map((v, i) => (
-                  <div key={'fail-'+i} className="glass rounded-[16px] p-6 border-l-4 border-l-red-500">
+                  <div key={'fail-'+i} className="glass rounded-[12px] md:rounded-[16px] p-4 md:p-6 border-l-4 border-l-red-500">
                     <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-3">
                       <div className="flex items-center gap-3">
                         <span className="px-2 py-1 bg-red-500/10 text-red-500 font-mono text-[11px] font-bold rounded">{v.rule_id}</span>
@@ -287,7 +287,7 @@ export default function ResultsPage({ params }) {
                   No ingredient data was detected on this packaging.
                 </div>
               ) : (
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
                   
                   {/* Left Column: Health Profile (2/3 width on desktop) */}
                   <div className="lg:col-span-2 space-y-6">
@@ -399,7 +399,7 @@ export default function ResultsPage({ params }) {
         {activeTab === 'evidence' && (
           <div className="animate-fade-in space-y-6">
             <h3 className="text-[18px] font-medium text-text-primary">Attached Photographic Evidence</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
               {(() => {
                 let images = [];
                 try {
@@ -424,10 +424,10 @@ export default function ResultsPage({ params }) {
         {/* TAB 3: DATA EXTRACTED */}
         {activeTab === 'data' && (
           <div className="animate-fade-in">
-             <h3 className="text-[18px] font-medium text-text-primary mb-6">AI Structured Extraction</h3>
+             <h3 className="text-[16px] md:text-[18px] font-medium text-text-primary mb-4 md:mb-6">AI Structured Extraction</h3>
              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {Object.entries(fields).filter(([k, v]) => !k.startsWith('_') && v).map(([k, v]) => (
-                  <div key={k} className="glass rounded-[16px] p-5">
+                  <div key={k} className="glass rounded-[12px] md:rounded-[16px] p-4 md:p-5">
                     <div className="text-[10px] font-bold tracking-widest uppercase text-text-muted mb-2">
                       {k.replace(/_/g, ' ')}
                     </div>

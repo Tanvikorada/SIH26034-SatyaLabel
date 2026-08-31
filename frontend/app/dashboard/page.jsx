@@ -120,7 +120,7 @@ export default function Dashboard() {
               </div>
               <div>
                 <h3 className="text-xl sm:text-3xl font-bold tracking-tight text-slate-900 dark:text-white mb-1">{card.value.toLocaleString()}</h3>
-                <p className="text-[11px] sm:text-sm font-medium leading-tight text-slate-500 dark:text-slate-400">{card.label}</p>
+                <p className="text-[11px] sm:text-xs font-medium leading-tight text-slate-500 dark:text-slate-400">{card.label}</p>
               </div>
               <div className={`absolute bottom-0 left-0 w-full h-1 opacity-0 group-hover:opacity-100 transition-opacity ${card.color.split(' ')[0].replace('text-', 'bg-')} dark:${card.color.split(' ')[1]?.replace('text-', 'bg-') || ''}`} />
             </div>
@@ -144,14 +144,14 @@ export default function Dashboard() {
             
             <div className="h-[320px] w-full">
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={graphData} margin={{ top: 10, right: 10, left: isMobile ? -60 : -20, bottom: isMobile ? 10 : 20 }}>
+                <BarChart data={graphData} margin={{ top: 10, right: 10, left: isMobile ? -30 : -20, bottom: isMobile ? 25 : 20 }}>
                   <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="currentColor" className="text-slate-200 dark:text-slate-800" />
                   <XAxis 
                     dataKey="rule_id" 
                     axisLine={false} 
                     tickLine={false} 
                     tick={{ fill: '#64748b', fontSize: isMobile ? 9 : 11, fontWeight: 500 }} 
-                    dy={isMobile ? 8 : 12} 
+                    dy={isMobile ? 12 : 12} 
                     interval="preserveStartEnd" 
                     tickFormatter={(val) => val.replace(/Rule /g, 'R')}
                   />

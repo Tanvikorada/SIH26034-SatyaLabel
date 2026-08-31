@@ -85,8 +85,8 @@ export default function RulesPage() {
   return (
     <div className="min-h-screen bg-background text-text-primary">
       <NavBar />
-      <div className="max-w-[1000px] mx-auto px-6 py-12">
-        <h1 className="text-[32px] font-medium tracking-tight leading-[1.1] mb-2">Rules Config</h1>
+      <div className="max-w-[1000px] mx-auto px-4 md:px-6 py-6 md:py-12">
+        <h1 className="text-[24px] md:text-[32px] font-medium tracking-tight leading-[1.1] mb-2">Rules Config</h1>
         <p className="text-[15px] text-text-secondary mb-10">Manage Legal Metrology Act constraints.</p>
 
         <div className="flex gap-4 border-b border-border mb-8">
@@ -113,7 +113,7 @@ export default function RulesPage() {
             .map((r, i) => {
               const violationStats = stats?.top_violated_rules?.find(tr => tr.rule_id === r.rule_id);
               return (
-                <div key={i} className="mello-card-flat p-6 flex flex-col group hover:border-mist transition-colors relative overflow-hidden">
+                <div key={i} className="mello-card-flat p-4 md:p-6 flex flex-col group hover:border-mist transition-colors relative overflow-hidden">
                   {violationStats && (
                     <div className="absolute top-0 right-0 bg-[#f87171]/10 text-[#f87171] text-[11px] font-bold px-3 py-1 rounded-bl-lg">
                       Failed {violationStats.count} times
@@ -138,7 +138,7 @@ export default function RulesPage() {
           {activeTab === 'all' && FULL_2011_RULES.map((r, i) => {
             const isMonitored = rules.some(aiRule => aiRule.rule_id.includes(r.id) || r.id.includes(aiRule.rule_id));
             return (
-              <div key={i} className="mello-card-flat p-6 flex flex-col group hover:border-mist transition-colors">
+              <div key={i} className="mello-card-flat p-4 md:p-6 flex flex-col group hover:border-mist transition-colors">
                 <div className="flex justify-between items-center mb-4">
                   <div className="flex items-center gap-3">
                     <div className={`w-2 h-2 rounded-full ${isMonitored ? 'bg-[#4ade80]' : 'bg-text-muted'}`}></div>

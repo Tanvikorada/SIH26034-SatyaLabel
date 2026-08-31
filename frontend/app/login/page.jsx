@@ -46,7 +46,7 @@ export default function Login() {
 
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-6 text-text-primary font-sans selection:bg-surface selection:text-background">
-      <div className="w-full max-w-[440px] mello-card p-10">
+      <div className="w-full max-w-[440px] mello-card p-6 sm:p-10">
         <div className="flex items-center gap-3 mb-10">
           <div className="w-8 h-8 rounded bg-gradient-to-br from-blue-600 to-blue-800 flex items-center justify-center shadow-md">
             <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -56,7 +56,7 @@ export default function Login() {
           <span className="font-bold tracking-tight text-[18px]">SatyaLabel</span>
         </div>
         
-        <h1 className="text-[32px] font-medium tracking-tight leading-[1.1] mb-3">Sign in</h1>
+        <h1 className="text-[28px] md:text-[32px] font-medium tracking-tight leading-[1.1] mb-3">Sign in</h1>
         <p className="text-[15px] text-text-secondary mb-8">Enter your credentials to access the compliance dashboard.</p>
 
         <form onSubmit={handleLogin} className="flex flex-col gap-4 mb-8">

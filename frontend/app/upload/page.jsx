@@ -153,7 +153,7 @@ export default function UploadPage() {
         <h1 className="text-[32px] font-medium tracking-tight leading-[1.1] mb-2">Initialize Scan</h1>
         <p className="text-[15px] text-text-secondary mb-10 flex items-center gap-3"><span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> OCR Pipeline Active. Awaiting payload.</p>
 
-        <div className="grid grid-cols-1 md:grid-cols-5 gap-0 md:gap-6 flex-1 md:flex-none h-[calc(100vh-140px)] md:h-auto">
+        <div className="grid grid-cols-1 md:grid-cols-5 gap-0 md:gap-6 flex-1 md:flex-none min-h-[calc(100vh-140px)] h-auto md:h-auto">
           <form onSubmit={handleUpload} className="mello-card p-4 md:p-8 col-span-3 flex flex-col gap-4 md:gap-6 h-full md:h-auto border-0 md:border md:shadow-sm bg-transparent md:bg-[var(--color-surface)]">
             <div className="flex flex-col gap-2">
               <label className="text-[10px] font-mono tracking-[0.2em] uppercase text-text-primary">Product Image</label>
@@ -231,7 +231,7 @@ export default function UploadPage() {
             </button>
           </form>
 
-          <div className="mello-card-flat p-6 col-span-2 flex flex-col h-[480px]">
+          <div className="mello-card-flat p-6 col-span-2 flex flex-col h-[320px] md:h-[480px]">
             <h3 className="text-[14px] font-medium tracking-tight mb-4 flex items-center gap-2">
               <div className={`w-2 h-2 rounded-full ${loading ? 'bg-[#4ade80] animate-pulse' : 'bg-border'}`}></div>
               System Output
