@@ -88,6 +88,13 @@ export default function DynamicLoader() {
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [logIdx, setLogIdx] = useState(0);
 
+  const triggerHaptic = (pattern) => {
+    if (typeof window !== 'undefined' && navigator && navigator.vibrate) {
+      try { navigator.vibrate(pattern); } catch(e) {}
+    }
+  };
+
+
   useEffect(() => {
     const interval = setInterval(() => {
       // Start exit animation (Swap/Revolve Out)
@@ -95,6 +102,7 @@ export default function DynamicLoader() {
       setTimeout(() => {
         // Change icon and instantly start entrance animation
         setPairIdx((prev) => (prev + 1) % icons.length);
+        triggerHaptic([15, 30, 15]); // Satisfying physical swap click
         setIsTransitioning(false);
       }, 400); // 400ms physical drop-out duration
     }, 2800);
@@ -104,7 +112,10 @@ export default function DynamicLoader() {
   useEffect(() => {
     const interval = setInterval(() => {
       setLogIdx((prev) => {
-        if (prev < logTexts.length - 1) return prev + 1;
+        if (prev < logTexts.length - 1) {
+          triggerHaptic(5); // Tiny tick for new log
+          return prev + 1;
+        }
         return prev;
       });
     }, 1800);

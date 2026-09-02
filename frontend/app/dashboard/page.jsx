@@ -2,7 +2,7 @@
 import { useEffect, useState } from 'react';
 import NavBar from '@/components/NavBar';
 import { useRouter } from 'next/navigation';
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Cell } from 'recharts';
+
 import { Activity, CheckCircle, AlertTriangle, Clock, FileText, ArrowUpRight, TrendingUp } from 'lucide-react';
 
 export default function Dashboard() {
@@ -143,44 +143,32 @@ export default function Dashboard() {
               </div>
             </div>
             
-            <div className="h-[320px] w-full overflow-x-auto hide-scrollbar">
-              <div className="min-w-[500px] h-full pr-4">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={graphData} margin={{ top: 10, right: 10, left: -20, bottom: 20 }}>
-                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" className="dark:stroke-slate-800" />
-                    <XAxis 
-                      dataKey="rule_id" 
-                      axisLine={false} 
-                      tickLine={false} 
-                      tick={{ fill: '#64748b', fontSize: 11, fontWeight: 500 }} 
-                      dy={12} 
-                      interval={0} 
-                      tickFormatter={(val) => val.replace(/Rule /g, 'R')}
-                    />
-                    <YAxis axisLine={false} tickLine={false} tick={{ fill: '#94a3b8', fontSize: 12 }} width={40} />
-                    <Tooltip 
-                      cursor={{ fill: 'rgba(30,58,138,0.04)' }} 
-                      contentStyle={{ 
-                        backgroundColor: 'rgba(255,255,255,0.95)', 
-                        backdropFilter: 'blur(8px)',
-                        border: '1px solid #e2e8f0', 
-                        borderRadius: '8px', 
-                        color: '#0f172a',
-                        boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)',
-                        fontWeight: 600,
-                        fontSize: '14px'
-                      }} 
-                      itemStyle={{ color: '#1E3A8A' }}
-                    />
-                    <Bar dataKey="count" radius={[6, 6, 0, 0]} barSize={40}>
-                      {graphData.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={index === 0 ? '#1E3A8A' : '#94a3b8'} className="dark:opacity-90 hover:opacity-80 transition-opacity" />
-                      ))}
-                    </Bar>
-                  </BarChart>
-                </ResponsiveContainer>
+            
+              <div className="w-full mt-4 space-y-6">
+                {(() => {
+                   if (!graphData || graphData.length === 0) return <div className="text-sm text-slate-500">No data available</div>;
+                   const maxCount = Math.max(...graphData.map(d => d.count)) || 1;
+                   return graphData.map((item, i) => (
+                     <div key={i} className="w-full group">
+                        <div className="flex justify-between items-end mb-2">
+                           <span className="text-[13px] font-medium text-slate-700 dark:text-slate-300 group-hover:text-[#1E3A8A] dark:group-hover:text-blue-400 transition-colors">
+                             {item.rule_id}
+                           </span>
+                           <span className="text-[12px] font-bold text-slate-900 dark:text-white">
+                             {item.count} <span className="text-slate-400 dark:text-slate-500 font-normal ml-1">scans</span>
+                           </span>
+                        </div>
+                        <div className="w-full bg-slate-100 dark:bg-slate-800/50 rounded-full h-2.5 overflow-hidden flex">
+                           <div 
+                             className="h-full bg-gradient-to-r from-[#1E3A8A] to-blue-500 dark:from-blue-600 dark:to-blue-400 rounded-full transition-all duration-1000 ease-out" 
+                             style={{ width: `${(item.count / maxCount) * 100}%` }}
+                           ></div>
+                        </div>
+                     </div>
+                   ));
+                })()}
               </div>
-            </div>          </div>
+            </div>
 
           {/* Activity Feed */}
           <div className="lg:col-span-2 bg-white dark:bg-[#11131a] rounded-xl border border-slate-200 dark:border-slate-800/80 shadow-sm p-6 lg:p-8 flex flex-col">

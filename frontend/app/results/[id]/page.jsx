@@ -195,12 +195,12 @@ export default function ResultsPage({ params }) {
           
 
         {/* TAB NAVIGATION */}
-        <div className="grid grid-cols-4 border-b border-border mb-8 w-full">
+        <div className="flex overflow-x-auto hide-scrollbar snap-x snap-mandatory border-b border-border mb-8 w-full">
           {['summary', 'ingredients', 'evidence', 'data'].map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
-              className={`px-1 py-3 text-[10px] md:text-[13px] md:px-6 font-bold tracking-widest uppercase transition-all flex items-center justify-center text-center ${activeTab === tab ? 'text-accent border-b-2 border-accent bg-accent/5' : 'text-text-muted hover:text-text-primary'}`}
+              className={`snap-center shrink-0 min-w-[90px] flex-1 px-2 py-3 text-[10px] md:text-[13px] md:px-6 font-bold tracking-widest uppercase transition-all flex items-center justify-center text-center ${activeTab === tab ? 'text-accent border-b-2 border-accent bg-accent/5' : 'text-text-muted hover:text-text-primary'}`}
             >
               {tab}
             </button>
