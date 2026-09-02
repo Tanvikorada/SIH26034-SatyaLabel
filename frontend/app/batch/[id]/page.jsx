@@ -1,6 +1,7 @@
 'use client';
 import { useEffect, useState } from 'react';
 import NavBar from '@/components/NavBar';
+import DynamicLoader from '@/components/DynamicLoader';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 

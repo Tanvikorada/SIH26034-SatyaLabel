@@ -1,17 +1,9 @@
 const fs = require('fs');
+
 let code = fs.readFileSync('app/upload/page.jsx', 'utf8');
 
-if (!code.includes('PremiumLoader')) {
-  // Import it at the top
-  code = code.replace("import { NavBar } from '@/components/NavBar';", "import { NavBar } from '@/components/NavBar';\nimport PremiumLoader from '@/components/PremiumLoader';");
-  
-  // Render it inside the main return block based on 'loading'
-  // Find: <div className="min-h-screen bg-background text-text-primary">
-  const renderTarget = '<div className="min-h-screen bg-background text-text-primary">';
-  const renderReplacement = '<div className="min-h-screen bg-background text-text-primary">\n      {loading && <PremiumLoader />}';
-  
-  code = code.replace(renderTarget, renderReplacement);
-  
-  fs.writeFileSync('app/upload/page.jsx', code);
-  console.log("UPLOAD PAGE FIXED");
-}
+code = code.replace("import PremiumLoader from '@/components/PremiumLoader';", "import DynamicLoader from '@/components/DynamicLoader';");
+code = code.replace("<PremiumLoader />", '<div className="fixed inset-0 z-[99999] bg-background flex items-center justify-center"><DynamicLoader /></div>');
+
+fs.writeFileSync('app/upload/page.jsx', code);
+console.log("UPGRADED UPLOAD PAGE");

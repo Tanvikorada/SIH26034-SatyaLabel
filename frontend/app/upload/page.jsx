@@ -5,7 +5,7 @@ import { toast } from 'sonner';
 import { triggerHaptic } from '@/utils/haptics';
 import { openDB } from 'idb';
 import NavBar from '@/components/NavBar';
-import PremiumLoader from '@/components/PremiumLoader';
+import DynamicLoader from '@/components/DynamicLoader';
 
 const API = process.env.NEXT_PUBLIC_API_URL || 'https://satyalabel-backend.onrender.com/api/v1';
 
@@ -149,7 +149,7 @@ export default function UploadPage() {
 
   return (
     <div className="min-h-screen bg-background text-text-primary">
-      {loading && <PremiumLoader />}
+      {loading && <div className="fixed inset-0 z-[99999] bg-background flex items-center justify-center"><DynamicLoader /></div>}
       <NavBar />
       <div className="max-w-[1000px] mx-auto px-6 py-12">
         <h1 className="text-[32px] font-medium tracking-tight leading-[1.1] mb-2">Initialize Scan</h1>
