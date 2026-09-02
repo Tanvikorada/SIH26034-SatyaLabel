@@ -148,6 +148,7 @@ export default function UploadPage() {
 
   return (
     <div className="min-h-screen bg-background text-text-primary">
+      {loading && <PremiumLoader />}
       <NavBar />
       <div className="max-w-[1000px] mx-auto px-6 py-12">
         <h1 className="text-[32px] font-medium tracking-tight leading-[1.1] mb-2">Initialize Scan</h1>
