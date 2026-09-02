@@ -1,7 +1,7 @@
 'use client';
 import { useState, useEffect } from 'react';
 
-export default function PremiumLoader() {
+export default function PremiumLoader({ inline = false }) {
   const texts = [
     "Scanning label details...",
     "Extracting manufacturer data...",
@@ -18,10 +18,10 @@ export default function PremiumLoader() {
   }, [texts.length]);
 
   return (
-    <div className="fixed inset-0 z-[99999] bg-white dark:bg-[#090a0f] flex flex-col items-center justify-center animate-in fade-in duration-300">
+    <div className={inline ? "flex flex-col items-center justify-center w-full" : "fixed inset-0 z-[99999] bg-white dark:bg-[#090a0f] flex flex-col items-center justify-center animate-in fade-in duration-300"}>
       
       {/* Animated Objects Container */}
-      <div className="flex items-end justify-center gap-12 mb-16 h-[120px]">
+      <div className={`flex items-end justify-center gap-12 h-[120px] ${inline ? "mb-6 scale-75 md:scale-100" : "mb-16"}`}>
         
         {/* Object 1: Shield */}
         <div className="flex flex-col items-center gap-6">
@@ -64,11 +64,11 @@ export default function PremiumLoader() {
       </div>
 
       {/* Dynamic Text */}
-      <div className="h-8 relative w-full flex justify-center">
+      {!inline && (<div className="h-8 relative w-full flex justify-center">
          <div key={textIdx} className="absolute text-[16px] md:text-[18px] font-bold text-text-primary tracking-wide text-center animate-in fade-in slide-in-from-bottom-2 duration-300">
            {texts[textIdx]}
          </div>
-      </div>
+      </div>)}
     </div>
   );
 }
