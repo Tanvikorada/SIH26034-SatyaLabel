@@ -43,6 +43,7 @@ export default function ResultsPage({ params }) {
         if (!res.ok) throw new Error('Failed to fetch');
         const json = await res.json();
         setReport(json.data);
+        if (typeof window !== "undefined" && navigator.vibrate) { navigator.vibrate([30, 50, 30]); }
       } catch (err) {
         console.error(err);
       } finally {
