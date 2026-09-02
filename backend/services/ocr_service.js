@@ -242,7 +242,7 @@ ${SCHEMA_HINT}`;
 
   } catch (err) {
     if (attempt < 2) {
-      const nextModel = modelName === 'gemini-2.5-flash' ? 'gemini-1.5-flash' : 'gemini-1.5-pro';
+      const nextModel = modelName === 'gemini-2.5-flash' ? 'gemini-1.5-flash-latest' : 'gemini-1.5-flash-latest';
       err.attemptHistory = (err.attemptHistory || '') + `[Attempt ${attempt} ${modelName}: ${err.message}] `;
         console.warn(`[OCR] Gemini failed with ${modelName} (${err.message}) - retrying with ${nextModel}...`);
       await new Promise(r => setTimeout(r, 2000));
