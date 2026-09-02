@@ -6,6 +6,7 @@ import { triggerHaptic } from '@/utils/haptics';
 import { openDB } from 'idb';
 import NavBar from '@/components/NavBar';
 import DynamicLoader from '@/components/DynamicLoader';
+import InAppCamera from '@/components/InAppCamera';
 
 const API = process.env.NEXT_PUBLIC_API_URL || 'https://satyalabel-backend.onrender.com/api/v1';
 
@@ -13,6 +14,7 @@ export default function UploadPage() {
   const router = useRouter();
   const [files, setFiles] = useState([]);
   const [previews, setPreviews] = useState([]);
+  const [isCameraOpen, setIsCameraOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [productName, setProductName] = useState('');
   const [category, setCategory] = useState('food');
@@ -159,7 +161,7 @@ export default function UploadPage() {
           <form onSubmit={handleUpload} className="mello-card p-4 md:p-8 col-span-3 flex flex-col gap-4 md:gap-6 h-full md:h-auto border-0 md:border md:shadow-sm bg-transparent md:bg-[var(--color-surface)]">
             <div className="flex flex-col gap-2">
               <label className="text-[10px] font-mono tracking-[0.2em] uppercase text-text-primary">Product Image</label>
-              <div className="relative w-full flex-1 min-h-[200px] border-none sm:border-2 sm:border-dashed sm:border-slate-300 sm:hover:border-primary bg-transparent sm:bg-slate-50 flex flex-col items-center justify-center rounded-2xl transition-colors">
+              <div className={`relative w-full flex-1 min-h-[200px] border-none sm:border-2 sm:border-dashed sm:border-slate-300 sm:hover:border-primary flex flex-col items-center justify-center rounded-2xl transition-colors ${isCameraOpen ? "bg-black border-none" : "bg-transparent sm:bg-slate-50"}`}>
                 {previews.length > 0 ? (
                   <div className="w-full flex flex-col gap-4">
                     <div className="text-[13px] text-text-secondary text-center">
