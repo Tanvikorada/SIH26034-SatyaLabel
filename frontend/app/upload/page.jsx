@@ -5,6 +5,7 @@ import { toast } from 'sonner';
 import { triggerHaptic } from '@/utils/haptics';
 import { openDB } from 'idb';
 import NavBar from '@/components/NavBar';
+import PremiumLoader from '@/components/PremiumLoader';
 
 const API = process.env.NEXT_PUBLIC_API_URL || 'https://satyalabel-backend.onrender.com/api/v1';
 
