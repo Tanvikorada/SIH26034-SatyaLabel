@@ -242,7 +242,7 @@ ${SCHEMA_HINT}`;
 
   } catch (err) {
     if (attempt < 2) {
-      const nextModel = modelName === 'gemini-2.5-flash' ? 'gemini-1.5-flash-latest' : 'gemini-1.5-flash-latest';
+      const nextModel = modelName === 'gemini-2.5-flash' ? 'gemini-2.5-pro' : 'gemini-2.0-flash';
       err.attemptHistory = (err.attemptHistory || '') + `[Attempt ${attempt} ${modelName}: ${err.message}] `;
         console.warn(`[OCR] Gemini failed with ${modelName} (${err.message}) - retrying with ${nextModel}...`);
       await new Promise(r => setTimeout(r, 2000));
@@ -426,8 +426,8 @@ async function runOcrPipeline(imagePaths, metadata = {}) {
     } 
     
     if (config.gemini?.enabled && config.gemini?.apiKey) {
-      console.log("[OCR] Attempting Gemini Vision...");
-      try {
+        console.log("[OCR] Attempting Gemini Vision...");
+        try {
         const geminiResult = await runGeminiVision(processedPaths, 1, 'gemini-2.5-flash');
         return {
           text: geminiResult.structuredData?.products?.[0]?.raw_text_transcript || geminiResult.text,
