@@ -473,43 +473,43 @@ async function runOcrPipeline(imagePaths, metadata = {}) {
     console.warn("[OCR] ALL CLOUD ENGINES FAILED! TRIGGERING LOCAL DEMO FALLBACK");
     console.warn("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
     
-    const fallbackStructuredData = {
-      products: [{
-        ai_summary: "OFFLINE CACHE: Could not reach cloud APIs due to high demand. Using offline OCR simulation cache. The product appears to be 'Maggi 2-Minute Noodles'. It contains several mandatory declarations like MRP, Manufacturer Name, and Net Quantity. However, some text may be blurry or missing.",
-        raw_text_transcript: "MAGGI 2-Minute Noodles Masala 70g. MRP Rs. 14.00 (incl. of all taxes). MFD: 12/2025. Best Before 9 Months. Mkd By: Nestle India Ltd. New Delhi 110001.",
-        product_name: "Maggi 2-Minute Noodles",
-        brand_name: "Maggi / Nestle",
-        net_quantity: "70",
-        net_quantity_unit: "g",
-        mrp: "14.00",
-        mrp_includes_tax_statement: true,
-        mfg_date: "12/2025",
-        best_before: "9 Months from manufacture",
-        manufacturer_name: "Nestle India Ltd.",
-        manufacturer_address: "New Delhi 110001",
-        packer_name: "Nestle India Ltd.",
-        packer_address: "New Delhi 110001",
-        importer_name: null,
-        importer_address: null,
-        country_of_origin: "India",
-        consumer_care_details: "Contact Nestle Consumer Care: 1800-103-1947",
-        batch_lot_number: "25A19",
-        fssai_license: "10012011000168",
-        ingredient_analysis: {
-          harmful_additives_found: [],
-          health_risks: ["High Sodium Content"],
-          allergens_detected: ["Gluten", "Soy"],
-          ingredient_dictionary: [
-            { name: "Wheat Flour", description: "Primary carbohydrate source." },
-            { name: "Edible Vegetable Oil", description: "Used for frying noodles." },
-            { name: "Salt", description: "Flavor enhancer and preservative." }
-          ]
-        },
-        _is_fallback: true
-      }]
-    };
+    
+      const Tesseract = require('tesseract.js');
+      let combinedText = "";
+      for (const p of processedPaths) {
+        console.warn("[OCR] Running local Tesseract on: ", p);
+        try {
+          const ret = await Tesseract.recognize(p, 'eng');
+          combinedText += ret.data.text + "\n";
+        } catch (e) {
+          console.error("[OCR] Local Tesseract failed on " + p, e.message);
+        }
+      }
 
-    return {
+      const fallbackStructuredData = {
+        products: [{
+          ai_summary: "OFFLINE MODE: Cloud AI engines (Gemini/Groq) were unavailable. Text was extracted using a genuine local Tesseract OCR fallback. Some structured fields were inferred via heuristic regex, meaning data may be incomplete or less accurate.",
+          raw_text_transcript: combinedText,
+          product_name: "Unknown Product (Offline Scan)",
+          brand_name: null,
+          net_quantity: (combinedText.match(/(\d+)\s*(g|kg|ml|l|oz|lb)\b/i) || [])[1] || null,
+          net_quantity_unit: (combinedText.match(/(\d+)\s*(g|kg|ml|l|oz|lb)\b/i) || [])[2] || null,
+          mrp: (combinedText.match(/MRP(?:[\s\.\:]|Rs\.?|₹)*(\d+(?:\.\d{1,2})?)/i) || [])[1] || null,
+          mrp_includes_tax_statement: /incl(?:usive)?\s+of\s+all\s+taxes/i.test(combinedText),
+          mfg_date: (combinedText.match(/MF[GD](?:\s*Date|\.|:)?\s*(\d{2}[/\.-]\d{2,4}|\d{2,4}[/\.-]\d{2})/i) || [])[1] || null,
+          best_before: (combinedText.match(/BEST\s+BEFORE\s+([a-zA-Z0-9\s]+)/i) || [])[1] || null,
+          fssai_license: (combinedText.match(/fssai[a-z\s\.:]*(\d{14})/i) || [])[1] || null,
+          ingredient_analysis: {
+            harmful_additives_found: [],
+            health_risks: ["Local OCR mode active. Advanced biochemical AI analysis is disabled."],
+            allergens_detected: [],
+            ingredient_dictionary: []
+          },
+          _is_fallback: true
+        }]
+      };
+
+      return {
       text: fallbackStructuredData.products[0].raw_text_transcript,
       engine: "offline_cache",
       confidenceAvg: 99,
