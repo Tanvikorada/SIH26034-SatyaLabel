@@ -343,7 +343,6 @@ router.get('/batch/:id/stream', requireAuth, async (req, res) => {
     batchClients.set(batchId, clients.filter(c => c !== res));
   });
 });
-});
 
 router.get('/batch/:id', requireAuth, async (req, res) => {
   try {
