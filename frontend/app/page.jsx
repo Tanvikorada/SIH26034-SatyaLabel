@@ -127,7 +127,7 @@ function HeroSeal() {
       
 
       {/* 3D Rendered Emblem Container */}
-      <div className="relative z-10 w-full aspect-square flex items-center justify-center transform-gpu transition-all duration-700 hover:scale-105 hover:rotate-y-6 hover:rotate-x-6"
+      <div className="relative z-10 w-full aspect-square flex items-center justify-center transform-gpu transition-all duration-700 hover:scale-105 hover:[transform:perspective(800px)_rotateY(4deg)_rotateX(3deg)]"
            style={{ transformStyle: 'preserve-3d' }}>
         
         {/* Transparent Float via mix-blend-mode */}
@@ -152,7 +152,7 @@ function PixelsToPenalty() {
   return (
     <section id="pipeline" className="py-32 px-6 md:px-12 relative z-10 bg-transparent border-y border-[var(--color-border)] overflow-hidden scroll-mt-16">
       <div className="max-w-[1200px] mx-auto">
-        <h2 className="text-4xl md:text-5xl font-semibold tracking-tight mb-20 text-center bg-clip-text text-transparent bg-gradient-to-r from-text-primary to-text-secondary">From Pixels to Penalty</h2>
+        <h2 className="text-4xl md:text-5xl font-semibold tracking-tight mb-20 text-center bg-clip-text text-transparent bg-gradient-to-r from-text-primary to-text-secondary">How It Works</h2>
         
         <div className="grid grid-cols-1 md:grid-cols-4 gap-0 border-y border-[var(--color-border)] relative">
           <div className="absolute top-0 left-0 right-0 h-3 flex justify-between px-2 -mt-1.5 opacity-20">
@@ -271,7 +271,7 @@ function UploadMicroApp() {
             </motion.div>
           ) : (
             <motion.div key="u" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="absolute inset-2 rounded bg-transparent border border-[var(--color-border)] overflow-hidden shadow-inner flex items-center justify-center">
-              <img src="https://images.unsplash.com/photo-1622483767028-3f66f32aef97?auto=format&fit=crop&q=80&w=300&h=300" className="opacity-80 object-cover w-full h-full mix-blend-luminosity" alt="Label" />
+              <img src="/demo-label-placeholder.jpg" className="opacity-80 object-cover w-full h-full mix-blend-luminosity" alt="Label" />
               <div className="absolute inset-0 border-2 border-[var(--color-primary)] opacity-50 rounded" />
               <CheckCircle2 size={32} className="absolute text-[var(--color-pass)] bg-transparent rounded-full p-1 shadow-lg" />
             </motion.div>
@@ -362,7 +362,7 @@ function PipelineSection() {
     <section className="py-32 px-6 md:px-12 max-w-[1200px] mx-auto relative z-10 border-t border-[var(--color-border)]">
       <div className="mb-20 text-center relative">
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-[var(--color-primary)]/10 blur-[100px] rounded-full pointer-events-none" />
-        <h2 className="text-4xl font-medium tracking-tight mb-4">Live Automated Pipeline</h2>
+        <h2 className="text-4xl font-medium tracking-tight mb-4">Automated Compliance Pipeline</h2>
         <p className="text-[var(--color-text-secondary)] text-[16px]">Experience the multi-stage architecture continuously at work in real-time.</p>
       </div>
       
@@ -408,7 +408,7 @@ function TheCaseFile() {
   return (
     <section className="py-24 px-6 md:px-12 max-w-[1000px] mx-auto w-full relative z-10 border-t border-[var(--color-border)]">
       <div className="mb-12 text-center">
-        <h2 className="text-3xl font-medium tracking-tight mb-3">The Paradigm Shift</h2>
+        <h2 className="text-3xl font-medium tracking-tight mb-3">Why SatyaLabel</h2>
         <p className="text-[var(--color-text-secondary)]">The difference in time is the difference in scale.</p>
       </div>
 
@@ -436,7 +436,7 @@ function TheCaseFile() {
                 <div className="w-[1px] h-32 bg-[var(--color-border)] hidden md:block" />
                 <div className="flex-1 text-center">
                   <div className="text-5xl font-mono text-[var(--color-text-muted)] mb-2">15m</div>
-                  <div className="text-[12px] font-medium tracking-wide uppercase text-[var(--color-text-secondary)]">Average per Label</div>
+                  <div className="text-[12px] font-medium tracking-wide uppercase text-[var(--color-text-secondary)]">end-to-end scan time</div>
                 </div>
               </motion.div>
             ) : (
@@ -448,7 +448,7 @@ function TheCaseFile() {
                 </div>
                 <div className="w-[1px] h-32 bg-[var(--color-border)] hidden md:block" />
                 <div className="flex-1 text-center">
-                  <div className="text-5xl font-mono text-[var(--color-accent)] mb-2 drop-shadow-[0_0_8px_var(--color-accent)]">4.2s</div>
+                  <div className="text-5xl font-mono text-[var(--color-accent)] mb-2 drop-shadow-[0_0_8px_var(--color-accent)]"><10s</div>
                   <div className="text-[12px] font-medium tracking-wide uppercase text-[var(--color-text-secondary)]">Average per Label</div>
                 </div>
               </motion.div>
@@ -482,7 +482,7 @@ function RulingLedger() {
   return (
     <section className="py-24 px-6 md:px-12 max-w-[1000px] mx-auto w-full relative z-10 border-t border-[var(--color-border)]">
       <div className="mb-12 text-center">
-        <h2 className="text-3xl font-medium tracking-tight mb-3">Live Compliance Ledger</h2>
+        <h2 className="text-3xl font-medium tracking-tight mb-3">Compliance Record</h2>
         <p className="text-[var(--color-text-secondary)]">Rooted directly in the Legal Metrology Rules, 2011.</p>
       </div>
 
@@ -531,7 +531,7 @@ function TechStack() {
   return (
     <section className="py-32 px-6 max-w-[1400px] mx-auto w-full relative z-10 border-t border-[var(--color-border)] bg-transparent">
       <div className="mb-24 text-center relative z-20">
-        <h2 className="text-4xl font-medium tracking-tight mb-4">Enterprise Architecture Flow</h2>
+        <h2 className="text-4xl font-medium tracking-tight mb-4">System Architecture</h2>
         <p className="text-[var(--color-text-secondary)] max-w-2xl mx-auto">10+ interconnected technologies parallelized for sub-3-second field audits. This is the exact journey of a single scan.</p>
       </div>
 
@@ -622,7 +622,7 @@ function TechStack() {
             <div className={`bg-surface/80 border p-4 rounded-xl transition-all duration-500 flex items-start gap-3 ${activeStage === 3 ? 'border-[var(--color-primary)]' : 'border-[var(--color-border)]'}`}>
               <div className={`mt-1 transition-all duration-500 ${activeStage === 3 ? 'text-[var(--color-primary)] rotate-12 scale-110 drop-shadow-[0_0_8px_rgba(var(--color-primary-rgb),0.5)]' : 'text-text-muted'}`}><Cpu size={20}/></div>
               <div>
-                <h3 className="font-semibold text-[15px] mb-1">Llama 90B Vision</h3>
+                <h3 className="font-semibold text-[15px] mb-1">Gemini 1.5 Flash Vision</h3>
                 <p className="text-[12px] text-[var(--color-text-muted)]">Multimodal JSON parsing</p>
               </div>
             </div>

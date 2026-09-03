@@ -7,10 +7,10 @@
   /* Light mode base (default) */
   --color-background: #ffffff;
   --color-surface: #ffffff;
-  --color-primary:          #0B1F3A;
+  --color-primary:          #0B1F3A;   /* Navy — headers, body text anchoring */
   --color-primary-hover:    #16335C;
-  --color-accent:           #0B1F3A;
-  --color-accent-soft:      #E1E7F0;
+  --color-accent:           #D4500A;   /* Saffron — CTAs, highlights, active states */
+  --color-accent-soft:      #FBF0E8;
   --color-border:           #D9D5CB;
   --color-text-primary:     #0A1628;
   --color-text-secondary:   #4A5468;
@@ -39,24 +39,24 @@
   --color-surface: #0a0a0a; /* dark grey surface */
   --color-primary:          #ffffff;
   --color-primary-hover:    #f4f4f5;
-  --color-accent:           #ffffff; /* white */
-  --color-accent-soft:      rgba(255,255,255,0.08);
+  --color-accent:           #F59E0B;   /* Warm amber — distinct from white primary in dark mode */
+  --color-accent-soft:      rgba(245,158,11,0.12);
   --color-border:           #27272a; /* graphite */
   --color-text-primary:     #fafafa; /* white */
   --color-text-secondary:   #d4d4d8; /* mist */
   --color-text-muted:       #a1a1aa; /* fog */
 
   /* Status - dark */
-  --color-pass:              #10b981;
-  --color-pass-bg:           rgba(16,185,129,0.15);
-  --color-noncompliant:      #ef4444;
-  --color-noncompliant-bg:   rgba(239,68,68,0.15);
-  --color-review:            #f59e0b;
-  --color-review-bg:         rgba(245,158,11,0.15);
+  --color-pass:              #34D399;
+  --color-pass-bg:           rgba(16,185,129,0.12);
+  --color-noncompliant:      #F87171;
+  --color-noncompliant-bg:   rgba(239,68,68,0.12);
+  --color-review:            #FCD34D;
+  --color-review-bg:         rgba(245,158,11,0.12);
   --color-not-applicable:    #71717a;
-  --color-not-applicable-bg: rgba(113,113,122,0.15);
-  --color-not-verified:      #d946ef;
-  --color-not-verified-bg:   rgba(217,70,239,0.15);
+  --color-not-applicable-bg: rgba(113,113,122,0.12);
+  --color-not-verified:      #94A3B8;   /* Neutral slate — matches light mode semantic weight */
+  --color-not-verified-bg:   rgba(100,116,139,0.15);
 }
 
 @layer base {
