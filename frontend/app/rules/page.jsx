@@ -80,7 +80,7 @@ export default function RulesPage() {
     fetchRules();
   }, [router]);
 
-  if (loading) return <div className="min-h-screen bg-background text-text-primary"><NavBar/><div className="p-10 text-text-secondary text-[14px]">Loading...</div></div>;
+  if (loading) return <div className="min-h-screen bg-background text-text-primary animate-fade-in"><NavBar/><div className="p-10 text-text-secondary text-[14px]">Loading...</div></div>;
 
   return (
     <div className="min-h-screen bg-background text-text-primary">
@@ -113,7 +113,7 @@ export default function RulesPage() {
             .map((r, i) => {
               const violationStats = stats?.top_violated_rules?.find(tr => tr.rule_id === r.rule_id);
               return (
-                <div key={i} className="mello-card-flat p-4 md:p-6 flex flex-col group hover:border-mist transition-colors relative overflow-hidden">
+                <div key={i} className="glass border border-border/50 shadow-sm hover:-translate-y-1 hover:shadow-md transition-all duration-300 rounded-[24px] p-4 md:p-6 flex flex-col group hover:border-mist transition-colors relative overflow-hidden">
                   {violationStats && (
                     <div className="absolute top-0 right-0 bg-[#f87171]/10 text-[#f87171] text-[11px] font-bold px-3 py-1 rounded-bl-lg">
                       Failed {violationStats.count} times
@@ -124,7 +124,7 @@ export default function RulesPage() {
                       <div className="w-2 h-2 rounded-full bg-[#4ade80]"></div>
                       <span className="font-mono text-[13px] text-text-secondary">{r.rule_id}</span>
                     </div>
-                    <span className="mello-badge-pass">AI Monitored</span>
+                    <span className="px-3 py-1 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 rounded-full text-[10px] font-bold tracking-widest uppercase">AI Monitored</span>
                   </div>
                   <h3 className="font-medium text-[16px] text-text-primary mb-2">{r.name}</h3>
                   <p className="text-[14px] text-text-muted leading-relaxed mb-6 flex-1">{r.description}</p>
@@ -138,13 +138,13 @@ export default function RulesPage() {
           {activeTab === 'all' && FULL_2011_RULES.map((r, i) => {
             const isMonitored = rules.some(aiRule => aiRule.rule_id.includes(r.id) || r.id.includes(aiRule.rule_id));
             return (
-              <div key={i} className="mello-card-flat p-4 md:p-6 flex flex-col group hover:border-mist transition-colors">
+              <div key={i} className="glass border border-border/50 shadow-sm hover:-translate-y-1 hover:shadow-md transition-all duration-300 rounded-[24px] p-4 md:p-6 flex flex-col group hover:border-mist transition-colors">
                 <div className="flex justify-between items-center mb-4">
                   <div className="flex items-center gap-3">
                     <div className={`w-2 h-2 rounded-full ${isMonitored ? 'bg-[#4ade80]' : 'bg-text-muted'}`}></div>
                     <span className="font-mono text-[13px] text-text-secondary">{r.id}</span>
                   </div>
-                  <span className={isMonitored ? 'mello-badge-pass' : 'mello-badge-na'}>{isMonitored ? 'AI Monitored' : 'Manual / Admin'}</span>
+                  <span className={isMonitored ? 'px-3 py-1 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 rounded-full text-[10px] font-bold tracking-widest uppercase' : 'px-3 py-1 bg-text-muted/10 text-text-muted border border-border rounded-full text-[10px] font-bold tracking-widest uppercase'}>{isMonitored ? 'AI Monitored' : 'Manual / Admin'}</span>
                 </div>
                 <h3 className="font-medium text-[16px] text-text-primary mb-2">{r.name}</h3>
                 <p className="text-[14px] text-text-muted leading-relaxed mb-6 flex-1">{r.desc}</p>
