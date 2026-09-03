@@ -372,6 +372,8 @@ ${SCHEMA_HINT}`;
 const ProductSchema = z.object({
   ai_summary: z.string().nullable().optional(),
   raw_text_transcript: z.string().nullable().optional(),
+  product_name: z.string().nullable().optional(),
+  brand_name: z.string().nullable().optional(),
   reasoning_log: z.string().nullable().optional(),
   meta_image_quality: z.string().nullable().optional(),
   visual_readability: z.string().nullable().optional(),

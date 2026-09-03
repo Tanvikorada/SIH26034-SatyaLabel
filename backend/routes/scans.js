@@ -505,7 +505,7 @@ function formatScanSummary(scan) {
     total_violations: scan.totalViolations,
     high_violations: scan.highViolations,
     product_name: scan.product?.productName || (scan.extractedData ? scan.extractedData.product_name : null) || null,
-    brand_name: scan.product?.brandName || null,
+    brand_name: scan.product?.brandName || (scan.extractedData ? scan.extractedData.brand_name : null) || null,
     ocr_engine: scan.ocrEngineUsed,
     created_at: scan.created_at,
   };
