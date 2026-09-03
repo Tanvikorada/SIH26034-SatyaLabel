@@ -18,7 +18,7 @@ export default function BottomNav() {
   if (!mounted || pathname === '/login' || pathname === '/') return null;
 
   return (
-    <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-background border-t border-[var(--color-border)] pb-safe shadow-[0_-10px_40px_rgba(0,0,0,0.05)]">
+    <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-[var(--color-background)] border-t border-[var(--color-border)] pb-safe shadow-[0_-10px_40px_rgba(0,0,0,0.05)]">
       <div className="flex items-center justify-around px-2 h-16">
         
         <Link onClick={() => triggerHaptic('light')} href="/dashboard" className="flex flex-col items-center justify-center w-full h-full gap-1 active:scale-95 transition-transform">

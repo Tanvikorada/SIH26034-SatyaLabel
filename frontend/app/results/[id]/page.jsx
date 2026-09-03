@@ -174,9 +174,9 @@ export default function ResultsPage({ params }) {
             </div>
             
             {/* Main Content: Name/Brand (Left) & Rule Audit (Right) */}
-            <div className="flex flex-row justify-between items-center gap-4 relative z-10">
-              <div className="flex-1 min-w-0">
-                <h1 className="text-[20px] md:text-[40px] font-bold tracking-tight mb-1 text-text-primary leading-tight line-clamp-3">
+            <div className="flex flex-col md:flex-row justify-between md:items-center gap-6 md:gap-4 relative z-10">
+              <div className="flex-1 min-w-0 w-full">
+                <h1 className="text-[24px] md:text-[40px] font-bold tracking-tight mb-1 text-text-primary leading-tight">
                   {report.product?.product_name || fields.product_name || 'Unknown Product'}
                 </h1>
                 <p className={`text-[13px] md:text-[15px] font-semibold truncate ${statusConfig.color}`}>
