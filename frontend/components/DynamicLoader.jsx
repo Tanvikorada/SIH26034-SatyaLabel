@@ -81,11 +81,6 @@ export default function DynamicLoader() {
   useEffect(() => {
     const timer = setInterval(() => {
       setIndex(prev => (prev + 1) % icons.length);
-      
-      // Haptic tick for physical sensation if supported
-      if (typeof window !== 'undefined' && navigator.vibrate) {
-        navigator.vibrate(30);
-      }
     }, 2500); // 2.5s per state
     return () => clearInterval(timer);
   }, []);

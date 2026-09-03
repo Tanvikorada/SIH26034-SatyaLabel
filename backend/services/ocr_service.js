@@ -525,4 +525,4 @@ async function runOcrPipeline(imagePaths, metadata = {}) {
       }
     }
   }
-}
+}module.exports = { runOcrPipeline };
