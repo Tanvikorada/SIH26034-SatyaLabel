@@ -120,8 +120,16 @@ export default function ResultsPage({ params }) {
   if (loading) return <div className="min-h-screen bg-background text-text-primary flex items-center justify-center"><div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-accent"></div></div>;
   if (!report) return <div className="min-h-screen bg-background text-text-primary p-12 text-center">Scan not found</div>;
 
-  const isPass = (report.overallStatus || report.overall_compliance) === 'compliant';
-  const badgeClass = isPass ? 'bg-green-500/10 text-green-500 border border-green-500/20' : 'bg-red-500/10 text-red-500 border border-red-500/20';
+  // ─── Status helpers — covers all 5 statuses from the rules engine ───
+  const overallStatusRaw = String(report.overallStatus || report.overall_compliance || '').toUpperCase();
+  const getStatusConfig = (s) => {
+    if (s === 'PASS' || s === 'COMPLIANT')                 return { label: 'PASS', color: 'text-emerald-500', bg: 'bg-emerald-500/10', border: 'border-emerald-500/30' };
+    if (s === 'POTENTIAL NON-COMPLIANCE' || s === 'FAIL' || s === 'NON_COMPLIANT') return { label: 'NON-COMPLIANT', color: 'text-red-500', bg: 'bg-red-500/10', border: 'border-red-500/30' };
+    if (s === 'MANUAL REVIEW' || s === 'NEEDS_REVIEW')     return { label: 'MANUAL REVIEW', color: 'text-amber-500', bg: 'bg-amber-500/10', border: 'border-amber-500/30' };
+    if (s === 'NOT APPLICABLE')                            return { label: 'NOT APPLICABLE', color: 'text-slate-400', bg: 'bg-slate-500/10', border: 'border-slate-500/30' };
+    return                                                        { label: s || 'NOT VERIFIED', color: 'text-blue-400', bg: 'bg-blue-500/10', border: 'border-blue-500/30' };
+  };
+  const statusConfig = getStatusConfig(overallStatusRaw);
   const allRules = report.violations || [];
   const ruleCounts = {
     pass:       allRules.filter(v => String(v.status).toUpperCase() === 'PASS').length,
@@ -155,25 +163,29 @@ export default function ResultsPage({ params }) {
           <div className="glass rounded-[20px] md:rounded-[24px] p-4 md:p-8 mb-6 md:mb-8 relative overflow-hidden">
             <div className="absolute top-0 right-0 w-64 h-64 bg-accent/5 rounded-full blur-[80px] -mr-32 -mt-32"></div>
             
-            {/* Top row: Badge and ID */}
+            {/* Top row: Verdict badge and ID */}
             <div className="flex flex-wrap items-center gap-2 mb-3 relative z-10">
-              <span className={`text-[10px] font-mono tracking-[0.1em] uppercase px-3 py-1 rounded-full ${badgeClass}`}>
-                {report.overallStatus || report.overall_compliance}
+              <span className={`text-[11px] font-mono font-bold tracking-[0.12em] uppercase px-3 py-1.5 rounded-full border ${statusConfig.bg} ${statusConfig.color} ${statusConfig.border}`}>
+                {statusConfig.label}
               </span>
               <span className="text-[10px] font-mono text-text-muted tracking-wider truncate max-w-[150px] md:max-w-xs">
                 ID: {report.id}
               </span>
             </div>
             
-            {/* Main Content: Name/Brand (Left) & Score (Right) */}
+            {/* Main Content: Name/Brand (Left) & Rule Audit (Right) */}
             <div className="flex flex-row justify-between items-center gap-4 relative z-10">
               <div className="flex-1 min-w-0">
                 <h1 className="text-[20px] md:text-[40px] font-bold tracking-tight mb-1 text-text-primary leading-tight line-clamp-3">
                   {report.product?.product_name || fields.product_name || 'Unknown Product'}
                 </h1>
-                <p className="text-text-secondary text-[13px] md:text-[16px] truncate">
-                  {report.product?.brand_name || fields.brand_name || 'Brand Unspecified'}
+                <p className={`text-[13px] md:text-[15px] font-semibold truncate ${statusConfig.color}`}>
+                  {statusConfig.label === 'PASS' ? '✓ Fully Compliant with Legal Metrology Rules' :
+                   statusConfig.label === 'NON-COMPLIANT' ? `✗ ${ruleCounts.fail} violation${ruleCounts.fail !== 1 ? 's' : ''} detected` :
+                   statusConfig.label === 'MANUAL REVIEW' ? `◎ ${ruleCounts.manual} item${ruleCounts.manual !== 1 ? 's' : ''} require officer review` :
+                   statusConfig.label}
                 </p>
+                <p className="text-text-muted text-[12px] mt-1 truncate">{report.product?.brand_name || fields.brand_name || ''}</p>
               </div>
               {/* Rule Audit Breakdown */}
               <div className="shrink-0 w-full md:w-[240px] glass border border-border/50 rounded-[16px] p-4 shadow-sm">

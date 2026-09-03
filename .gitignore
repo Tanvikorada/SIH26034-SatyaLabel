@@ -10,3 +10,16 @@ Thumbs.db
 
 .vercel
 .env*
+
+# --- Dev artifacts (never commit these) ---
+*.sqlite
+*.traineddata
+test_reports/
+reports/
+fix_*.js
+patch_*.js
+check*.js
+test_*.js
+apply_*.js
+backend/uploads/*
+!backend/uploads/.gitkeep
