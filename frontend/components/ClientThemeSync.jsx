@@ -28,6 +28,11 @@ export default function ClientThemeSync() {
 
     document.documentElement.style.backgroundColor = resolvedTheme === 'dark' ? '#000000' : '#ffffff';
     document.body.style.backgroundColor = resolvedTheme === 'dark' ? '#000000' : '#ffffff';
+    
+    // Enable iOS Safari :active pseudo-class tactile feedback
+    if (typeof window !== 'undefined') {
+      document.body.ontouchstart = () => {};
+    }
 
   }, [resolvedTheme]);
 

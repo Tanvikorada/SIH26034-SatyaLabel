@@ -104,8 +104,24 @@ export default function AboutPage() {
             </div>
           </section>
 
-          <div className="text-center mt-4">
-            <p className="text-[12px] text-text-muted">Designed & Developed for Smart India Hackathon</p>
+          {/* THE SIGNATURE PILL */}
+          <div className="mt-16 pb-12 flex justify-center">
+            <div className="relative group cursor-pointer select-none">
+              {/* Ambient Glow */}
+              <div className="absolute inset-0 bg-gradient-to-r from-accent/30 via-rose-500/30 to-amber-500/30 rounded-full blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-700"></div>
+              
+              {/* Glass Capsule */}
+              <div className="relative glass border border-border/50 rounded-full px-6 py-3 flex items-center gap-2.5 transition-all duration-300 group-hover:border-accent/40 group-active:scale-95 shadow-sm">
+                <span className="text-[11px] font-mono tracking-[0.2em] uppercase text-text-secondary">Crafted with</span>
+                <svg className="w-4 h-4 text-rose-500 animate-pulse drop-shadow-[0_0_8px_rgba(244,63,94,0.6)]" fill="currentColor" viewBox="0 0 24 24">
+                   <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+                </svg>
+                <span className="text-[11px] font-mono tracking-[0.2em] uppercase text-text-secondary">by</span>
+                <span className="text-[14px] font-bold tracking-wide bg-clip-text text-transparent bg-gradient-to-r from-accent to-amber-400 drop-shadow-sm ml-1">
+                  Tanvi
+                </span>
+              </div>
+            </div>
           </div>
 
         </div>
