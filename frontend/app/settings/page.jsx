@@ -91,7 +91,7 @@ export default function SettingsPage() {
             <h2 className="text-[13px] font-bold tracking-widest uppercase text-text-muted px-2">About</h2>
             <div className="glass rounded-[24px] border border-border/50 overflow-hidden shadow-sm">
               <button
-                onClick={() => { triggerHaptic('light'); setShowAbout(v => !v); }}
+                onClick={() => { triggerHaptic('light'); router.push('/about'); }}
                 className="w-full flex items-center justify-between p-5 hover:bg-black/5 dark:hover:bg-white/5 transition-colors"
               >
                 <div className="flex items-center gap-4">
@@ -103,25 +103,8 @@ export default function SettingsPage() {
                     <div className="text-[12px] text-text-muted">Version {APP_VERSION} · SIH26034</div>
                   </div>
                 </div>
-                {showAbout ? <ChevronUp size={16} className="text-text-muted" /> : <ChevronDown size={16} className="text-text-muted" />}
+                <div className="text-text-muted font-bold text-[14px]">›</div>
               </button>
-
-              {showAbout && (
-                <div className="border-t border-border/50 px-5 pb-5 pt-4 text-[13px] text-text-secondary space-y-2">
-                  <div className="grid grid-cols-2 gap-x-4 gap-y-2">
-                    <span className="text-text-muted font-mono text-[11px] uppercase tracking-wider">Version</span>
-                    <span className="font-semibold text-text-primary">{APP_VERSION}</span>
-                    <span className="text-text-muted font-mono text-[11px] uppercase tracking-wider">Build Date</span>
-                    <span className="font-semibold text-text-primary">{BUILD_DATE}</span>
-                    <span className="text-text-muted font-mono text-[11px] uppercase tracking-wider">Rules Engine</span>
-                    <span className="font-semibold text-text-primary">{RULES_VERSION}</span>
-                    <span className="text-text-muted font-mono text-[11px] uppercase tracking-wider">Project ID</span>
-                    <span className="font-semibold text-text-primary">SIH26034</span>
-                    <span className="text-text-muted font-mono text-[11px] uppercase tracking-wider">Authority</span>
-                    <span className="font-semibold text-text-primary">Dept. of Consumer Affairs</span>
-                  </div>
-                </div>
-              )}
             </div>
           </section>
 
