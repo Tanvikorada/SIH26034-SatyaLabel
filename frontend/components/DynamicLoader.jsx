@@ -1,217 +1,146 @@
-'use client';
+"use client";
 import { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 
-// Highly 3D-styled SVGs using multi-layered paths, bevels, and gloss highlights
+// High-end 3D SVGs relevant to Food Packaging & Legal Metrology
 const icons = [
-  // Pair 1: 3D Shield & 3D Document Stack
-  [
-    <svg key="shield" width="70" height="70" viewBox="0 0 100 100" fill="none" className="drop-shadow-2xl">
-      <defs>
-        <linearGradient id="shieldBase" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stopColor="#1E3A8A"/><stop offset="100%" stopColor="#172554"/></linearGradient>
-        <linearGradient id="shieldFront" x1="20%" y1="0%" x2="80%" y2="100%"><stop offset="0%" stopColor="#3B82F6"/><stop offset="100%" stopColor="#1D4ED8"/></linearGradient>
-        <linearGradient id="shieldGloss" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stopColor="rgba(255,255,255,0.6)"/><stop offset="50%" stopColor="rgba(255,255,255,0)"/></linearGradient>
-      </defs>
-      <path d="M50 95s35-15 35-45V20L50 5L15 20v30c0 30 35 45 35 45z" fill="url(#shieldBase)" transform="translate(4, 6)"/>
-      <path d="M50 95s35-15 35-45V20L50 5L15 20v30c0 30 35 45 35 45z" fill="url(#shieldFront)"/>
-      <path d="M50 95c0 0-35-15-35-45V20L50 5v90z" fill="url(#shieldGloss)" opacity="0.6"/>
-    </svg>,
-    <svg key="doc" width="62" height="62" viewBox="0 0 100 100" fill="none" className="drop-shadow-2xl">
-      <defs>
-        <linearGradient id="docBase" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stopColor="#B45309"/><stop offset="100%" stopColor="#78350F"/></linearGradient>
-        <linearGradient id="docFront" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stopColor="#FBBF24"/><stop offset="100%" stopColor="#D97706"/></linearGradient>
-      </defs>
-      <path d="M30 15h40a8 8 0 0 1 8 8v60a8 8 0 0 1-8 8H30a8 8 0 0 1-8-8V23a8 8 0 0 1 8-8z" fill="url(#docBase)" transform="translate(6, 6)"/>
-      <path d="M26 11h40a8 8 0 0 1 8 8v60a8 8 0 0 1-8 8H26a8 8 0 0 1-8-8V19a8 8 0 0 1 8-8z" fill="#FDE68A" transform="translate(3, 3)"/>
-      <path d="M22 7h40a8 8 0 0 1 8 8v60a8 8 0 0 1-8 8H22a8 8 0 0 1-8-8V15a8 8 0 0 1 8-8z" fill="url(#docFront)"/>
-      <rect x="35" y="30" width="30" height="6" rx="3" fill="#FFF" opacity="0.9"/>
-      <rect x="35" y="45" width="30" height="6" rx="3" fill="#FFF" opacity="0.9"/>
-      <rect x="35" y="60" width="20" height="6" rx="3" fill="#FFF" opacity="0.9"/>
-    </svg>
-  ],
-  // Pair 2: 3D Magnifying Glass & 3D Box
-  [
-    <svg key="mag" width="66" height="66" viewBox="0 0 100 100" fill="none" className="drop-shadow-2xl">
-      <defs>
-        <linearGradient id="lens" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stopColor="#67E8F9"/><stop offset="100%" stopColor="#06B6D4"/></linearGradient>
-        <linearGradient id="rim" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stopColor="#F8FAFC"/><stop offset="100%" stopColor="#94A3B8"/></linearGradient>
-        <linearGradient id="handle" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stopColor="#8B5CF6"/><stop offset="100%" stopColor="#4C1D95"/></linearGradient>
-      </defs>
-      <rect x="58" y="58" width="16" height="36" rx="8" transform="rotate(-45 58 58)" fill="#312E81" />
-      <rect x="54" y="54" width="16" height="36" rx="8" transform="rotate(-45 54 54)" fill="url(#handle)" />
-      <circle cx="46" cy="46" r="30" fill="#475569" />
-      <circle cx="42" cy="42" r="30" fill="url(#rim)" />
-      <circle cx="42" cy="42" r="22" fill="url(#lens)" opacity="0.8" />
-      <path d="M42 20a22 22 0 0 0-22 22 22 22 0 0 1 22-22z" fill="#FFF" opacity="0.8"/>
-    </svg>,
-    <svg key="box" width="66" height="66" viewBox="0 0 100 100" fill="none" className="drop-shadow-2xl">
-      <defs>
-        <linearGradient id="boxTop" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stopColor="#34D399"/><stop offset="100%" stopColor="#059669"/></linearGradient>
-        <linearGradient id="boxLeft" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stopColor="#10B981"/><stop offset="100%" stopColor="#047857"/></linearGradient>
-        <linearGradient id="boxRight" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stopColor="#059669"/><stop offset="100%" stopColor="#064E3B"/></linearGradient>
-      </defs>
-      <path d="M50 15 L85 30 L50 45 L15 30 Z" fill="url(#boxTop)" />
-      <path d="M15 30 L50 45 L50 85 L15 70 Z" fill="url(#boxLeft)" />
-      <path d="M85 30 L50 45 L50 85 L85 70 Z" fill="url(#boxRight)" />
-      <path d="M15 30 L50 45 L85 30" stroke="#6EE7B7" strokeWidth="2" strokeLinejoin="round"/>
-      <path d="M50 45 L50 85" stroke="#34D399" strokeWidth="2" strokeLinecap="round"/>
-    </svg>
-  ],
-  // Pair 3: 3D Clipboard & AI Core
-  [
-    <svg key="clip" width="66" height="66" viewBox="0 0 100 100" fill="none" className="drop-shadow-2xl">
-       <rect x="25" y="20" width="50" height="65" rx="4" fill="#78350F" transform="translate(4,4)"/>
-       <rect x="25" y="20" width="50" height="65" rx="4" fill="#D97706"/>
-       <rect x="30" y="25" width="40" height="55" rx="2" fill="#F8FAFC"/>
-       <rect x="40" y="10" width="20" height="15" rx="2" fill="#475569" transform="translate(3,3)"/>
-       <rect x="40" y="10" width="20" height="15" rx="2" fill="#94A3B8"/>
-       <rect x="42" y="40" width="20" height="4" rx="2" fill="#CBD5E1"/>
-       <rect x="42" y="55" width="15" height="4" rx="2" fill="#CBD5E1"/>
-       <path d="M35 38 L38 42 L45 33" stroke="#10B981" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
-       <path d="M35 53 L38 57 L45 48" stroke="#10B981" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
-    </svg>,
-    <svg key="ai" width="66" height="66" viewBox="0 0 100 100" fill="none" className="drop-shadow-2xl">
-       <path d="M50 20 L80 35 L50 50 L20 35 Z" fill="rgba(56, 189, 248, 0.2)" stroke="#38BDF8" strokeWidth="1"/>
-       <path d="M20 35 L50 50 L50 80 L20 65 Z" fill="rgba(14, 165, 233, 0.2)" stroke="#0EA5E9" strokeWidth="1"/>
-       <path d="M80 35 L50 50 L50 80 L80 65 Z" fill="rgba(2, 132, 199, 0.2)" stroke="#0284C7" strokeWidth="1"/>
-       <path d="M50 35 L65 42 L50 50 L35 42 Z" fill="#E0F2FE"/>
-       <path d="M35 42 L50 50 L50 65 L35 57 Z" fill="#7DD3FC"/>
-       <path d="M65 42 L50 50 L50 65 L65 57 Z" fill="#38BDF8"/>
-       <circle cx="50" cy="20" r="4" fill="#FFF" filter="drop-shadow(0 0 5px #38BDF8)"/>
-       <circle cx="20" cy="35" r="4" fill="#FFF" filter="drop-shadow(0 0 5px #38BDF8)"/>
-       <circle cx="80" cy="35" r="4" fill="#FFF" filter="drop-shadow(0 0 5px #38BDF8)"/>
-    </svg>
-  ],
-  // Pair 4: 3D Lock & Gold Coin (Compliance Value)
-  [
-    <svg key="lock" width="66" height="66" viewBox="0 0 100 100" fill="none" className="drop-shadow-2xl">
-       <path d="M35 40 V30 C35 15 65 15 65 30 V40" fill="none" stroke="#64748B" strokeWidth="12" strokeLinecap="round" transform="translate(3,3)"/>
-       <path d="M35 40 V30 C35 15 65 15 65 30 V40" fill="none" stroke="#CBD5E1" strokeWidth="12" strokeLinecap="round"/>
-       <rect x="25" y="40" width="50" height="45" rx="8" fill="#B45309" transform="translate(4,4)"/>
-       <rect x="25" y="40" width="50" height="45" rx="8" fill="#FBBF24"/>
-       <circle cx="50" cy="55" r="6" fill="#78350F"/>
-       <path d="M47 58 L53 58 L55 68 L45 68 Z" fill="#78350F"/>
-       <rect x="30" y="40" width="10" height="45" fill="#FFF" opacity="0.4"/>
-    </svg>,
-    <svg key="coin" width="66" height="66" viewBox="0 0 100 100" fill="none" className="drop-shadow-2xl">
-       <circle cx="53" cy="53" r="30" fill="#B45309"/>
-       <circle cx="50" cy="50" r="30" fill="#D97706"/>
-       <circle cx="50" cy="50" r="24" fill="#FBBF24"/>
-       <path d="M38 50 L46 58 L62 42" stroke="#B45309" strokeWidth="6" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
-       <path d="M50 20 A30 30 0 0 0 20 50 A30 30 0 0 1 50 20 Z" fill="#FFF" opacity="0.5"/>
-    </svg>
-  ]
+  // 1. Food Packaging Box (Scanning)
+  <svg key="package" width="70" height="70" viewBox="0 0 100 100" fill="none" className="drop-shadow-2xl">
+    <defs>
+      <linearGradient id="boxTop" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stopColor="#F59E0B"/><stop offset="100%" stopColor="#D97706"/></linearGradient>
+      <linearGradient id="boxLeft" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stopColor="#D97706"/><stop offset="100%" stopColor="#B45309"/></linearGradient>
+      <linearGradient id="boxRight" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stopColor="#B45309"/><stop offset="100%" stopColor="#78350F"/></linearGradient>
+    </defs>
+    <path d="M50 20 L85 35 L50 50 L15 35 Z" fill="url(#boxTop)" />
+    <path d="M15 35 L50 50 L50 85 L15 70 Z" fill="url(#boxLeft)" />
+    <path d="M85 35 L50 50 L50 85 L85 70 Z" fill="url(#boxRight)" />
+    <path d="M15 35 L50 50 L85 35" stroke="#FCD34D" strokeWidth="2" strokeLinejoin="round"/>
+    <path d="M50 50 L50 85" stroke="#FBBF24" strokeWidth="2" strokeLinecap="round"/>
+    <rect x="25" y="45" width="10" height="15" fill="#FFF" opacity="0.8" transform="skewY(22)" />
+    <circle cx="65" cy="55" r="6" fill="#10B981" opacity="0.9" transform="skewY(-22)" />
+  </svg>,
+
+  // 2. OCR Scanner / Eye (Extraction)
+  <svg key="scanner" width="70" height="70" viewBox="0 0 100 100" fill="none" className="drop-shadow-2xl">
+    <defs>
+      <linearGradient id="scanLine" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stopColor="transparent"/><stop offset="50%" stopColor="#3B82F6"/><stop offset="100%" stopColor="transparent"/></linearGradient>
+      <linearGradient id="lens2" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stopColor="#60A5FA"/><stop offset="100%" stopColor="#1E3A8A"/></linearGradient>
+    </defs>
+    <rect x="15" y="20" width="70" height="60" rx="4" fill="#1E293B" stroke="#475569" strokeWidth="2" />
+    <rect x="25" y="30" width="50" height="6" fill="#334155" rx="3" />
+    <rect x="25" y="45" width="40" height="6" fill="#334155" rx="3" />
+    <rect x="25" y="60" width="30" height="6" fill="#334155" rx="3" />
+    
+    <circle cx="65" cy="65" r="25" fill="url(#lens2)" opacity="0.9" stroke="#94A3B8" strokeWidth="4" />
+    <path d="M65 45a20 20 0 0 0-20 20 20 20 0 0 1 20-20z" fill="#FFF" opacity="0.6"/>
+    <line x1="50" y1="65" x2="80" y2="65" stroke="#60A5FA" strokeWidth="2" />
+    <line x1="65" y1="50" x2="65" y2="80" stroke="#60A5FA" strokeWidth="2" />
+  </svg>,
+
+  // 3. Legal Scales (Rules Engine)
+  <svg key="scales" width="70" height="70" viewBox="0 0 100 100" fill="none" className="drop-shadow-2xl">
+    <defs>
+      <linearGradient id="gold" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stopColor="#FDE047"/><stop offset="100%" stopColor="#A16207"/></linearGradient>
+      <linearGradient id="silver" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stopColor="#F1F5F9"/><stop offset="100%" stopColor="#94A3B8"/></linearGradient>
+    </defs>
+    <path d="M50 10 L50 85" stroke="url(#gold)" strokeWidth="6" strokeLinecap="round" />
+    <path d="M40 85 L60 85 L55 95 L45 95 Z" fill="url(#gold)" />
+    <path d="M20 30 L80 30" stroke="url(#gold)" strokeWidth="6" strokeLinecap="round" />
+    <circle cx="50" cy="30" r="6" fill="url(#silver)" />
+    
+    <path d="M20 30 L10 55 L30 55 Z" fill="none" stroke="url(#silver)" strokeWidth="2" />
+    <path d="M10 55 C10 65 30 65 30 55 Z" fill="url(#gold)" opacity="0.9" />
+    
+    <path d="M80 30 L70 55 L90 55 Z" fill="none" stroke="url(#silver)" strokeWidth="2" />
+    <path d="M70 55 C70 65 90 65 90 55 Z" fill="url(#gold)" opacity="0.9" />
+  </svg>,
+
+  // 4. Verified Shield (Compliance)
+  <svg key="shield" width="70" height="70" viewBox="0 0 100 100" fill="none" className="drop-shadow-2xl">
+    <defs>
+      <linearGradient id="shieldBase2" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stopColor="#059669"/><stop offset="100%" stopColor="#064E3B"/></linearGradient>
+      <linearGradient id="shieldFront2" x1="20%" y1="0%" x2="80%" y2="100%"><stop offset="0%" stopColor="#34D399"/><stop offset="100%" stopColor="#047857"/></linearGradient>
+    </defs>
+    <path d="M50 90s35-15 35-45V25L50 10L15 25v30c0 30 35 45 35 45z" fill="url(#shieldBase2)" transform="translate(4, 4)"/>
+    <path d="M50 90s35-15 35-45V25L50 10L15 25v30c0 30 35 45 35 45z" fill="url(#shieldFront2)"/>
+    <path d="M50 90c0 0-35-15-35-45V25L50 10v80z" fill="#FFF" opacity="0.2"/>
+    <path d="M30 50 L45 65 L70 35" stroke="#FFF" strokeWidth="8" strokeLinecap="round" strokeLinejoin="round" fill="none" />
+  </svg>
 ];
 
-const logTexts = [
-  "Targeting bounding boxes on package geometry...",
-  "Isolating Manufacturer Address block...",
-  "Extracting textual data layer...",
-  "Evaluating Rule 6 compliance parameters...",
-  "Verifying MRP formatting and tax inclusiveness...",
-  "Initiating biochemical composition check...",
-  "Cross-referencing E-number toxicity database...",
-  "Aggregating 33 rule outcomes...",
-  "Finalizing compliance payload..."
+const texts = [
+  "Extracting Packaging Telemetry",
+  "Running OCR Vision Models",
+  "Auditing Legal Metrology Rules",
+  "Finalizing Compliance Score"
 ];
 
 export default function DynamicLoader() {
-  const [pairIdx, setPairIdx] = useState(0);
-  const [isTransitioning, setIsTransitioning] = useState(false);
-  const [logIdx, setLogIdx] = useState(0);
-
-  const triggerHaptic = (pattern) => {
-    if (typeof window !== 'undefined' && navigator && navigator.vibrate) {
-      try { navigator.vibrate(pattern); } catch(e) {}
-    }
-  };
-
+  const [index, setIndex] = useState(0);
 
   useEffect(() => {
-    const interval = setInterval(() => {
-      // Start exit animation (Swap/Revolve Out)
-      setIsTransitioning(true);
-      setTimeout(() => {
-        // Change icon and instantly start entrance animation
-        setPairIdx((prev) => (prev + 1) % icons.length);
-        triggerHaptic([15, 30, 15]); // Satisfying physical swap click
-        setIsTransitioning(false);
-      }, 400); // 400ms physical drop-out duration
-    }, 2800);
-    return () => clearInterval(interval);
+    const timer = setInterval(() => {
+      setIndex(prev => (prev + 1) % icons.length);
+      
+      // Haptic tick for physical sensation if supported
+      if (typeof window !== 'undefined' && navigator.vibrate) {
+        navigator.vibrate(30);
+      }
+    }, 2500); // 2.5s per state
+    return () => clearInterval(timer);
   }, []);
 
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setLogIdx((prev) => {
-        if (prev < logTexts.length - 1) {
-          triggerHaptic(5); // Tiny tick for new log
-          return prev + 1;
-        }
-        return prev;
-      });
-    }, 1800);
-    return () => clearInterval(interval);
-  }, []);
-
-  const currentPair = icons[pairIdx];
-  const currentLog = logTexts[logIdx];
-
-  // The 'isTransitioning' state triggers the Swiggy-style drop/swap.
-  // When TRUE (exiting): Items drop down heavily, shrink, and fade.
-  // When FALSE (entering/active): Items spring up to center, grow, and float.
-  
   return (
-    <div className="flex flex-col items-center justify-center w-full min-h-[50vh] animate-in fade-in duration-500 overflow-hidden">
+    <div className="flex flex-col items-center justify-center py-16 px-4">
       
-      {/* Animated Objects Container */}
-      <div className="flex items-end justify-center gap-12 h-[130px] mb-8 relative z-10 perspective-[1000px]">
-        
-        {/* Object 1 (Left) */}
-        <div className="flex flex-col items-center gap-6">
-          <div 
-            className={`
-              transition-all duration-[400ms] ease-[cubic-bezier(0.34,1.56,0.64,1)]
-              ${isTransitioning 
-                ? 'translate-y-[80px] scale-50 opacity-0 rotate-[-30deg]' 
-                : 'translate-y-0 scale-100 opacity-100 rotate-0'}
-            `}
+      {/* 3D Flip Container */}
+      <div 
+        className="relative w-32 h-32 flex items-center justify-center mb-10" 
+        style={{ perspective: 1200 }} // Gives the 3D depth illusion
+      >
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={index}
+            initial={{ rotateY: 90, opacity: 0, scale: 0.8 }}
+            animate={{ rotateY: 0, opacity: 1, scale: 1 }}
+            exit={{ rotateY: -90, opacity: 0, scale: 0.8 }}
+            transition={{ duration: 0.5, ease: "easeInOut" }}
+            className="absolute flex items-center justify-center"
+            style={{ transformStyle: 'preserve-3d' }}
           >
-            <div className={!isTransitioning ? "animate-[wobble3D_3s_ease-in-out_infinite]" : ""}>
-              {currentPair[0]}
-            </div>
-          </div>
-          <div className="w-14 h-2 bg-black/10 dark:bg-white/10 rounded-[100%] blur-[2px] animate-[shadowScale_1.5s_ease-in-out_infinite_alternate]"></div>
-        </div>
-
-        {/* Object 2 (Right) */}
-        <div className="flex flex-col items-center gap-6">
-          <div 
-            className={`
-              transition-all duration-[400ms] ease-[cubic-bezier(0.34,1.56,0.64,1)] delay-[50ms]
-              ${isTransitioning 
-                ? 'translate-y-[80px] scale-50 opacity-0 rotate-[30deg]' 
-                : 'translate-y-0 scale-100 opacity-100 rotate-0'}
-            `}
-          >
-            <div className={!isTransitioning ? "animate-[wobble3D_3.5s_ease-in-out_infinite]" : ""}>
-              {currentPair[1]}
-            </div>
-          </div>
-          <div className="w-14 h-2 bg-black/10 dark:bg-white/10 rounded-[100%] blur-[2px] animate-[shadowScale_1.5s_ease-in-out_infinite_alternate-reverse]"></div>
-        </div>
-        
-      </div>
-
-      {/* Dynamic Tiny Text Log */}
-      <div className="flex flex-col items-center h-10 relative z-10 w-full overflow-hidden">
-        <div key={logIdx} className="inline-flex items-center gap-2 px-4 py-2 bg-slate-100 dark:bg-white/5 rounded-full border border-slate-200 dark:border-white/10 shadow-sm animate-in fade-in slide-in-from-bottom-3 duration-300">
-          <div className="w-2 h-2 rounded-full bg-accent animate-pulse shadow-[0_0_8px_rgba(59,130,246,0.8)]"></div>
-          <span className="text-[12px] md:text-[13px] font-medium text-slate-600 dark:text-slate-300 tracking-wide truncate max-w-[280px] md:max-w-md">
-            {currentLog}
-          </span>
-        </div>
+            {/* Soft glowing aura behind the icon */}
+            <div className="absolute inset-0 bg-accent/20 blur-2xl rounded-full scale-150"></div>
+            {icons[index]}
+          </motion.div>
+        </AnimatePresence>
       </div>
       
+      {/* Text Carousel */}
+      <div className="h-6 overflow-hidden relative w-full max-w-[280px]">
+        <AnimatePresence mode="wait">
+          <motion.p
+            key={index}
+            initial={{ y: 20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ y: -20, opacity: 0 }}
+            transition={{ duration: 0.3 }}
+            className="text-[13px] font-bold tracking-widest uppercase text-text-secondary text-center absolute w-full"
+          >
+            {texts[index]}...
+          </motion.p>
+        </AnimatePresence>
+      </div>
+
+      {/* Progress Bar */}
+      <div className="w-48 h-1 bg-border rounded-full mt-6 overflow-hidden relative">
+        <motion.div 
+          className="absolute top-0 left-0 h-full bg-accent"
+          initial={{ width: '0%' }}
+          animate={{ width: `${((index + 1) / icons.length) * 100}%` }}
+          transition={{ duration: 0.5 }}
+        />
+      </div>
+
     </div>
   );
 }
