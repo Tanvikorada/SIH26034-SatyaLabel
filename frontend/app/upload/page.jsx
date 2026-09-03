@@ -124,14 +124,42 @@ export default function UploadPage() {
       const json = await res.json();
       const responseData = json.data || json;
       
-      toast.success('Scan complete', { id: toastId });
-      const scanId = responseData.scan_id || responseData.id || responseData.batch_id;
-      if (scanId) {
-        setTimeout(() => router.push(`/results/${scanId}`), 1000);
-      } else {
+      const batchId = responseData.batch_id || responseData.id || responseData.scan_id;
+      if (!batchId) {
         toast.warning('Scan submitted. Check history for results.', { id: toastId });
         setTimeout(() => router.push('/history'), 1500);
+        return;
       }
+
+      // Connect to true SSE stream
+      const sseUrl = `${API}/scans/batch/${batchId}/stream?token=${sessionStorage.getItem('token')}`;
+      const sse = new EventSource(sseUrl);
+      
+      sse.onmessage = (event) => {
+        try {
+          const data = JSON.parse(event.data);
+          if (data.type === 'progress') {
+            setLogs(prev => [...prev, `> ${data.message}`]);
+          } else if (data.status === 'complete' || data.status === 'completed') {
+            sse.close();
+            toast.success('Scan complete', { id: toastId });
+            router.push(`/results/${data.scanId || batchId}`);
+          } else if (data.status === 'failed') {
+            sse.close();
+            setLogs(prev => [...prev, `> ERROR: ${data.errorMessage || 'Scan failed'}`]);
+            toast.error('Scan failed', { id: toastId });
+            setLoading(false);
+          }
+        } catch (e) {
+          // ignore
+        }
+      };
+      
+      sse.onerror = () => {
+        sse.close();
+        setTimeout(() => router.push(`/results/${batchId}`), 2000);
+      };
+
     } catch (err) {
       await saveToSyncQueue(files[0], metadata);
       toast.warning('Network Offline', { id: toastId, description: 'Scan queued locally.' });
@@ -140,17 +168,7 @@ export default function UploadPage() {
   };
 
   useEffect(() => {
-    if (loading) {
-      const msgs = ['Initializing Vision Engine...', 'Detecting bounding boxes...', 'Extracting textual tokens...', 'Applying Legal Metrology Act...', 'Computing compliance vectors...'];
-      let i = 0;
-      const interval = setInterval(() => {
-        if (i < msgs.length) {
-          setLogs(prev => [...prev, `> ${msgs[i]}`]);
-          i++;
-        }
-      }, 800);
-      return () => clearInterval(interval);
-    }
+    // Real SSE telemetry handles this now.
   }, [loading]);
 
   return (
