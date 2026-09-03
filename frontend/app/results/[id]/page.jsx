@@ -308,6 +308,7 @@ export default function ResultsPage({ params }) {
                   No ingredient data was detected on this packaging.
                 </div>
               ) : (
+                <>
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
                   
                   {/* Left Column: Health Profile (2/3 width on desktop) */}
@@ -386,21 +387,7 @@ export default function ResultsPage({ params }) {
                       )}
                     </div>
 
-                    
-                    {/* Detailed AI Ingredient Dictionary */}
-                    {fields.ingredient_analysis?.ingredient_dictionary && fields.ingredient_analysis.ingredient_dictionary.length > 0 && (
-                      <div className="glass rounded-[20px] p-6 mt-6 col-span-full">
-                        <h4 className="text-[14px] font-mono tracking-wider text-text-secondary uppercase mb-4 border-b border-border pb-2">AI Ingredient Breakdown</h4>
-                        <div className="space-y-4">
-                          {fields.ingredient_analysis.ingredient_dictionary.map((ing, i) => (
-                            <div key={i} className="flex flex-col sm:flex-row gap-3 items-start border border-border/50 bg-background/30 rounded-xl p-4 hover:border-text-muted transition-colors">
-                               <div className="min-w-[140px] font-medium text-text-primary text-[14px]">{ing.name}</div>
-                               <div className="text-[13px] text-text-secondary leading-relaxed">{ing.description}</div>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    )}
+
                     
                     {/* Raw Ingredients Text */}
                     <div className="glass rounded-[20px] p-6 border border-border h-full min-h-[300px]">
@@ -411,7 +398,22 @@ export default function ResultsPage({ params }) {
                     </div>
 
                   </div>
-                </div>
+                  </div>
+                  {/* Detailed AI Ingredient Dictionary - Rendered full width below the grid */}
+                  {fields.ingredient_analysis?.ingredient_dictionary && fields.ingredient_analysis.ingredient_dictionary.length > 0 && (
+                    <div className="glass rounded-[20px] p-6 mt-6 w-full">
+                      <h4 className="text-[14px] font-mono tracking-wider text-text-secondary uppercase mb-4 border-b border-border pb-2">AI Ingredient Breakdown</h4>
+                      <div className="space-y-4">
+                        {fields.ingredient_analysis.ingredient_dictionary.map((ing, i) => (
+                          <div key={i} className="flex flex-col sm:flex-row gap-3 items-start border border-border/50 bg-background/30 rounded-xl p-4 hover:border-text-muted transition-colors">
+                             <div className="min-w-[140px] font-medium text-text-primary text-[14px]">{ing.name}</div>
+                             <div className="text-[13px] text-text-secondary leading-relaxed">{ing.description}</div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </>
               )}
             </div>
           )}
