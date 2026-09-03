@@ -309,7 +309,7 @@ router.post('/', requireAuth, (req, res, next) => {
 const batchClients = new Map();
 
 // GET /api/v1/scans/batch/:id/stream - SSE Endpoint
-router.get('/batch/:id/stream', requireAuth, (req, res) => {
+router.get('/batch/:id/stream', requireAuth, async (req, res) => {
   res.writeHead(200, {
     'Content-Type': 'text/event-stream',
     'Cache-Control': 'no-cache',
@@ -317,16 +317,32 @@ router.get('/batch/:id/stream', requireAuth, (req, res) => {
   });
   
   const batchId = String(req.params.id);
-  if (!batchClients.has(batchId)) batchClients.set(batchId, []);
-  batchClients.get(batchId).push(res);
   
   // Send initial ping to establish connection
   res.write(': ping\n\n');
+
+  // RACE CONDITION FIX: The offline AI pipeline is sometimes SO fast that it finishes 
+  // before the frontend even finishes establishing the SSE connection.
+  try {
+    const { Batch, Scan } = require('../models');
+    const batch = await Batch.findByPk(batchId);
+    if (batch && (batch.status === 'complete' || batch.status === 'completed' || batch.status === 'failed')) {
+      const scan = await Scan.findOne({ where: { batchId: batch.id } });
+      res.write(`data: ${JSON.stringify({ status: batch.status, scanId: scan ? scan.id : null, errorMessage: batch.errorMessage })}\n\n`);
+      return res.end();
+    }
+  } catch (e) {
+    console.error('SSE race check err:', e);
+  }
+
+  if (!batchClients.has(batchId)) batchClients.set(batchId, []);
+  batchClients.get(batchId).push(res);
 
   req.on('close', () => {
     const clients = batchClients.get(batchId) || [];
     batchClients.set(batchId, clients.filter(c => c !== res));
   });
+});
 });
 
 router.get('/batch/:id', requireAuth, async (req, res) => {
