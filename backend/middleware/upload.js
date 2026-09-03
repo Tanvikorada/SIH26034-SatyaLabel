@@ -12,14 +12,16 @@ const fs = require('fs');
 const UPLOAD_DIR = process.env.UPLOAD_DIR || './uploads';
 const MAX_FILE_SIZE_MB = 10; // Spec 04: max 10 MB
 
-// Ensure upload directory exists
-if (!fs.existsSync(UPLOAD_DIR)) {
-  fs.mkdirSync(UPLOAD_DIR, { recursive: true });
-}
+if (!fs.existsSync(UPLOAD_DIR)) { fs.mkdirSync(UPLOAD_DIR, { recursive: true }); }
 
-const storage = multer.memoryStorage();
-
-// Spec 04: Accept JPG/PNG only
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, UPLOAD_DIR);
+  },
+  filename: function (req, file, cb) {
+    cb(null, `${Date.now()}-${uuidv4()}${path.extname(file.originalname)}`);
+  }
+});
 // (webp/bmp/tiff removed — not specified in spec; keeping simple for demo)
 const fileFilter = (req, file, cb) => {
   const allowed = ['.jpg', '.jpeg', '.png'];
