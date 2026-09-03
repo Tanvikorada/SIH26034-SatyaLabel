@@ -448,7 +448,7 @@ function TheCaseFile() {
                 </div>
                 <div className="w-[1px] h-32 bg-[var(--color-border)] hidden md:block" />
                 <div className="flex-1 text-center">
-                  <div className="text-5xl font-mono text-[var(--color-accent)] mb-2 drop-shadow-[0_0_8px_var(--color-accent)]"><10s</div>
+                  <div className="text-5xl font-mono text-[var(--color-accent)] mb-2 drop-shadow-[0_0_8px_var(--color-accent)]">{"<"}10s</div>
                   <div className="text-[12px] font-medium tracking-wide uppercase text-[var(--color-text-secondary)]">Average per Label</div>
                 </div>
               </motion.div>
