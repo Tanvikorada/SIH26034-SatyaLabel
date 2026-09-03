@@ -345,7 +345,7 @@ async function generateReport({ scan, product, extractedFields, violations, stat
 
   // ── PAGE 1 ────────────────────────────────────────────────────────────────
   currentPage++;
-  const { page: p1, cursorY: cy1Start } = makePage(pdfDoc, fonts, currentPage, estimatedPages, sealImg);
+  let { page: p1, cursorY: cy1Start } = makePage(pdfDoc, fonts, currentPage, estimatedPages, sealImg);
   let cy = cy1Start;
 
   // ── Report Meta Block ──
@@ -366,7 +366,28 @@ async function generateReport({ scan, product, extractedFields, violations, stat
   p1.drawLine({ start: { x: MARGIN, y: cy }, end: { x: A4_W - MARGIN, y: cy }, thickness: 0.4, color: C.border });
   cy -= 16;
 
-  // ── Section 1: Extracted Declarations ──
+    // --- AI EXECUTIVE SUMMARY ---
+  if (fields.ai_summary) {
+    cy = drawSectionHeading(p1, fonts, cy, 'AI Executive Summary');
+    const words = fields.ai_summary.split(/\s+/);
+    let line = '';
+    for (const w of words) {
+      if ((line + w).length > 95) {
+        p1.drawText(san(line), { x: MARGIN + 5, y: cy, size: 8, font: fonts.regular, color: C.black });
+        cy -= 12;
+        line = w + ' ';
+      } else {
+        line += w + ' ';
+      }
+    }
+    if (line) {
+      p1.drawText(san(line), { x: MARGIN + 5, y: cy, size: 8, font: fonts.regular, color: C.black });
+      cy -= 12;
+    }
+    cy -= 10;
+  }
+
+  // --- Section 1: Extracted Declarations ---
   cy = drawSectionHeading(p1, fonts, cy, 'Section 1 — Extracted Label Declarations');
 
   const extractedRows = [
@@ -396,7 +417,48 @@ async function generateReport({ scan, product, extractedFields, violations, stat
   );
   cy -= 12;
 
-  // ── Section 2 header (may spill to next page) ──
+  // --- INGREDIENT ANALYSIS ---
+  if (fields.ingredient_analysis) {
+    if (cy < 150) {
+      currentPage++;
+      const np = makePage(pdfDoc, fonts, currentPage, estimatedPages, sealImg);
+      p1 = np.page;
+      cy = np.cursorY;
+    }
+    cy = drawSectionHeading(p1, fonts, cy, 'Biochemical & Ingredient Analysis');
+    
+    const iq = fields.ingredient_analysis;
+    const items = [
+      ['Clean Label', iq.is_clean_label ? 'Yes' : 'No'],
+      ['Harmful Additives', (iq.harmful_additives_found || []).join(', ') || 'None detected'],
+      ['Health Risks', (iq.health_risks || []).join(', ') || 'None identified'],
+      ['Allergens', (iq.allergens_detected || []).join(', ') || 'None detected']
+    ];
+    
+    for (const [k, v] of items) {
+      p1.drawText(san(k) + ':', { x: MARGIN, y: cy, size: 7.5, font: fonts.bold, color: C.slate });
+      
+      const words = String(v).split(/\s+/);
+      let line = '';
+      let textY = cy;
+      for (const w of words) {
+        if ((line + w).length > 70) {
+          p1.drawText(san(line), { x: MARGIN + 100, y: textY, size: 7.5, font: fonts.mono, color: C.black });
+          textY -= 10;
+          line = w + ' ';
+        } else {
+          line += w + ' ';
+        }
+      }
+      if (line) {
+        p1.drawText(san(line), { x: MARGIN + 100, y: textY, size: 7.5, font: fonts.mono, color: C.black });
+      }
+      cy = textY - 14;
+    }
+    cy -= 6;
+  }
+
+  // --- Section 2 header (may spill to next page) ---
   if (cy < 120) {
     currentPage++;
     const next = makePage(pdfDoc, fonts, currentPage, estimatedPages, sealImg);
