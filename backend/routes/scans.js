@@ -95,7 +95,16 @@ function inferCategory(fieldsMap) {
 // Runs AFTER the HTTP response has been sent (fire-and-forget from route handler).
 // Updates the scan record with results when complete.
 
+// Emit progress update helper
+const emitProgress = (batchId, step, message) => {
+  const clients = batchClients.get(String(batchId)) || [];
+  clients.forEach(clientRes => {
+    clientRes.write(`data: ${JSON.stringify({ type: 'progress', step, message })}\n\n`);
+  });
+};
+
 async function runBatchPipeline(batch, imagePath, metadata = {}) {
+  let finalScanId = null;
   try {
     const { Scan, Product, Violation, Report, Batch } = require('../models');
     const { runOcrPipeline } = require('../services/ocr_service');
@@ -104,140 +113,113 @@ async function runBatchPipeline(batch, imagePath, metadata = {}) {
     const { generateReport, generateCSV } = require('../services/report_service');
     const { generateAIAuditorAnalysis } = require('../services/auditor_service');
 
-    const { detectAndCropProducts } = require('../services/crop_service');
-  
-    console.log('[Pipeline] Starting pipeline for Batch', batch.id);
+    emitProgress(batch.id, 1, 'Initializing Vision Engine...');
     
     let successfulScans = 0;
-      
-      const filePathsArray = Array.isArray(imagePath) ? imagePath : [imagePath];
-      const ocrResult = await runOcrPipeline(filePathsArray, metadata.forceEngine);
-      if (!ocrResult) {
-        await batch.update({ status: 'failed', errorMessage: 'Could not extract text.' });
-        return;
-      }
-      
-      let productsArray = ocrResult.geminiStructuredData?.products || ocrResult.geminiStructuredData;
-      if (!Array.isArray(productsArray)) productsArray = [productsArray];
-      if (productsArray.length > 1) {
-        await batch.update({ status: 'failed', errorMessage: filePathsArray.length > 1 ? 'MULTIPLE_IMAGES_MULTIPLE_PRODUCTS' : 'SINGLE_IMAGE_MULTIPLE_PRODUCTS' });
-        return;
-      }
-      
-      const rawProductData = productsArray[0];
-      if (!rawProductData || Object.keys(rawProductData).length === 0) {
-        await batch.update({ status: 'failed', errorMessage: 'No consumer packaging found.' });
-        return;
-      }
-      
-      try {
-        const fieldsMap = extractFields(
-        ocrResult.text,
-        rawProductData,
-        ocrResult._fontMetrics || null
-      );
-
-      if (rawProductData.meta_image_quality && rawProductData.meta_image_quality !== 'good') {
-         fieldsMap._quality_warning = rawProductData.meta_quality_reason || 'Image quality too poor for full verification.';
-      }
-      if (rawProductData.meta_obstruction && rawProductData.meta_obstruction !== 'none') {
-           let reason = rawProductData.meta_obstruction;
-           if (reason === 'partially_cut_off') reason = 'Curved surface / Edge cut off. Take multiple photos for full validation.';
-           else if (reason === 'thumb_covering_text') reason = 'Thumb covering text detected.';
-           fieldsMap._quality_warning = (fieldsMap._quality_warning ? fieldsMap._quality_warning + ' | ' : '') + 'Obstruction: ' + reason;
-        }
-
-      const { results, violations, stats } = await validateCompliance(fieldsMap, ocrResult.text, metadata);
-      
-      const aiAnalysis = await generateAIAuditorAnalysis(fieldsMap, violations, ocrResult.text);
-      if (aiAnalysis) {
-        fieldsMap._ai_analysis = aiAnalysis;
-      }
-
-      const productName = fieldsMap.product_name || batch.productNameHint || 'Unknown Product';
-      const brandName   = fieldsMap.brand_name   || batch.brandNameHint   || null;
-      let product = null;
-
-      if (productName === 'Unknown Product') {
-        product = await Product.create({ productName, brandName, category: 'general' });
-      } else if (productName) {
-        [product] = await Product.findOrCreate({
-          where: { productName },
-          defaults: { productName, brandName, category: 'general' },
-        });
-        if (brandName && !product.brandName) await product.update({ brandName });
-      }
-
-      const scan = await Scan.create({
-        batchId:          batch.id,
-        imagePath:        batch.originalImage,
-        uploadedBy:       batch.uploadedBy,
-        sourceType:       batch.sourceType,
-        productId:        product?.id || null,
-        ocrRawText:       ocrResult.text,
-        ocrEngineUsed:    ocrResult.engine,
-        ocrConfidenceAvg: ocrResult.confidence,
-        extractedFields:  fieldsMap,
-        overallCompliance: stats.overallCompliance,
-        complianceScore:  stats.complianceScore,
-        totalRulesChecked: stats.totalRulesChecked,
-        totalViolations:  stats.totalViolations,
-        highViolations:   stats.highViolations,
-        status:           'complete',
-      });
-
-      const violationsToSave = results || violations;
-      const reportDir = require('path').join(__dirname, '../uploads');
-      const reportPath = await generateReport({
-        scan: scan.toJSON(),
-        product: product?.toJSON() || null,
-        extractedFields: fieldsMap,
-        violations: violationsToSave,
-        stats,
-      }, reportDir);
-
-      await Report.create({ scanId: scan.id, filePath: reportPath, generatedBy: scan.uploadedBy || null });
-
-      for (const v of violationsToSave) {
-        await Violation.create({
-          scanId: scan.id,
-          ruleId: v.rule_id || v.ruleId,
-          ruleTitle: v.rule_title || v.ruleTitle,
-          status: v.status,
-          affectedField: v.field || v.affectedField,
-          severity: v.severity,
-          detail: v.detail,
-          confidence: v.confidence || 'estimated',
-        });
-      }
-      successfulScans++;
-      } catch (innerErr) {
-        global.lastInnerErr = innerErr.stack || innerErr.message;
-        console.error('[Pipeline] Error processing individual product inside batch', batch.id, innerErr);
-        require('fs').writeFileSync('inner_err.log', innerErr.stack || innerErr.message);
-        await batch.update({ status: 'failed', errorMessage: 'Internal error during analysis: ' + innerErr.message });
-      }
-
-    if (successfulScans > 0) {
-      await batch.update({ status: 'completed' });
-    } else if (batch.status !== 'failed') {
-      await batch.update({ status: 'failed', errorMessage: 'Processing failed.' });
+    const filePathsArray = Array.isArray(imagePath) ? imagePath : [imagePath];
+    
+    emitProgress(batch.id, 2, 'Extracting textual tokens from image...');
+    const ocrResult = await runOcrPipeline(filePathsArray, metadata.forceEngine);
+    if (!ocrResult) {
+      await batch.update({ status: 'failed', errorMessage: 'Could not extract text.' });
+      return;
     }
+    
+    let productsArray = ocrResult.geminiStructuredData?.products || ocrResult.geminiStructuredData;
+    if (!Array.isArray(productsArray)) productsArray = [productsArray];
+    
+    const rawProductData = productsArray[0];
+    if (!rawProductData || Object.keys(rawProductData).length === 0) {
+      await batch.update({ status: 'failed', errorMessage: 'No consumer packaging found.' });
+      return;
+    }
+    
+    emitProgress(batch.id, 3, 'Applying Legal Metrology Act rules...');
+    const fieldsMap = extractFields(ocrResult.text, rawProductData, ocrResult._fontMetrics || null);
+
+    emitProgress(batch.id, 4, 'Computing compliance vectors...');
+    const { results, violations, stats } = await validateCompliance(fieldsMap, ocrResult.text, metadata);
+  
+    const aiAnalysis = await generateAIAuditorAnalysis(fieldsMap, violations, ocrResult.text);
+    if (aiAnalysis) fieldsMap._ai_analysis = aiAnalysis;
+
+    const productName = fieldsMap.product_name || batch.productNameHint || 'Unknown Product';
+    const brandName   = fieldsMap.brand_name   || batch.brandNameHint   || null;
+
+    let product;
+    if (productName === 'Unknown Product') {
+      product = await Product.create({ productName, brandName, category: 'general' });
+    } else if (productName) {
+      [product] = await Product.findOrCreate({
+        where: { productName },
+        defaults: { productName, brandName, category: 'general' },
+      });
+      if (brandName && !product.brandName) await product.update({ brandName });
+    }
+
+    emitProgress(batch.id, 5, 'Saving final report data...');
+    const scan = await Scan.create({
+      batchId:          batch.id,
+      imagePath:        batch.originalImage,
+      uploadedBy:       batch.uploadedBy,
+      sourceType:       batch.sourceType,
+      productId:        product?.id || null,
+      ocrRawText:       ocrResult.text,
+      ocrEngineUsed:    ocrResult.engine,
+      ocrConfidenceAvg: ocrResult.confidence,
+      extractedFields:  fieldsMap,
+      overallCompliance: stats.overallCompliance,
+      complianceScore:  stats.complianceScore,
+      totalRulesChecked: stats.totalRulesChecked,
+      totalViolations:  stats.totalViolations,
+      highViolations:   stats.highViolations,
+      status:           'complete',
+    });
+    
+    finalScanId = scan.id;
+
+    const violationsToSave = results || violations;
+    const reportDir = require('path').join(__dirname, '../uploads');
+    const reportPath = await generateReport({
+      scan: scan.toJSON(),
+      product: product?.toJSON() || null,
+      extractedFields: fieldsMap,
+      violations: violationsToSave,
+      stats,
+    }, reportDir);
+
+    await Report.create({ scanId: scan.id, filePath: reportPath, generatedBy: scan.uploadedBy || null });
+
+    for (const v of violationsToSave) {
+      await Violation.create({
+        scanId: scan.id,
+        ruleId: v.rule_id || v.ruleId,
+        ruleTitle: v.rule_title || v.ruleTitle,
+        status: v.status,
+        affectedField: v.field || v.affectedField,
+        severity: v.severity,
+        detail: v.detail,
+        confidence: v.confidence || 'estimated',
+      });
+    }
+    successfulScans++;
+      
+    await batch.update({ status: 'complete', successfulScans });
+    emitProgress(batch.id, 6, 'Complete!');
   } catch (err) {
     console.error('[Pipeline] Fatal error processing batch', batch.id, err);
-    require('fs').writeFileSync(require('path').join(__dirname, '../uploads/last_crash.txt'), err.stack || err.message);
     await batch.update({ status: 'failed', errorMessage: err.message }).catch(() => {});
   } finally {
-    // SSE Push Notification MUST fire even on early returns
     const clients = batchClients.get(String(batch.id)) || [];
     clients.forEach(clientRes => {
-      clientRes.write(`data: ${JSON.stringify({ status: batch.status })}\n\n`);
+      clientRes.write(`data: ${JSON.stringify({ status: batch.status, scanId: finalScanId })}\n\n`);
       clientRes.end();
     });
     batchClients.delete(String(batch.id));
   }
 }
-// OLD:// ─── POST /api/v1/scans ───────────────────────────────────────────────────────
+
+// ─── POST /api/v1/scans ───────────────────────────────────────────────────────
 // Spec 05: Returns 202 immediately. Pipeline runs async.
 // Client polls GET /scans/:id until status !== "processing".
 //
@@ -718,4 +700,72 @@ router.post('/:id/cancel', requireAuth, async (req, res) => {
   }
 });
 
+
+// PUT /api/v1/scans/:id (Phase 4: Human-in-the-Loop Override)
+router.put('/:id', requireAuth, async (req, res) => {
+  try {
+    const { Scan, Violation, Report } = require('../models');
+    const scanId = req.params.id;
+    const { extractedFields, violations } = req.body;
+
+    const scan = await Scan.findByPk(scanId);
+    if (!scan) return res.status(404).json({ error: 'Scan not found' });
+
+    // Update Extracted Fields
+    if (extractedFields) {
+      // NOTE: Sequelize might complain if isManuallyOverridden doesn't exist, we skip adding it to avoid auto-sync schema issues
+      await scan.update({ 
+        extractedFields
+      });
+    }
+
+    // Update Violations
+    if (violations && Array.isArray(violations)) {
+      for (const vData of violations) {
+        if (vData.id) {
+          const v = await Violation.findByPk(vData.id);
+          if (v && v.scanId === scan.id) {
+            await v.update({
+              status: vData.status,
+              detail: vData.detail,
+              affectedField: vData.affectedField
+            });
+          }
+        }
+      }
+    }
+
+    // Regenerate the PDF report with new values
+    const { generateReport } = require('../services/report_service');
+    
+    // Fetch fresh violations to regenerate report
+    const updatedViolations = await Violation.findAll({ where: { scanId } });
+    const product = scan.productId ? await require('../models').Product.findByPk(scan.productId) : null;
+    
+    const reportDir = require('path').join(__dirname, '../uploads');
+    const newReportPath = await generateReport({
+      scan: scan.toJSON(),
+      product: product?.toJSON() || null,
+      extractedFields: scan.extractedFields,
+      violations: updatedViolations.map(v => v.toJSON()),
+      stats: {
+        totalRulesChecked: scan.totalRulesChecked,
+        totalViolations: updatedViolations.filter(v => v.status.toUpperCase() === 'POTENTIAL NON-COMPLIANCE').length,
+        overallCompliance: updatedViolations.some(v => v.status.toUpperCase() === 'POTENTIAL NON-COMPLIANCE') ? 'fail' : 'pass'
+      }
+    }, reportDir);
+
+    const report = await Report.findOne({ where: { scanId } });
+    if (report) {
+      await report.update({ filePath: newReportPath });
+    }
+
+    return res.json({ success: true, message: 'Scan manually overridden and report regenerated' });
+  } catch (err) {
+    console.error('Error updating scan:', err);
+    res.status(500).json({ error: 'Failed to update scan' });
+  }
+});
+
 module.exports = router;
+

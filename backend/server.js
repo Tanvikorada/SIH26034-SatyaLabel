@@ -100,7 +100,8 @@ const startServer = async () => {
     console.log('Environment variable keys:', Object.keys(process.env));
     console.log('Is DATABASE_URL present in env?', !!process.env.DATABASE_URL);
     console.log('Is config.db.url present?', !!config.db.url);
-    await syncDatabase({ alter: true });
+    // Auto-sync disabled for production safety
+    // await syncDatabase({ alter: true });
 
     
 
