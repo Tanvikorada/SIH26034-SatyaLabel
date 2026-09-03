@@ -5,6 +5,7 @@ export default function manifest() {
     description: 'Legal Metrology AI Compliance Engine',
     start_url: '/dashboard?v=2',
     display: 'standalone',
+    display_override: ['standalone'],
     background_color: '#ffffff',
     theme_color: '#1E3A8A',
     icons: [

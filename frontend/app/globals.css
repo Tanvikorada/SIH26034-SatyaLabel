@@ -346,6 +346,16 @@ html, body {
   user-select: none;
   /* Prevent long-press from bringing up "Save Image" or "Copy Link" menus on UI elements */
   -webkit-touch-callout: none;
+
+  /* ── PWA BOTTOM SAFE-AREA FIX ─────────────────────────────────────
+     1. dvh = dynamic viewport height — correct for notch/gesture bars
+     2. background extends the app color into the safe-area strip,
+        eliminating the blank/white gap below the bottom nav
+     3. padding-bottom ensures content body never hides under gesture bar
+  ────────────────────────────────────────────────────────────────── */
+  min-height: 100dvh;
+  background-color: var(--color-background);
+  padding-bottom: env(safe-area-inset-bottom);
 }
 
 /* Allow text selection ONLY where it makes sense (inputs, logs) */

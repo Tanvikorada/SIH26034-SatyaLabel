@@ -63,7 +63,7 @@ export default function RootLayout({ children }) {
           </div>
           {children}
           <BottomNav />
-          <div className="md:hidden fixed bottom-0 left-0 w-full h-[env(safe-area-inset-bottom)] bg-white dark:bg-[#090a0f] z-[99999] pointer-events-none"></div>
+          <div className="md:hidden fixed bottom-0 left-0 w-full h-[env(safe-area-inset-bottom)] bg-background z-[99999] pointer-events-none"></div>
 
         <ClientThemeSync />
         </ThemeProvider>
