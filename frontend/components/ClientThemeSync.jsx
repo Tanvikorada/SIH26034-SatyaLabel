@@ -26,7 +26,7 @@ export default function ClientThemeSync() {
 
     
 
-    document.documentElement.style.backgroundColor = resolvedTheme === 'dark' ? '#000000' : '#ffffff';
+    document.documentElement.style.backgroundColor = resolvedTheme === 'dark' ? '#000000' : '#1E3A8A';
     document.body.style.backgroundColor = resolvedTheme === 'dark' ? '#000000' : '#ffffff';
     
     // Enable iOS Safari :active pseudo-class tactile feedback
