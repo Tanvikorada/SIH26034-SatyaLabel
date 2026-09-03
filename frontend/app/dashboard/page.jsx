@@ -7,15 +7,7 @@ import { Activity, CheckCircle, AlertTriangle, Clock, FileText, ArrowUpRight, Tr
 
 export default function Dashboard() {
   const [stats, setStats] = useState(null);
-  const [isMobile, setIsMobile] = useState(false);
   const router = useRouter();
-
-  useEffect(() => {
-    setIsMobile(window.innerWidth < 640);
-    const handleResize = () => setIsMobile(window.innerWidth < 640);
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
 
   useEffect(() => {
     if (!localStorage.getItem('token')) return router.push('/login');
@@ -41,9 +33,9 @@ export default function Dashboard() {
             { rule_id: 'Rule 4 - Name', count: 27 }
           ],
           recent_scans: [
-            { id: '1', product_name: 'Aashirvaad Atta 5kg', status: 'PASS', created_at: new Date().toISOString() },
-            { id: '2', product_name: 'Dabur Honey 250g', status: 'POTENTIAL NON-COMPLIANCE', created_at: new Date(Date.now() - 3600000).toISOString() },
-            { id: '3', product_name: 'Tata Salt 1kg', status: 'MANUAL REVIEW', created_at: new Date(Date.now() - 7200000).toISOString() }
+            { id: '1', product_name: 'Demo Product A', status: 'PASS', created_at: new Date().toISOString() },
+            { id: '2', product_name: 'Demo Product B', status: 'POTENTIAL NON-COMPLIANCE', created_at: new Date(Date.now() - 3600000).toISOString() },
+            { id: '3', product_name: 'Demo Product C', status: 'MANUAL REVIEW', created_at: new Date(Date.now() - 7200000).toISOString() }
           ]
         });
       }
@@ -143,7 +135,7 @@ export default function Dashboard() {
                 <h3 className="text-xl sm:text-3xl font-bold tracking-tight text-slate-900 dark:text-white mb-1">{card.value.toLocaleString()}</h3>
                 <p className="text-[11px] sm:text-xs font-medium leading-tight text-slate-500 dark:text-slate-400">{card.label}</p>
               </div>
-              <div className={`absolute bottom-0 left-0 w-full h-1 opacity-0 group-hover:opacity-100 transition-opacity ${card.color.split(' ')[0].replace('text-', 'bg-')} dark:${card.color.split(' ')[1]?.replace('text-', 'bg-') || ''}`} />
+              <div className={[`absolute bottom-0 left-0 w-full h-1 opacity-0 group-hover:opacity-100 transition-opacity`, i===0?'bg-blue-500':i===1?'bg-emerald-500':i===2?'bg-red-500':'bg-amber-500'].join(' ')} />
             </div>
           ))}
         </div>
@@ -208,7 +200,7 @@ export default function Dashboard() {
                 return (
                   <div 
                     key={i} 
-                    onClick={() => router.push(`/results/${scan.id || 'mock'}`)}
+                    onClick={() => scan.id && scan.id !== '---' && router.push(`/results/${scan.id}`)}
                     className="flex flex-col p-4 rounded-lg border border-slate-100 dark:border-slate-800/60 bg-slate-50/50 dark:bg-slate-900/20 hover:bg-slate-100 dark:hover:bg-slate-800/50 hover:border-slate-200 dark:hover:border-slate-700 cursor-pointer transition-all"
                   >
                     <div className="flex justify-between items-start mb-2">

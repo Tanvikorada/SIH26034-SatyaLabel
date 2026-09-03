@@ -6,7 +6,6 @@ import { triggerHaptic } from '@/utils/haptics';
 import { openDB } from 'idb';
 import NavBar from '@/components/NavBar';
 import DynamicLoader from '@/components/DynamicLoader';
-import InAppCamera from '@/components/InAppCamera';
 
 const API = process.env.NEXT_PUBLIC_API_URL || 'https://satyalabel-backend.onrender.com/api/v1';
 
@@ -14,10 +13,8 @@ export default function UploadPage() {
   const router = useRouter();
   const [files, setFiles] = useState([]);
   const [previews, setPreviews] = useState([]);
-  const [isCameraOpen, setIsCameraOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [productName, setProductName] = useState('');
-  const [category, setCategory] = useState('food');
   const [sourceType, setSourceType] = useState('physical_label');
   const [logs, setLogs] = useState([]);
 
@@ -52,6 +49,7 @@ export default function UploadPage() {
   };
 
   const removeFile = (index) => {
+    URL.revokeObjectURL(previews[index]); // prevent memory leak
     setFiles(prev => prev.filter((_, i) => i !== index));
     setPreviews(prev => prev.filter((_, i) => i !== index));
   };
@@ -108,7 +106,7 @@ export default function UploadPage() {
     
     setLoading(true);
     const toastId = toast.loading(files.length > 1 ? 'Processing multi-angle context...' : 'Initializing compliance scan...');
-    const metadata = { productName: productName || 'Unknown', category, sourceType, forceEngine: 'gemini', timestamp: new Date().toISOString() };
+    const metadata = { productName: productName || 'Unknown', sourceType, forceEngine: 'gemini', timestamp: new Date().toISOString() };
     
     try {
       const formData = new FormData();
@@ -127,7 +125,13 @@ export default function UploadPage() {
       const responseData = json.data || json;
       
       toast.success('Scan complete', { id: toastId });
-      setTimeout(() => router.push(`/batch/${responseData.batch_id || 'mock'}`), 1000);
+      const scanId = responseData.scan_id || responseData.id || responseData.batch_id;
+      if (scanId) {
+        setTimeout(() => router.push(`/results/${scanId}`), 1000);
+      } else {
+        toast.warning('Scan submitted. Check history for results.', { id: toastId });
+        setTimeout(() => router.push('/history'), 1500);
+      }
     } catch (err) {
       await saveToSyncQueue(files[0], metadata);
       toast.warning('Network Offline', { id: toastId, description: 'Scan queued locally.' });
@@ -161,7 +165,7 @@ export default function UploadPage() {
           <form onSubmit={handleUpload} className="mello-card p-4 md:p-8 col-span-3 flex flex-col gap-4 md:gap-6 h-full md:h-auto border-0 md:border md:shadow-sm bg-transparent md:bg-[var(--color-surface)]">
             <div className="flex flex-col gap-2">
               <label className="text-[10px] font-mono tracking-[0.2em] uppercase text-text-primary">Product Image</label>
-              <div className={`relative w-full flex-1 min-h-[200px] border-none sm:border-2 sm:border-dashed sm:border-slate-300 sm:hover:border-primary flex flex-col items-center justify-center rounded-2xl transition-colors ${isCameraOpen ? "bg-black border-none" : "bg-transparent sm:bg-slate-50"}`}>
+              <div className="relative w-full flex-1 min-h-[200px] border-none sm:border-2 sm:border-dashed sm:border-slate-300 sm:hover:border-primary flex flex-col items-center justify-center rounded-2xl transition-colors bg-transparent sm:bg-slate-50">
                 {previews.length > 0 ? (
                   <div className="w-full flex flex-col gap-4">
                     <div className="text-[13px] text-text-secondary text-center">
@@ -238,7 +242,7 @@ export default function UploadPage() {
           <div className="mello-card-flat p-6 col-span-2 flex flex-col h-[320px] md:h-[480px]">
             <h3 className="text-[14px] font-medium tracking-tight mb-4 flex items-center gap-2">
               <div className={`w-2 h-2 rounded-full ${loading ? 'bg-[#4ade80] animate-pulse' : 'bg-border'}`}></div>
-              System Output
+              Processing Steps
             </h3>
             <div className="flex-1 font-mono text-[12px] allow-select cursor-text leading-relaxed text-text-muted flex flex-col gap-2 overflow-y-auto bg-slate-50 rounded-xl p-5 border border-slate-200 shadow-inner">
               
