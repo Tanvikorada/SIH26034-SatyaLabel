@@ -138,7 +138,15 @@ export default function ResultsPage({ params }) {
 
   const isPass = (report.overallStatus || report.overall_compliance) === 'compliant';
   const badgeClass = isPass ? 'bg-green-500/10 text-green-500 border border-green-500/20' : 'bg-red-500/10 text-red-500 border border-red-500/20';
-  const scoreColor = report.compliance_score >= 80 ? 'text-green-500' : report.compliance_score >= 50 ? 'text-amber-500' : 'text-red-500';
+  const allRules = report.violations || [];
+  const ruleCounts = {
+    pass:       allRules.filter(v => String(v.status).toUpperCase() === 'PASS').length,
+    fail:       allRules.filter(v => String(v.status).toUpperCase() === 'POTENTIAL NON-COMPLIANCE').length,
+    manual:     allRules.filter(v => String(v.status).toUpperCase() === 'MANUAL REVIEW').length,
+    na:         allRules.filter(v => String(v.status).toUpperCase() === 'NOT APPLICABLE').length,
+    unverified: allRules.filter(v => String(v.status).toUpperCase() === 'NOT VERIFIED').length,
+  };
+  const totalChecked = allRules.length || 1;
 
   const fields = report.extractedFields || report.extracted_fields || {};
 
@@ -183,11 +191,27 @@ export default function ResultsPage({ params }) {
                   {report.product?.brand_name || fields.brand_name || 'Brand Unspecified'}
                 </p>
               </div>
-              
-              <div className="flex flex-col items-center justify-center shrink-0 bg-background/50 border border-border/50 rounded-xl p-3 shadow-sm min-w-[80px] md:min-w-[120px]">
-                <div className="text-[8px] md:text-[10px] text-text-muted font-bold tracking-[0.1em] uppercase mb-1">Score</div>
-                <div className={`text-[32px] md:text-[56px] font-black tracking-tighter leading-none ${scoreColor}`}>
-                  {report.compliance_score || report.complianceScore}%
+              {/* Rule Audit Breakdown */}
+              <div className="shrink-0 w-full md:w-[240px] glass border border-border/50 rounded-[16px] p-4 shadow-sm">
+                <div className="text-[10px] font-bold tracking-widest uppercase text-text-muted mb-3">
+                  Rule Audit &middot; {allRules.length} checks
+                </div>
+                <div className="flex flex-col gap-[10px]">
+                  {[
+                    { label: 'Pass',           count: ruleCounts.pass,       bar: 'bg-emerald-500', txt: 'text-emerald-500' },
+                    { label: 'Non-Compliant',  count: ruleCounts.fail,       bar: 'bg-red-500',     txt: 'text-red-500'     },
+                    { label: 'Manual Review',  count: ruleCounts.manual,     bar: 'bg-amber-400',   txt: 'text-amber-400'   },
+                    { label: 'Not Applicable', count: ruleCounts.na,         bar: 'bg-slate-400',   txt: 'text-slate-400'   },
+                    { label: 'Not Verified',   count: ruleCounts.unverified, bar: 'bg-blue-400',    txt: 'text-blue-400'    },
+                  ].map(({ label, count, bar, txt }) => (
+                    <div key={label} className="flex items-center gap-2">
+                      <div className={`text-[11px] font-semibold w-[96px] shrink-0 ${txt}`}>{label}</div>
+                      <div className="flex-1 h-1.5 bg-border/50 rounded-full overflow-hidden">
+                        <div className={`h-full ${bar} rounded-full transition-all duration-700`} style={{ width: `${(count / totalChecked) * 100}%` }} />
+                      </div>
+                      <div className={`text-[12px] font-black w-4 text-right tabular-nums ${txt}`}>{count}</div>
+                    </div>
+                  ))}
                 </div>
               </div>
             </div>
