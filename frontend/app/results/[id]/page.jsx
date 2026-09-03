@@ -251,20 +251,23 @@ export default function ResultsPage({ params }) {
                 Violations & Warnings
               </h4>
               <div className="space-y-4">
-                {(report.violations || []).filter(v => String(v.status).toUpperCase() !== 'PASS' && String(v.status).toUpperCase() !== 'NOT APPLICABLE').map((v, i) => (
-                  <div key={'fail-'+i} className="glass rounded-[12px] md:rounded-[16px] p-4 md:p-6 border-l-4 border-l-red-500">
-                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-3">
-                      <div className="flex items-center gap-3">
-                        <span className="px-2 py-1 bg-red-500/10 text-red-500 font-mono text-[11px] font-bold rounded">{v.rule_id}</span>
-                        <h4 className="text-[16px] font-medium text-text-primary">{v.rule_title}</h4>
+                {(report.violations || []).filter(v => String(v.status).toUpperCase() !== 'PASS' && String(v.status).toUpperCase() !== 'NOT APPLICABLE').map((v, i) => {
+                  const isReview = String(v.status).toUpperCase() === 'MANUAL REVIEW';
+                  return (
+                    <div key={'fail-'+i} className={`glass rounded-[12px] md:rounded-[16px] p-4 md:p-6 border-l-4 ${isReview ? 'border-l-amber-500' : 'border-l-red-500'}`}>
+                      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-3">
+                        <div className="flex items-center gap-3">
+                          <span className={`px-2 py-1 font-mono text-[11px] font-bold rounded ${isReview ? 'bg-amber-500/10 text-amber-500' : 'bg-red-500/10 text-red-500'}`}>{v.rule_id}</span>
+                          <h4 className="text-[16px] font-medium text-text-primary">{v.rule_title}</h4>
+                        </div>
+                        <span className={`text-[11px] font-bold tracking-widest uppercase ${isReview ? 'text-amber-500' : 'text-red-500'}`}>{v.status}</span>
                       </div>
-                      <span className="text-[11px] font-bold text-red-500 tracking-widest uppercase">{v.status}</span>
+                      <p className="text-[14px] text-text-secondary leading-relaxed font-mono">
+                        {v.detail || v.detail_text}
+                      </p>
                     </div>
-                    <p className="text-[14px] text-text-secondary leading-relaxed font-mono">
-                      {v.detail || v.detail_text}
-                    </p>
-                  </div>
-                ))}
+                  );
+                })}
                 {(report.violations || []).filter(v => String(v.status).toUpperCase() !== 'PASS' && String(v.status).toUpperCase() !== 'NOT APPLICABLE').length === 0 && (
                   <div className="text-[14px] text-text-muted italic px-2">No violations found. Product is fully compliant.</div>
                 )}
