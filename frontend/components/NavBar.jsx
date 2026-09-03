@@ -11,14 +11,14 @@ export default function NavBar() {
   const [menuOpen, setMenuOpen] = useState(false);
 
   useEffect(() => {
-    setEmail(localStorage.getItem('email') || 'officer@gov.in');
-    setRole(localStorage.getItem('role') || '');
+    setEmail(sessionStorage.getItem('email') || 'officer@gov.in');
+    setRole(sessionStorage.getItem('role') || '');
   }, []);
 
   const handleLogout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('email');
-    localStorage.removeItem('role');
+    sessionStorage.removeItem('token');
+    sessionStorage.removeItem('email');
+    sessionStorage.removeItem('role');
     router.push('/login');
   };
 

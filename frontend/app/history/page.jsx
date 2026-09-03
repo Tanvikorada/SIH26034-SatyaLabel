@@ -99,7 +99,7 @@ export default function HistoryPage() {
     try {
       const res = await fetch(`${API}/scans/${id}`, {
         method: 'DELETE',
-        headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+        headers: { 'Authorization': `Bearer ${sessionStorage.getItem('token')}` }
       });
       if (res.ok) {
         setScans(prev => prev.filter(s => s.id !== id));
@@ -114,14 +114,14 @@ export default function HistoryPage() {
 
   // Fetch scans with pagination + filter
   const fetchScans = useCallback(async () => {
-    if (!localStorage.getItem('token')) { router.push('/login'); return; }
+    if (!sessionStorage.getItem('token')) { router.push('/login'); return; }
     setLoading(true);
     try {
       const params = new URLSearchParams({ page, limit: 12 });
       if (debouncedSearch) params.set('search', debouncedSearch);
       if (statusFilter) params.set('status', statusFilter);
       const res = await fetch(`${API}/scans?${params}`, {
-        headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+        headers: { 'Authorization': `Bearer ${sessionStorage.getItem('token')}` }
       });
       if (!res.ok) throw new Error('API Error');
       const json = await res.json();

@@ -21,16 +21,16 @@ export default function SettingsPage() {
 
   useEffect(() => {
     setMounted(true);
-    const t = localStorage.getItem('token');
+    const t = sessionStorage.getItem('token');
     if (!t) { router.push('/login'); return; }
-    setEmail(localStorage.getItem('email') || '');
-    setRole(localStorage.getItem('role') || 'officer');
+    setEmail(sessionStorage.getItem('email') || '');
+    setRole(sessionStorage.getItem('role') || 'officer');
   }, [router]);
 
   const handleLogout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('email');
-    localStorage.removeItem('role');
+    sessionStorage.removeItem('token');
+    sessionStorage.removeItem('email');
+    sessionStorage.removeItem('role');
     toast.success('Logged out successfully');
     router.push('/login');
   };

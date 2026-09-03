@@ -38,7 +38,7 @@ export default function ResultsPage({ params }) {
     const fetchReport = async () => {
       try {
         const res = await fetch(`${API}/scans/${resolvedParams.id}`, {
-          headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+          headers: { 'Authorization': `Bearer ${sessionStorage.getItem('token')}` }
         });
         if (!res.ok) throw new Error('Failed to fetch');
         const json = await res.json();
@@ -58,7 +58,7 @@ export default function ResultsPage({ params }) {
     try {
       const res = await fetch(`${API}/scans/${resolvedParams.id}`, {
         method: 'DELETE',
-        headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+        headers: { 'Authorization': `Bearer ${sessionStorage.getItem('token')}` }
       });
       if (res.ok) {
         toast.success('Scan record deleted.');
@@ -76,14 +76,14 @@ export default function ResultsPage({ params }) {
     try {
       const res = await fetch(`${API}/scans/${resolvedParams.id}/report`, {
         method: 'POST',
-        headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+        headers: { 'Authorization': `Bearer ${sessionStorage.getItem('token')}` }
       });
       if (!res.ok) throw new Error('Failed to generate report');
       const json = await res.json();
       
       const fileUrl = json.data.file_url;
       const dlRes = await fetch(`${API.replace('/api/v1', '')}${fileUrl}?t=${Date.now()}`, {
-        headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+        headers: { 'Authorization': `Bearer ${sessionStorage.getItem('token')}` }
       });
       const blob = await dlRes.blob();
       const url = window.URL.createObjectURL(blob);
@@ -99,7 +99,7 @@ export default function ResultsPage({ params }) {
   const downloadCSV = async () => {
     try {
       const res = await fetch(`${API.replace('/api/v1', '')}/api/v1/scans/${report.id}/csv`, {
-        headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+        headers: { 'Authorization': `Bearer ${sessionStorage.getItem('token')}` }
       });
       if (!res.ok) throw new Error('Failed to fetch CSV');
       const blob = await res.blob();

@@ -19,14 +19,14 @@ export default function BatchPage({ params }) {
 
   useEffect(() => {
     if (!resolvedParams) return;
-    if (!localStorage.getItem('token')) return router.push('/login');
+    if (!sessionStorage.getItem('token')) return router.push('/login');
     
           // Fetch initial state
       let eventSource;
       const fetchBatch = async () => {
         try {
           const res = await fetch(`${API}/scans/batch/${resolvedParams.id}`, {
-            headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+            headers: { 'Authorization': `Bearer ${sessionStorage.getItem('token')}` }
           });
           if (!res.ok) throw new Error('Failed to fetch batch');
           const json = await res.json();
@@ -36,7 +36,7 @@ export default function BatchPage({ params }) {
           
           if (data.status === 'processing') {
             // Setup real-time SSE stream for updates instead of polling
-            const token = localStorage.getItem('token');
+            const token = sessionStorage.getItem('token');
             eventSource = new EventSource(`${API}/scans/batch/${resolvedParams.id}/stream?token=${token}`);
             
             eventSource.onmessage = (event) => {

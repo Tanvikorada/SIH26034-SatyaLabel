@@ -12,7 +12,7 @@ export default function BottomNav() {
 
   useEffect(() => {
     setMounted(true);
-    setRole(localStorage.getItem('role') || '');
+    setRole(sessionStorage.getItem('role') || '');
   }, []);
 
   if (!mounted || pathname === '/login' || pathname === '/') return null;

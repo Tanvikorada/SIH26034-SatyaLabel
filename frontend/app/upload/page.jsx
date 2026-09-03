@@ -19,7 +19,7 @@ export default function UploadPage() {
   const [logs, setLogs] = useState([]);
 
   useEffect(() => {
-    if (!localStorage.getItem('token')) router.push('/login');
+    if (!sessionStorage.getItem('token')) router.push('/login');
   }, [router]);
 
   const saveToSyncQueue = async (fileBlob, metadata) => {
@@ -117,7 +117,7 @@ export default function UploadPage() {
 
       const res = await fetch(`${API}/scans`, {
         method: 'POST',
-        headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` },
+        headers: { 'Authorization': `Bearer ${sessionStorage.getItem('token')}` },
         body: formData
       });
       if (!res.ok) throw new Error("API Error");

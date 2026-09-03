@@ -25,10 +25,10 @@ export default function Login() {
       const data = await res.json();
 
       if (data.token) {
-        localStorage.setItem('token', data.token);
-        localStorage.setItem('email', loginEmail);
+        sessionStorage.setItem('token', data.token);
+        sessionStorage.setItem('email', loginEmail);
         // Role comes from the server response — not from email string
-        localStorage.setItem('role', data.role || (loginEmail.toLowerCase().includes('admin') ? 'admin' : 'officer'));
+        sessionStorage.setItem('role', data.user?.role || 'officer');
         toast.success('Login successful', { id: toastId });
         router.push('/dashboard');
       } else {
@@ -55,9 +55,9 @@ export default function Login() {
 
   // Explicit demo mode — separated clearly from real auth
   const enterDemoMode = () => {
-    localStorage.setItem('token', 'demo-token');
-    localStorage.setItem('email', 'demo@satyalabel.gov.in');
-    localStorage.setItem('role', 'officer');
+    sessionStorage.setItem('token', 'demo-token');
+    sessionStorage.setItem('email', 'demo@satyalabel.gov.in');
+    sessionStorage.setItem('role', 'officer');
     setDemoMode(true);
     toast.info('Demo mode activated — data is simulated', { duration: 4000 });
     setTimeout(() => router.push('/dashboard'), 800);

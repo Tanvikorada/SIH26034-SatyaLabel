@@ -10,11 +10,11 @@ export default function Dashboard() {
   const router = useRouter();
 
   useEffect(() => {
-    if (!localStorage.getItem('token')) return router.push('/login');
+    if (!sessionStorage.getItem('token')) return router.push('/login');
     const fetchStats = async () => {
       try {
         const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'https://satyalabel-backend.onrender.com/api/v1'}/dashboard/stats`, {
-          headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+          headers: { 'Authorization': `Bearer ${sessionStorage.getItem('token')}` }
         });
         if (!res.ok) throw new Error('API Error');
         const json = await res.json();
