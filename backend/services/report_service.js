@@ -522,10 +522,10 @@ async function generateReport({ scan, product, extractedFields, violations, stat
     const sc  = statusColor(ruleStatus);
     const sym = statusSymbol(ruleStatus);
     const cells = [
-      san(v.rule_id || ''),
-      trunc(san(v.rule_title || v.title || ''), 32),
+      san(v.ruleId || v.rule_id || ''),
+      trunc(san(v.ruleTitle || v.rule_title || v.title || ''), 32),
       sym,
-      trunc(san(v.detail_text || v.detail || ''), 22),
+      trunc(san(v.detail || v.detail_text || ''), 22),
     ];
 
     let cx = MARGIN;
@@ -596,6 +596,45 @@ async function generateReport({ scan, product, extractedFields, violations, stat
     ay -= 13;
   }
 
+  // --- Attach Photo Evidence ---
+  const imgPath = scan.imagePath || scan.image_path;
+  if (imgPath && fs.existsSync(imgPath)) {
+    try {
+      const imgBuffer = fs.readFileSync(imgPath);
+      let img;
+      if (imgPath.toLowerCase().endsWith('.png')) {
+        img = await pdfDoc.embedPng(imgBuffer);
+      } else {
+        img = await pdfDoc.embedJpg(imgBuffer);
+      }
+      
+      const maxWidth = CONTENT_W;
+      const maxHeight = 500; // Safe area
+      const dims = img.scale(1);
+      
+      let scale = 1;
+      if (dims.width > maxWidth) scale = maxWidth / dims.width;
+      if ((dims.height * scale) > maxHeight) scale = maxHeight / dims.height;
+      
+      const scaledW = dims.width * scale;
+      const scaledH = dims.height * scale;
+      
+      currentPage++;
+      const { page: evPage, cursorY: ecy } = makePage(pdfDoc, fonts, currentPage, estimatedPages, sealImg);
+      
+      const afterHeading = drawSectionHeading(evPage, fonts, ecy, 'Appendix A - Photographic Evidence');
+      
+      evPage.drawImage(img, {
+        x: (A4_W - scaledW) / 2,
+        y: afterHeading - 20 - scaledH,
+        width: scaledW,
+        height: scaledH,
+      });
+    } catch(e) {
+      console.warn("Could not embed image evidence:", e.message);
+    }
+  }
+
   // ── Fix page count: update all footers with real count ──
   // (pdf-lib doesn't support header/footer injection post-hoc, but we set estimatedPages ≥ actual)
   // Page count is correct as currentPage = actual count.
@@ -613,59 +652,49 @@ async function generateReport({ scan, product, extractedFields, violations, stat
 // One flat row per scan. Returns a UTF-8 CSV string.
 
 function generateCSV(scanData) {
-  // scanData can be a single object or an array
-  const scans = Array.isArray(scanData) ? scanData : [scanData];
+  // Use vertical layout for single item view
+  const data = Array.isArray(scanData) ? scanData[0] : scanData;
+  if (!data) return '';
+  
+  const { scan, product, extractedFields, violations, stats } = data;
+  const fields = extractedFields || {};
+  const vList  = violations || [];
 
-  const rows = scans.map(({ scan, product, extractedFields, violations, stats }) => {
-    const fields = extractedFields || {};
-    const vList  = violations || [];
-
-    const failedRules  = vList
-      .filter(v => String(v.status).toUpperCase() === 'POTENTIAL NON-COMPLIANCE')
-      .map(v => v.rule_id || '')
-      .join('; ');
-
-    const reviewRules  = vList
-      .filter(v => String(v.status).toUpperCase() === 'MANUAL REVIEW')
-      .map(v => v.rule_id || '')
-      .join('; ');
-
-    const reportId = `SL-${new Date(scan.created_at || Date.now()).getFullYear()}-${String(scan.id).padStart(6, '0')}`;
-
-    return {
-      report_id:            reportId,
-      scan_date:            scan.created_at ? new Date(scan.created_at).toISOString() : '',
-      product_name:         product?.product_name || fields.product_name || '',
-      source_type:          scan.source_type || 'physical_label',
-      overall_status:       scan.overallStatus || scan.overall_compliance || '',
-      manufacturer_name:    fields.manufacturer_name || '',
-      manufacturer_address: fields.manufacturer_address || '',
-      packer_name:          fields.packer_name || '',
-      importer_name:        fields.importer_name || '',
-      net_quantity:         fields.net_quantity || '',
-      mrp:                  fields.mrp || '',
-      mfg_date:             fields.mfg_date || '',
-      best_before:          fields.best_before || '',
-      fssai_license:        fields.fssai_license || '',
-      country_of_origin:    fields.country_of_origin || '',
-      consumer_care:        fields.customer_care || '',
-      violation_count:      String(stats?.totalViolations ?? vList.filter(v => String(v.status).toUpperCase() === 'POTENTIAL NON-COMPLIANCE').length),
-      failed_rules:         failedRules,
-      review_rules:         reviewRules,
-      officer_name:         scan.user?.name || scan.officer_name || 'Not logged',
-    };
+  const reportId = `SL-${new Date(scan.created_at || Date.now()).getFullYear()}-${String(scan.id).padStart(6, '0')}`;
+  
+  const verticalData = [
+    ['Field', 'Value'],
+    ['Report ID', reportId],
+    ['Scan Date', scan.created_at ? new Date(scan.created_at).toISOString() : ''],
+    ['Product Name', product?.product_name || fields.product_name || ''],
+    ['Brand', product?.brand_name || fields.brand_name || ''],
+    ['Category', product?.category || 'general'],
+    ['Source Type', scan.source_type || 'physical_label'],
+    ['Overall Status', scan.overallStatus || scan.overall_compliance || ''],
+    ['Compliance Score', stats?.complianceScore ? `${stats.complianceScore}%` : ''],
+    ['Total Rules Checked', stats?.totalRulesChecked || ''],
+    ['Total Violations', stats?.totalViolations || ''],
+    ['High Severity Violations', stats?.highViolations || ''],
+    ['---', '---'],
+    ['EXTRACTED DATA', ''],
+    ['Net Quantity', fields.net_quantity || ''],
+    ['MRP', fields.mrp || ''],
+    ['Mfg Date', fields.mfg_date || ''],
+    ['FSSAI License', fields.fssai_license || ''],
+    ['Ingredients', fields.ingredients || ''],
+    ['---', '---'],
+    ['RULE AUDIT', '']
+  ];
+  
+  vList.forEach((v, index) => {
+    const rId = v.ruleId || v.rule_id || '';
+    const rTitle = v.ruleTitle || v.rule_title || v.title || '';
+    const rDetail = v.detail || v.detail_text || '';
+    const rStatus = String(v.status || '').toUpperCase();
+    verticalData.push([`Rule ${index + 1}`, `[${rStatus}] ${rId}: ${rTitle} - ${rDetail}`]);
   });
 
-  // csv-stringify with header: true gives us the column headers automatically
-  const output = stringify(rows, {
-    header: true,
-    quoted_string: true,    // always quote strings
-    cast: {
-      string: (value) => ({ value, quoted: true }),
-    },
-  });
-
-  return output;
+  return stringify(verticalData);
 }
 
 module.exports = { generateReport, generateCSV };

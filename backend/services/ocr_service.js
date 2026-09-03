@@ -159,12 +159,6 @@ async function runGeminiVision(imagePaths, attempt = 1, modelName = 'gemini-1.5-
     consumer_care_details: "string",
     batch_lot_number: "string",
     fssai_license: "string",
-    ingredient_analysis: {
-      harmful_additives_found: ["string"],
-      health_risks: ["string"],
-      allergen_warnings: ["string"],
-      is_clean_label: "boolean"
-    },
     country_of_origin: "string",
     ingredients: "string",
     veg_nonveg: "string",
