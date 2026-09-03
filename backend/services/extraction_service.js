@@ -368,6 +368,7 @@ function extractFields(rawText, geminiStructuredData = null, ocrFontMetrics = nu
     veg_nonveg: g.veg_nonveg || null,
     
     // Extracted during 9 PM - 12 AM session
+    _is_fallback: g._is_fallback || false,
     ai_summary: g.ai_summary || null,
     ingredient_analysis: g.ingredient_analysis || null,
     packer_name: g.packer_name || null,

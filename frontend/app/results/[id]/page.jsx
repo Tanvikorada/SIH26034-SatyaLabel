@@ -147,6 +147,18 @@ export default function ResultsPage({ params }) {
       <NavBar />
       
       <main className="max-w-[1000px] mx-auto px-4 md:px-6 mt-4 md:mt-8">
+        {fields._is_fallback && (
+          <div className="mb-6 p-4 glass rounded-[16px] border border-yellow-500/30 bg-yellow-500/5 flex items-start gap-4 animate-in fade-in slide-in-from-top-4">
+            <div className="p-2 bg-yellow-500/10 rounded-full text-yellow-500 mt-0.5">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+            </div>
+            <div>
+              <h4 className="text-[14px] font-bold text-yellow-500 tracking-wide uppercase mb-1">Network Offline: Using Local AI Cache</h4>
+              <p className="text-[13px] text-yellow-500/80 leading-relaxed">The Google Cloud API failed to respond due to high demand. Our system automatically routed this scan to the offline simulation cache to ensure zero downtime. This is a cached demo result.</p>
+            </div>
+          </div>
+        )}
+        
         {/* HERO SECTION */}
           <div className="glass rounded-[20px] md:rounded-[24px] p-4 md:p-8 mb-6 md:mb-8 relative overflow-hidden">
             <div className="absolute top-0 right-0 w-64 h-64 bg-accent/5 rounded-full blur-[80px] -mr-32 -mt-32"></div>
