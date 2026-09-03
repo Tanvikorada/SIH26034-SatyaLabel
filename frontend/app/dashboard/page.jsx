@@ -103,10 +103,30 @@ export default function Dashboard() {
         {/* KPI Cards Grid */}
         <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6 mb-10">
           {[
-            { label: 'Total Inspections', value: stats.total_scans || 0, icon: <img src="https://cdn.jsdelivr.net/gh/microsoft/fluentui-emoji@latest/assets/Chart%20increasing/3D/chart_increasing_3d.png" alt="Total" className="w-7 h-7 drop-shadow-md" />, color: 'text-blue-600 dark:text-blue-400', bg: 'bg-white dark:bg-[#11131a]', border: 'border-blue-200 dark:border-blue-900/50' },
-            { label: 'Verified Compliant', value: stats.compliant_count ?? stats.compliant ?? 0, icon: <img src="https://cdn.jsdelivr.net/gh/microsoft/fluentui-emoji@latest/assets/Check%20mark%20button/3D/check_mark_button_3d.png" alt="Compliant" className="w-7 h-7 drop-shadow-md" />, color: 'text-emerald-600 dark:text-emerald-400', bg: 'bg-white dark:bg-[#11131a]', border: 'border-emerald-200 dark:border-emerald-900/50' },
-            { label: 'Violations Detected', value: stats.non_compliant_count ?? stats.violations ?? 0, icon: <img src="https://cdn.jsdelivr.net/gh/microsoft/fluentui-emoji@latest/assets/Warning/3D/warning_3d.png" alt="Violations" className="w-7 h-7 drop-shadow-md" />, color: 'text-red-600 dark:text-red-400', bg: 'bg-white dark:bg-[#11131a]', border: 'border-red-200 dark:border-red-900/50' },
-            { label: 'Awaiting Review', value: stats.needs_review_count ?? stats.manual_review ?? 0, icon: <img src="https://cdn.jsdelivr.net/gh/microsoft/fluentui-emoji@latest/assets/Stopwatch/3D/stopwatch_3d.png" alt="Review" className="w-7 h-7 drop-shadow-md" />, color: 'text-amber-600 dark:text-amber-400', bg: 'bg-white dark:bg-[#11131a]', border: 'border-amber-200 dark:border-amber-900/50' },
+            { 
+              label: 'Total Inspections', 
+              value: stats.total_scans || 0, 
+              icon: <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="opacity-40"/><path d="M12 16V12M12 8H12.01" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>, 
+              color: 'text-blue-500 dark:text-blue-400', bg: 'bg-white dark:bg-[#11131a]', border: 'border-blue-200 dark:border-blue-900/50' 
+            },
+            { 
+              label: 'Verified Compliant', 
+              value: stats.compliant_count ?? stats.compliant ?? 0, 
+              icon: <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z" fill="currentColor" fillOpacity="0.15" stroke="currentColor" strokeWidth="2"/><path d="M8 12.5L10.5 15L16 9" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>, 
+              color: 'text-emerald-500 dark:text-emerald-400', bg: 'bg-white dark:bg-[#11131a]', border: 'border-emerald-200 dark:border-emerald-900/50' 
+            },
+            { 
+              label: 'Violations Detected', 
+              value: stats.non_compliant_count ?? stats.violations ?? 0, 
+              icon: <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M12 4L4 18H20L12 4Z" fill="currentColor" fillOpacity="0.15" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/><path d="M12 10V14M12 17H12.01" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>, 
+              color: 'text-red-500 dark:text-red-400', bg: 'bg-white dark:bg-[#11131a]', border: 'border-red-200 dark:border-red-900/50' 
+            },
+            { 
+              label: 'Awaiting Review', 
+              value: stats.needs_review_count ?? stats.manual_review ?? 0, 
+              icon: <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z" fill="currentColor" fillOpacity="0.15" stroke="currentColor" strokeWidth="2"/><path d="M12 7V12L15 15" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>, 
+              color: 'text-amber-500 dark:text-amber-400', bg: 'bg-white dark:bg-[#11131a]', border: 'border-amber-200 dark:border-amber-900/50' 
+            },
           ].map((card, i) => (
             <div key={i} className={`p-4 sm:p-6 rounded-xl border ${card.border} ${card.bg} shadow-sm hover:shadow-md transition-shadow relative overflow-hidden group`}>
               <div className="flex justify-between items-start mb-4">
