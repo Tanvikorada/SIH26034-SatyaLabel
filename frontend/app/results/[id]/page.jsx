@@ -384,7 +384,7 @@ export default function ResultsPage({ params }) {
                   </div>
 
                   {/* Right Column: Allergens & Raw Text (1/3 width on desktop) */}
-                  <div className="lg:col-span-1 space-y-6">
+                  <div className="lg:col-span-1 flex flex-col gap-6 h-full">
                     
                     {/* Allergens */}
                     <div className="glass rounded-[20px] p-6 border border-border">
@@ -405,7 +405,7 @@ export default function ResultsPage({ params }) {
 
                     
                     {/* Raw Ingredients Text */}
-                    <div className="glass rounded-[20px] p-6 border border-border h-full min-h-[300px]">
+                    <div className="glass rounded-[20px] p-6 border border-border flex-1 min-h-[250px]">
                       <h4 className="text-[10px] font-mono tracking-[0.2em] uppercase text-text-primary mb-4">Raw Ingredient Text</h4>
                       <div className="text-[13px] text-text-secondary leading-relaxed bg-background/50 p-4 rounded-xl border border-border/50">
                         {fields.ingredients ? fields.ingredients : "Raw ingredients text unavailable."}
