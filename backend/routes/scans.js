@@ -64,7 +64,7 @@ const { Scan, Product, Violation, Report, User } = require('../models');
 const { runOcrPipeline } = require('../services/ocr_service');
 const { extractFields } = require('../services/extraction_service');
 const { validateCompliance } = require('../services/rules_engine');
-const { generateReport } = require('../services/report_service');
+const { generateReport, generateCSV } = require('../services/report_service');
 const { generateAIAuditorAnalysis } = require('../services/auditor_service');
 
 // ─── HELPERS ─────────────────────────────────────────────────────────────────
@@ -101,7 +101,7 @@ async function runBatchPipeline(batch, imagePath, metadata = {}) {
     const { runOcrPipeline } = require('../services/ocr_service');
     const { extractFields } = require('../services/extraction_service');
     const { validateCompliance } = require('../services/rules_engine');
-    const { generateReport } = require('../services/report_service');
+    const { generateReport, generateCSV } = require('../services/report_service');
     const { generateAIAuditorAnalysis } = require('../services/auditor_service');
 
     const { detectAndCropProducts } = require('../services/crop_service');
@@ -660,6 +660,46 @@ router.get('/debug-models', async (req, res) => {
   }
 });
 
+
+
+// ==========================================
+// GET /api/v1/scans/:id/csv
+// Download flat CSV for a scan
+// ==========================================
+router.get('/:id/csv', requireAuth, async (req, res) => {
+  try {
+    const scan = await Scan.findByPk(req.params.id, {
+      include: [
+        { model: Product,   as: 'product' },
+        { model: Violation, as: 'violations' },
+      ],
+    });
+    if (!scan) return fail(res, 404, 'SCAN_NOT_FOUND', 'Scan not found');
+    
+    const stats = {
+      totalRulesChecked: scan.totalRulesChecked,
+      totalViolations:   scan.totalViolations,
+      highViolations:    scan.highViolations,
+      complianceScore:   scan.complianceScore,
+      overallCompliance: scan.overallCompliance,
+    };
+    
+    const csvContent = generateCSV({
+      scan: scan.toJSON(),
+      product: scan.product?.toJSON() || null,
+      extractedFields: scan.extractedFields || {},
+      violations: scan.violations || [],
+      stats
+    });
+    
+    res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+    res.setHeader('Content-Disposition', `attachment; filename="compliance_report_${scan.id.slice(0,8)}.csv"`);
+    res.send(csvContent);
+  } catch(err) {
+    console.error('[GET /scans/:id/csv]', err);
+    fail(res, 500, 'CSV_ERROR', err.message);
+  }
+});
 
 // POST /api/v1/scans/:id/cancel
 router.post('/:id/cancel', requireAuth, async (req, res) => {

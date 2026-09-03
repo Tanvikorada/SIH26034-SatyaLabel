@@ -96,41 +96,25 @@ export default function ResultsPage({ params }) {
     }
   };
 
-  const downloadCSV = () => {
-    const fields = report.extractedFields || report.extracted_fields || {};
-    const violations = report.violations || [];
-    const csvRows = [];
-    csvRows.push("LEGAL METROLOGY COMPLIANCE REPORT");
-    csvRows.push(`Scan ID,${report.id}`);
-    csvRows.push(`Date,${new Date(report.created_at).toLocaleString()}`);
-    csvRows.push(`Overall Status,${report.overall_compliance || report.overallStatus}`);
-    csvRows.push(`Compliance Score,${report.compliance_score || report.complianceScore}%`);
-    csvRows.push("");
-    
-    csvRows.push("--- EXTRACTED DATA ---");
-    csvRows.push("Field Name,Extracted Value");
-    for (const [k, v] of Object.entries(fields)) {
-      if (!k.startsWith('_') && v) {
-        const label = k.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
-        csvRows.push(`"${label}","${String(v).replace(/"/g, '""')}"`);
-      }
+  const downloadCSV = async () => {
+    try {
+      const res = await fetch(`${API.replace('/api/v1', '')}/api/v1/scans/${report.id}/csv`, {
+        headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+      });
+      if (!res.ok) throw new Error('Failed to fetch CSV');
+      const blob = await res.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `compliance_report_${report.id.slice(0,8)}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      window.URL.revokeObjectURL(url);
+      toast.success('CSV Exported Successfully');
+    } catch (e) {
+      toast.error('Could not generate CSV export');
     }
-    
-    csvRows.push("");
-    csvRows.push("--- RULE VIOLATIONS ---");
-    csvRows.push("Rule ID,Status,Severity,Details");
-    for (const v of violations) {
-      if(String(v.status).toUpperCase() !== 'PASS' && String(v.status).toUpperCase() !== 'NOT APPLICABLE') {
-        csvRows.push(`"${v.rule_id}","${v.status}","${v.severity || 'high'}","${String(v.detail_text || v.detail || '').replace(/"/g, '""')}"`);
-      }
-    }
-    
-    const blob = new Blob([csvRows.join('\n')], { type: 'text/csv' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `compliance_report_${report.id}.csv`;
-    a.click();
   };
 
   if (loading) return <div className="min-h-screen bg-background text-text-primary flex items-center justify-center"><div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-accent"></div></div>;

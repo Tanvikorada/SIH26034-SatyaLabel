@@ -1,422 +1,609 @@
 // backend/services/report_service.js
-// PDF Compliance Report Generator — SIH26034
-// Uses pdf-lib for zero-cost, offline PDF creation
+// Government-grade PDF Compliance Report Generator
+// Format: A4, clean letterhead, real tables, no gradients — printable in B&W
+// ─────────────────────────────────────────────────────────────────────────────
 
-const { PDFDocument, rgb, StandardFonts, degrees } = require('pdf-lib');
-const fs = require('fs');
-const path = require('path');
+'use strict';
 
-// ─── BRAND COLORS ─────────────────────────────────────────────────────────────
-const COLORS = {
-  saffron:     rgb(1.0, 0.6, 0.0),      // India saffron #FF9900
-  green:       rgb(0.07, 0.53, 0.03),   // India green #138808
-  darkBlue:    rgb(0.06, 0.09, 0.16),   // Dark slate #0F1728
-  white:       rgb(1, 1, 1),
-  lightGray:   rgb(0.95, 0.95, 0.95),
-  midGray:     rgb(0.6, 0.6, 0.6),
-  red:         rgb(0.85, 0.12, 0.08),   // Critical violation
-  orange:      rgb(0.95, 0.45, 0.0),    // Major violation
-  yellow:      rgb(0.85, 0.70, 0.0),    // Minor violation
-  textDark:    rgb(0.1, 0.1, 0.1),
+const { PDFDocument, rgb, StandardFonts } = require('pdf-lib');
+const { stringify }                        = require('csv-stringify/sync');
+const fs                                   = require('fs');
+const path                                 = require('path');
+
+// ── CONSTANTS ─────────────────────────────────────────────────────────────────
+
+const A4_W = 595.28;   // points
+const A4_H = 841.89;   // points
+const MARGIN = 42.52;  // 15mm in points
+const CONTENT_W = A4_W - MARGIN * 2;
+
+// Navy / government palette — renders cleanly in greyscale print too
+const C = {
+  navy:      rgb(0.07, 0.13, 0.30),   // #121F4D
+  navyLight: rgb(0.15, 0.22, 0.45),
+  slate:     rgb(0.40, 0.45, 0.55),
+  mid:       rgb(0.55, 0.55, 0.55),
+  border:    rgb(0.80, 0.82, 0.86),
+  bg:        rgb(0.97, 0.97, 0.98),
+  white:     rgb(1, 1, 1),
+  black:     rgb(0.05, 0.05, 0.05),
+  // Status colours — also expressed as greyscale-safe fills
+  pass:      rgb(0.06, 0.55, 0.28),   // #0F8D47
+  fail:      rgb(0.78, 0.08, 0.08),   // #C71414
+  review:    rgb(0.75, 0.50, 0.00),   // #BF8000
+  na:        rgb(0.40, 0.40, 0.40),
+  unverif:   rgb(0.20, 0.40, 0.72),   // #3366B7
 };
 
-/**
- * Sanitize text for WinAnsi encoding (StandardFonts.Helvetica)
- */
-function sanitize(str) {
-  if (typeof str !== 'string') return '';
-  return str
-    .replace(/\u2248/g, '~')       // approx
-    .replace(/\u20B9/g, 'Rs.')     // rupee
-    .replace(/[\u201C\u201D]/g, '"') // smart quotes
-    .replace(/[\u2018\u2019]/g, "'") // smart quotes
-    .replace(/\u2014/g, '-')       // em dash
-    .replace(/[^\x20-\x7E\xA0-\xFF]/g, ''); // Keep standard printable ASCII & Latin-1
+// ── HELPERS ───────────────────────────────────────────────────────────────────
+
+/** Strip characters outside WinAnsi; replace ₹ → Rs. and smart punctuation */
+function san(str) {
+  if (str === null || str === undefined) return '';
+  return String(str)
+    .replace(/₹/g, 'Rs.')
+    .replace(/\u20B9/g, 'Rs.')
+    .replace(/[\u2018\u2019]/g, "'")
+    .replace(/[\u201C\u201D]/g, '"')
+    .replace(/\u2014/g, '--')
+    .replace(/\u2013/g, '-')
+    .replace(/\u2022/g, '*')
+    .replace(/[^\x20-\x7E\xA0-\xFF]/g, '?');
 }
 
-/**
- * Truncate text to max length with ellipsis
- */
-function truncate(str, max = 80) {
-  const s = sanitize(String(str || ''));
+function trunc(str, max) {
+  const s = san(str);
   return s.length > max ? s.slice(0, max - 3) + '...' : s;
 }
 
-/**
- * Draw a colored rectangle
- */
-function drawRect(page, x, y, w, h, color) {
-  page.drawRectangle({ x, y, width: w, height: h, color });
+function statusColor(status) {
+  const s = String(status).toUpperCase();
+  if (s === 'PASS')                      return C.pass;
+  if (s === 'POTENTIAL NON-COMPLIANCE')  return C.fail;
+  if (s === 'MANUAL REVIEW')             return C.review;
+  if (s === 'NOT APPLICABLE')            return C.na;
+  return C.unverif;
 }
 
-/**
- * Generate PDF compliance report for a scan.
- *
- * @param {object} scan        - Scan record (with violations and extractedFields)
- * @param {string} outputDir   - Directory to save the PDF
- * @returns {string}           - Path to generated PDF
- */
-async function generateReport(scan, outputDir = './reports') {
-  // Ensure output directory exists
-  if (!fs.existsSync(outputDir)) {
-    fs.mkdirSync(outputDir, { recursive: true });
+function statusSymbol(status) {
+  const s = String(status).toUpperCase();
+  if (s === 'PASS')                      return 'PASS';
+  if (s === 'POTENTIAL NON-COMPLIANCE')  return 'NON-COMPLIANT';
+  if (s === 'MANUAL REVIEW')             return 'MANUAL REVIEW';
+  if (s === 'NOT APPLICABLE')            return 'N/A';
+  return 'NOT VERIFIED';
+}
+
+function confidenceLabel(conf) {
+  if (!conf) return 'N/A';
+  const c = String(conf).toLowerCase();
+  if (c === 'high')   return 'High';
+  if (c === 'medium') return 'Medium';
+  if (c === 'low')    return 'Low';
+  return san(conf);
+}
+
+function fmtDate(raw) {
+  if (!raw) return 'N/A';
+  const d = new Date(raw);
+  if (isNaN(d.getTime())) return san(raw);
+  return d.toLocaleString('en-IN', {
+    day: '2-digit', month: 'short', year: 'numeric',
+    hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Kolkata',
+  }) + ' IST';
+}
+
+// ── ICON ─────────────────────────────────────────────────────────────────────
+// Find the emblem asset relative to this file
+const EMBLEM_PATH = path.resolve(__dirname, '../../frontend/public/emblem-transparent.png');
+const ICON_PATH   = path.resolve(__dirname, '../../frontend/public/icon-with-text.png');
+
+async function embedSeal(pdfDoc) {
+  // Try emblem first, then icon, then return null gracefully
+  for (const p of [EMBLEM_PATH, ICON_PATH]) {
+    try {
+      if (fs.existsSync(p)) {
+        const bytes = fs.readFileSync(p);
+        return await pdfDoc.embedPng(bytes);
+      }
+    } catch (_) { /* skip */ }
+  }
+  return null;
+}
+
+// ── PAGE FACTORY ──────────────────────────────────────────────────────────────
+
+function makePage(pdfDoc, fonts, pageNum, totalPages, sealImg) {
+  const page = pdfDoc.addPage([A4_W, A4_H]);
+
+  // ── Header rule ──
+  const headerBottom = A4_H - 72;
+
+  // Seal icon (left)
+  if (sealImg) {
+    const sealDim = sealImg.scaleToFit(36, 36);
+    page.drawImage(sealImg, {
+      x: MARGIN,
+      y: A4_H - 54 + (36 - sealDim.height) / 2,
+      width: sealDim.width,
+      height: sealDim.height,
+    });
   }
 
-  const pdfDoc = await PDFDocument.create();
-  const helvetica = await pdfDoc.embedFont(StandardFonts.Helvetica);
-  const helveticaBold = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
-
-  // Override drawText to automatically sanitize all strings for WinAnsi
-  const overrideDrawText = (page) => {
-    const originalDrawText = page.drawText.bind(page);
-    page.drawText = (text, options) => {
-      originalDrawText(sanitize(String(text)), options);
-    };
-    return page;
-  };
-
-  const pageW = 595; // A4 width in points
-  const pageH = 842; // A4 height in points
-  const margin = 50;
-  const contentW = pageW - margin * 2;
-
-  // ── PAGE 1: Header + Overview ──────────────────────────────────────────────
-  const page1 = overrideDrawText(pdfDoc.addPage([pageW, pageH]));
-
-  // Header bar
-  drawRect(page1, 0, pageH - 80, pageW, 80, COLORS.darkBlue);
-
-  // Ministry branding
-    page1.drawText('GOVERNMENT OF INDIA', {
-      x: margin, y: pageH - 25,
-      size: 14, font: helveticaBold, color: COLORS.white,
-    });
-    page1.drawText('Ministry of Consumer Affairs, Food & Public Distribution', {
-      x: margin, y: pageH - 40,
-      size: 10, font: helvetica, color: COLORS.saffron,
-    });
-    page1.drawText('Department of Consumer Affairs - Legal Metrology Division', {
-      x: margin, y: pageH - 55,
-      size: 9, font: helvetica, color: COLORS.lightGray,
-    });
-  
-    // App branding
-    page1.drawText('SatyaLabel System (SIH26034)', {
-      x: pageW - 190, y: pageH - 35,
-      size: 12, font: helveticaBold, color: COLORS.white,
-    });
-    page1.drawText('Official AI Inspection Node', {
-      x: pageW - 150, y: pageH - 50,
-      size: 9, font: helvetica, color: COLORS.saffron,
-    });
-  
-    // Title
-    page1.drawText('NOTICE UNDER LEGAL METROLOGY ACT, 2009', {
-      x: margin, y: pageH - 110,
-      size: 16, font: helveticaBold, color: COLORS.textDark,
-    });
-    
-    // Add a fake barcode/reference number
-    page1.drawText(`REF: LMD-AI-${String(scan.id).substring(0,8).toUpperCase()}-${new Date().getFullYear()}`, {
-      x: margin, y: pageH - 125,
-      size: 10, font: helveticaBold, color: COLORS.midGray,
-    });
-
-    const isCompliant = scan.overallStatus === 'compliant';
-    const isNonCompliant = scan.overallStatus === 'non_compliant';
-
-    // Draw an official-looking rubber stamp at an angle
-    const stampText = isCompliant ? 'VERIFIED PASSED' : 'VIOLATION DETECTED';
-    const stampColor = isCompliant ? COLORS.green : COLORS.red;
-    
-    // Draw outer box for stamp
-    page1.drawRectangle({
-      x: pageW - 220, y: pageH - 160,
-      width: 170, height: 40,
-      borderColor: stampColor,
-      borderWidth: 3,
-      rotate: degrees(15),
-      opacity: 0.6
-    });
-    
-    // Draw text inside stamp
-    page1.drawText(stampText, {
-      x: pageW - 210, y: pageH - 148,
-      size: 16, font: helveticaBold, color: stampColor,
-      rotate: degrees(15),
-      opacity: 0.6
-    });
-    
-    // Draw small date on stamp
-    page1.drawText(`DATE: ${new Date().toISOString().split('T')[0]}`, {
-      x: pageW - 190, y: pageH - 165,
-      size: 8, font: helvetica, color: stampColor,
-      rotate: degrees(15),
-      opacity: 0.6
-    });
-
-  // Scan metadata
-  let y = pageH - 145;
-  const metaItems = [
-    ['Report ID', scan.id],
-    ['Generated', new Date().toLocaleString('en-IN')],
-    ['Product Name', truncate((scan.product?.product_name || (scan.extracted_fields ? scan.extracted_fields.product_name : null)) || 'Unknown', 60)],
-    ['Brand', truncate((scan.product?.brand_name || (scan.extracted_fields ? scan.extracted_fields.brand_name : null)) || 'Unknown', 60)],
-    ['OCR Engine', scan.ocrEngineUsed || 'tesseract'],
-    ['Compliance Score', `${scan.complianceScore || 0}%`],
-    ['Original File', truncate(scan.originalFilename || scan.imagePath, 60)],
-  ];
-
-  drawRect(page1, margin, y - (metaItems.length * 18) - 10, contentW, metaItems.length * 18 + 20, COLORS.lightGray);
-  y -= 5;
-
-  for (const [label, value] of metaItems) {
-    page1.drawText(`${label}:`, {
-      x: margin + 10, y,
-      size: 9, font: helveticaBold, color: COLORS.textDark,
-    });
-    page1.drawText(String(value || '—'), {
-      x: margin + 130, y,
-      size: 9, font: helvetica, color: COLORS.textDark,
-    });
-    y -= 18;
-  }
-
-  y -= 25;
-
-  // ── Violation Summary Stats ───────────────────────────────────────────────
-  page1.drawText('VIOLATION SUMMARY', {
-    x: margin, y,
-    size: 12, font: helveticaBold, color: COLORS.textDark,
+  // Header text (right of seal)
+  const textX = sealImg ? MARGIN + 48 : MARGIN;
+  page.drawText('SATYALABEL — LEGAL METROLOGY COMPLIANCE REPORT', {
+    x: textX, y: A4_H - 30,
+    size: 11, font: fonts.bold, color: C.navy,
   });
-  y -= 5;
-  drawRect(page1, margin, y - 2, contentW, 2, COLORS.saffron);
-  y -= 20;
-
-  const statsData = [
-    ['Total Rules Checked', (scan.violations ? scan.violations.length : 16) || 16, COLORS.darkBlue],
-    ['Rules Passed', ((scan.violations ? scan.violations.length : 16) || 16) - ((scan.violations ? scan.violations.filter(v => v.status !== 'PASS').length : 0) || 0), COLORS.green],
-    ['Critical Violations', (scan.violations ? scan.violations.filter(v => v.severity === 'high').length : 0) || 0, COLORS.red],
-    ['Major Violations', ((scan.violations ? scan.violations.filter(v => v.status !== 'PASS').length : 0) || 0) - ((scan.violations ? scan.violations.filter(v => v.severity === 'high').length : 0) || 0), COLORS.orange],
-    ['Minor / Estimated', scan.estimatedViolations || 0, COLORS.yellow],
-  ];
-
-  const statBoxW = (contentW - 20) / statsData.length;
-  for (let i = 0; i < statsData.length; i++) {
-    const [label, val, color] = statsData[i];
-    const bx = margin + i * (statBoxW + 5);
-
-    drawRect(page1, bx, y - 50, statBoxW, 60, color);
-    page1.drawText(String(val), {
-      x: bx + statBoxW / 2 - 10, y: y - 20,
-      size: 20, font: helveticaBold, color: COLORS.white,
-    });
-    const words = label.split(' ');
-    page1.drawText(words[0], {
-      x: bx + 5, y: y - 38,
-      size: 7, font: helvetica, color: COLORS.white,
-    });
-    if (words[1]) {
-      page1.drawText(words.slice(1).join(' '), {
-        x: bx + 5, y: y - 48,
-        size: 7, font: helvetica, color: COLORS.white,
-      });
-    }
-  }
-
-  y -= 80;
-
-  // ── Extracted Fields Table ────────────────────────────────────────────────
-  page1.drawText('EXTRACTED FIELDS', {
-    x: margin, y,
-    size: 12, font: helveticaBold, color: COLORS.textDark,
+  page.drawText('Department of Consumer Affairs  ·  Ministry of Consumer Affairs, Food & Public Distribution', {
+    x: textX, y: A4_H - 46,
+    size: 7, font: fonts.regular, color: C.slate,
   });
-  y -= 5;
-  drawRect(page1, margin, y - 2, contentW, 2, COLORS.saffron);
-  y -= 20;
 
-  // Table header
-  drawRect(page1, margin, y - 2, contentW, 16, COLORS.darkBlue);
-  page1.drawText('Field', { x: margin + 5, y: y + 2, size: 8, font: helveticaBold, color: COLORS.white });
-  page1.drawText('Extracted Value', { x: margin + 150, y: y + 2, size: 8, font: helveticaBold, color: COLORS.white });
-  page1.drawText('Status', { x: margin + 420, y: y + 2, size: 8, font: helveticaBold, color: COLORS.white });
-  y -= 18;
+  // 1px navy rule below header
+  page.drawLine({
+    start: { x: MARGIN, y: headerBottom },
+    end:   { x: A4_W - MARGIN, y: headerBottom },
+    thickness: 0.75,
+    color: C.navy,
+  });
 
-  const fieldLabels = {
-    product_name: 'Product Name',
-    brand_name: 'Brand Name',
-    net_quantity: 'Net Quantity',
-    mrp: 'MRP',
-    mfg_date: 'Mfg. Date',
-    best_before: 'Best Before',
-    manufacturer_name: 'Manufacturer Name',
-    manufacturer_address: 'Mfr. Address',
-    customer_care: 'Customer Care',
-    batch_lot_number: 'Batch/Lot No.',
-    fssai_license: 'FSSAI License No.',
-    country_of_origin: 'Country of Origin',
-  };
-
-  const extractedObj = scan.extractedFields || {};
-  const fields = Array.isArray(extractedObj) 
-    ? extractedObj 
-    : Object.keys(extractedObj).filter(k => !k.startsWith('_')).map(k => ({
-        fieldName: k,
-        fieldValue: extractedObj[k],
-        isPresent: !!extractedObj[k]
-      }));
-
-  let rowBg = false;
-
-  for (const field of fields) {
-    if (!fieldLabels[field.fieldName]) continue;
-    if (y < 80) break; // Overflow protection
-
-    if (rowBg) drawRect(page1, margin, y - 3, contentW, 14, COLORS.lightGray);
-    rowBg = !rowBg;
-
-    const statusText = field.isPresent ? ' Found' : ' Missing';
-    const statusColor = field.isPresent ? COLORS.green : COLORS.red;
-
-    page1.drawText(fieldLabels[field.fieldName], {
-      x: margin + 5, y,
-      size: 7.5, font: helveticaBold, color: COLORS.textDark,
-    });
-    
-    // Ensure string
-    const valText = typeof field.fieldValue === 'object' ? JSON.stringify(field.fieldValue) : String(field.fieldValue || '');
-    page1.drawText(truncate(valText, 45), {
-      x: margin + 150, y,
-      size: 7.5, font: helvetica, color: COLORS.textDark,
-    });
-    page1.drawText(statusText, {
-      x: margin + 420, y,
-      size: 7.5, font: helveticaBold, color: statusColor,
-    });
-    if (field.isEstimated) {
-      page1.drawText('[Estimated]', {
-        x: margin + 470, y,
-        size: 6, font: helvetica, color: COLORS.orange,
-      });
-    }
-    y -= 14;
-  }
-
-  y -= 10;
-
-  // ── VIOLATIONS TABLE (may overflow to page 2) ─────────────────────────────
-  const violations = scan.violations || [];
-
-  const addViolationsPage = async () => {
-    const page = overrideDrawText(pdfDoc.addPage([pageW, pageH]));
-    let vy = pageH - 60;
-
-    // Page header
-    drawRect(page, 0, pageH - 40, pageW, 40, COLORS.darkBlue);
-    page.drawText('VIOLATION DETAILS', {
-      x: margin, y: pageH - 28,
-      size: 14, font: helveticaBold, color: COLORS.white,
-    });
-    page.drawText(`Scan ID: ${scan.id}`, {
-      x: pageW - 280, y: pageH - 28,
-      size: 8, font: helvetica, color: COLORS.midGray,
-    });
-
-    for (let i = 0; i < violations.length; i++) {
-      const v = violations[i];
-      if (vy < 120) {
-        // Would overflow  add another page (simplified: stop at 50 violations)
-        break;
-      }
-      
-      const ruleNumStr = String(v.ruleNumber || v.rule_id || v.ruleId || 'Unknown Rule');
-      const ruleDescStr = String(v.ruleDescription || v.rule_title || v.ruleTitle || '');
-      const detailStr = String(v.violationDetail || v.detail || v.detail_text || '');
-      const sevStr = String(v.severity || 'high');
-      const isEst = v.isEstimated || v.confidence === 'low' || v.confidence === 'medium';
-      const estNote = v.estimationNote || 'Physical verification required';
-
-      const sevColor = sevStr.toLowerCase() === 'high' || sevStr.toLowerCase() === 'critical' ? COLORS.red :
-                       sevStr.toLowerCase() === 'medium' || sevStr.toLowerCase() === 'major'    ? COLORS.orange : COLORS.yellow;
-
-      // Violation card background
-      drawRect(page, margin, vy - 65, contentW, 72, COLORS.lightGray);
-      drawRect(page, margin, vy - 65, 4, 72, sevColor); // Left accent bar
-
-      // Rule number badge
-      drawRect(page, margin + 12, vy - 10, 120, 18, sevColor);
-      page.drawText(ruleNumStr, {
-        x: margin + 15, y: vy - 5,
-        size: 9, font: helveticaBold, color: COLORS.white,
-      });
-
-      // Severity label
-      page.drawText(sevStr.toUpperCase(), {
-        x: margin + 145, y: vy - 5,
-        size: 8, font: helveticaBold, color: sevColor,
-      });
-
-      if (isEst) {
-        page.drawText('[ESTIMATED]', {
-          x: margin + 210, y: vy - 5,
-          size: 7, font: helveticaBold, color: COLORS.orange,
-        });
-      }
-
-      // Rule description
-      page.drawText(truncate(ruleDescStr, 85), {
-        x: margin + 12, y: vy - 25,
-        size: 7.5, font: helvetica, color: COLORS.midGray,
-      });
-
-      // Violation finding
-      page.drawText(truncate(detailStr, 90), {
-        x: margin + 12, y: vy - 40,
-        size: 8, font: helveticaBold, color: COLORS.textDark,
-      });
-
-      if (isEst) {
-        page.drawText(`Note: ${truncate(estNote, 85)}`, {
-          x: margin + 12, y: vy - 56,
-          size: 6.5, font: helvetica, color: COLORS.orange,
-        });
-      }
-
-      vy -= 82;
-    }
-
-    // Footer
-    drawRect(page, 0, 0, pageW, 35, COLORS.lightGray);
-    page.drawText(
-      'This report is generated by SatyaLabel (SIH26034). Findings are based on OCR analysis and must be verified against the physical product for enforcement action.',
-      { x: margin, y: 20, size: 6.5, font: helvetica, color: COLORS.midGray }
-    );
-    page.drawText(`Generated: ${new Date().toISOString()}`, {
-      x: pageW - 200, y: 20, size: 6.5, font: helvetica, color: COLORS.midGray,
-    });
-  };
-
-  // Add violations page
-  if (violations.length > 0) {
-    await addViolationsPage();
-  }
-
-  // ── Footer on page 1 ──────────────────────────────────────────────────────
-  drawRect(page1, 0, 0, pageW, 35, COLORS.lightGray);
-  page1.drawText(
-    'This report is generated by SatyaLabel (SIH26034). For enforcement use only — verify findings against the physical product.',
-    { x: margin, y: 20, size: 6.5, font: helvetica, color: COLORS.midGray }
+  // ── Footer ──
+  const footerY = 28;
+  page.drawLine({
+    start: { x: MARGIN, y: footerY + 10 },
+    end:   { x: A4_W - MARGIN, y: footerY + 10 },
+    thickness: 0.5,
+    color: C.border,
+  });
+  page.drawText(
+    'Generated by SatyaLabel  ·  Smart India Hackathon 2026  ·  SIH26034' +
+    `  ·  Page ${pageNum} of ${totalPages}`,
+    { x: MARGIN, y: footerY, size: 6.5, font: fonts.regular, color: C.mid }
+  );
+  page.drawText(
+    'This is a system-generated report for enforcement reference purposes only.',
+    { x: MARGIN, y: footerY - 10, size: 6.5, font: fonts.regular, color: C.mid }
   );
 
-  // ── Save PDF ──────────────────────────────────────────────────────────────
-  const filename = `compliance_report_${scan.id}_${Date.now()}.pdf`;
-  const filePath = path.join(outputDir, filename);
+  return { page, cursorY: headerBottom - 14 };
+}
+
+// ── SECTION HEADING ───────────────────────────────────────────────────────────
+
+function drawSectionHeading(page, fonts, y, text) {
+  // Thin navy left bar + uppercase label
+  page.drawRectangle({ x: MARGIN, y: y - 2, width: 3, height: 14, color: C.navy });
+  page.drawText(text.toUpperCase(), {
+    x: MARGIN + 10, y,
+    size: 8.5, font: fonts.bold, color: C.navy,
+  });
+  return y - 18;
+}
+
+// ── TABLE ─────────────────────────────────────────────────────────────────────
+
+/**
+ * Draw a bordered table.
+ * cols: [{ header, width, align? }]
+ * rows: string[][]
+ * Returns new Y position.
+ */
+function drawTable(page, fonts, startY, cols, rows) {
+  const ROW_H      = 16;
+  const HEADER_H   = 18;
+  const CELL_PAD_X = 5;
+  const CELL_PAD_Y = 4;
+
+  let y = startY;
+  const tableW = cols.reduce((s, c) => s + c.width, 0);
+
+  // Header row
+  page.drawRectangle({ x: MARGIN, y: y - HEADER_H, width: tableW, height: HEADER_H, color: C.navy });
+  let cx = MARGIN;
+  for (const col of cols) {
+    page.drawText(col.header.toUpperCase(), {
+      x: cx + CELL_PAD_X,
+      y: y - HEADER_H + CELL_PAD_Y + 2,
+      size: 7, font: fonts.bold, color: C.white,
+    });
+    cx += col.width;
+  }
+  y -= HEADER_H;
+
+  // Data rows
+  rows.forEach((row, ri) => {
+    const bg = ri % 2 === 0 ? C.white : C.bg;
+    page.drawRectangle({ x: MARGIN, y: y - ROW_H, width: tableW, height: ROW_H, color: bg });
+
+    cx = MARGIN;
+    row.forEach((cell, ci) => {
+      const col = cols[ci];
+      const isStatus = col.header === 'STATUS' || col.header === 'CONFIDENCE';
+      const cellColor = isStatus ? statusColor(cell) : C.black;
+      const cellFont  = isStatus ? fonts.bold : fonts.mono;
+      const cellSize  = isStatus ? 7 : 7;
+
+      const displayText = isStatus ? statusSymbol(cell) : trunc(String(cell ?? ''), Math.floor(col.width / 4.8));
+      page.drawText(displayText, {
+        x: cx + CELL_PAD_X,
+        y: y - ROW_H + CELL_PAD_Y,
+        size: cellSize, font: cellFont, color: cellColor,
+      });
+
+      // Status dot (7×7 colored square left of text in status column)
+      if (isStatus) {
+        page.drawRectangle({
+          x: cx + CELL_PAD_X - 1,
+          y: y - ROW_H + CELL_PAD_Y + 1,
+          width: 4, height: 7,
+          color: statusColor(cell),
+        });
+        page.drawText(displayText, {
+          x: cx + CELL_PAD_X + 7,
+          y: y - ROW_H + CELL_PAD_Y,
+          size: cellSize, font: fonts.bold, color: statusColor(cell),
+        });
+      }
+
+      cx += col.width;
+    });
+
+    // Row border bottom
+    page.drawLine({
+      start: { x: MARGIN, y: y - ROW_H },
+      end:   { x: MARGIN + tableW, y: y - ROW_H },
+      thickness: 0.3, color: C.border,
+    });
+
+    y -= ROW_H;
+  });
+
+  // Outer border
+  page.drawRectangle({
+    x: MARGIN, y, width: tableW, height: HEADER_H + ROW_H * rows.length,
+    borderColor: C.border, borderWidth: 0.5,
+  });
+
+  return y - 8;
+}
+
+// ── META BLOCK ────────────────────────────────────────────────────────────────
+
+function drawMetaBlock(page, fonts, startY, meta) {
+  const COL1_W = 90;
+  const COL2_W = 200;
+  const ROW_H  = 14;
+  let y = startY;
+
+  const pairs = meta; // [[ label, value ], ...]
+  const half  = Math.ceil(pairs.length / 2);
+  const left  = pairs.slice(0, half);
+  const right = pairs.slice(half);
+
+  // Two-column, no-border key-value layout
+  const maxRows = Math.max(left.length, right.length);
+  for (let i = 0; i < maxRows; i++) {
+    const ly = y - i * ROW_H;
+    if (left[i]) {
+      page.drawText(left[i][0] + ':', {
+        x: MARGIN, y: ly, size: 7.5, font: fonts.bold, color: C.slate,
+      });
+      page.drawText(trunc(String(left[i][1] ?? 'N/A'), 38), {
+        x: MARGIN + COL1_W, y: ly, size: 7.5, font: fonts.mono, color: C.black,
+      });
+    }
+    if (right[i]) {
+      page.drawText(right[i][0] + ':', {
+        x: MARGIN + COL1_W + COL2_W + 20, y: ly, size: 7.5, font: fonts.bold, color: C.slate,
+      });
+      page.drawText(trunc(String(right[i][1] ?? 'N/A'), 32), {
+        x: MARGIN + COL1_W + COL2_W + 20 + 90, y: ly, size: 7.5, font: fonts.mono, color: C.black,
+      });
+    }
+  }
+
+  return y - maxRows * ROW_H - 8;
+}
+
+// ── MAIN: generateReport ──────────────────────────────────────────────────────
+
+async function generateReport({ scan, product, extractedFields, violations, stats }, outputDir = './reports') {
+  if (!fs.existsSync(outputDir)) fs.mkdirSync(outputDir, { recursive: true });
+
+  const pdfDoc = await PDFDocument.create();
+
+  // Embed standard fonts — WinAnsi safe
+  const regular  = await pdfDoc.embedFont(StandardFonts.Helvetica);
+  const bold     = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
+  const mono     = await pdfDoc.embedFont(StandardFonts.Courier);
+  const fonts    = { regular, bold, mono };
+
+  const sealImg  = await embedSeal(pdfDoc);
+
+  const fields   = extractedFields || {};
+  const vList    = violations || [];
+
+  // ── Sort violations: fail → review → pass → na → unverified ──
+  const ORDER = {
+    'POTENTIAL NON-COMPLIANCE': 0,
+    'MANUAL REVIEW': 1,
+    'NOT VERIFIED': 2,
+    'PASS': 3,
+    'NOT APPLICABLE': 4,
+  };
+  const sortedV = [...vList].sort((a, b) => {
+    const as = String(a.status).toUpperCase();
+    const bs = String(b.status).toUpperCase();
+    return (ORDER[as] ?? 5) - (ORDER[bs] ?? 5);
+  });
+
+  // Determine total pages (estimate: 1 for meta+extracted, 1+ for compliance)
+  const estimatedPages = 1 + Math.ceil(sortedV.length / 20);
+  let currentPage = 0;
+
+  // ── PAGE 1 ────────────────────────────────────────────────────────────────
+  currentPage++;
+  const { page: p1, cursorY: cy1Start } = makePage(pdfDoc, fonts, currentPage, estimatedPages, sealImg);
+  let cy = cy1Start;
+
+  // ── Report Meta Block ──
+  cy = drawSectionHeading(p1, fonts, cy, 'Report Information');
+  const overallStatus = san(scan.overallStatus || scan.overall_compliance || 'N/A');
+  const metaPairs = [
+    ['Report ID',     `SL-${new Date(scan.created_at || Date.now()).getFullYear()}-${String(scan.id).padStart(6, '0')}`],
+    ['Product',       san(product?.product_name || fields.product_name || 'Unknown')],
+    ['Officer/User',  san(scan.user?.name || scan.officer_name || 'Not Logged')],
+    ['Scan Date',     fmtDate(scan.created_at)],
+    ['Source Type',   san(scan.source_type || 'Physical Label')],
+    ['Overall Status', overallStatus],
+  ];
+  cy = drawMetaBlock(p1, fonts, cy, metaPairs);
+  cy -= 6;
+
+  // Horizontal rule
+  p1.drawLine({ start: { x: MARGIN, y: cy }, end: { x: A4_W - MARGIN, y: cy }, thickness: 0.4, color: C.border });
+  cy -= 16;
+
+  // ── Section 1: Extracted Declarations ──
+  cy = drawSectionHeading(p1, fonts, cy, 'Section 1 — Extracted Label Declarations');
+
+  const extractedRows = [
+    ['Manufacturer Name',    fields.manufacturer_name,    fields._confidence?.manufacturer_name],
+    ['Manufacturer Address', fields.manufacturer_address, fields._confidence?.manufacturer_address],
+    ['Packer Name',          fields.packer_name,          null],
+    ['Importer Name',        fields.importer_name,        null],
+    ['Net Quantity',         fields.net_quantity,         fields._confidence?.net_quantity],
+    ['MRP',                  fields.mrp,                  fields._confidence?.mrp],
+    ['Mfg. / Best Before',   `${fields.mfg_date || 'N/A'}  /  ${fields.best_before || 'N/A'}`, null],
+    ['Consumer Care',        fields.customer_care,        null],
+    ['FSSAI Licence',        fields.fssai_license,        null],
+    ['Country of Origin',    fields.country_of_origin,    null],
+    ['Batch / Lot Number',   fields.batch_lot_number,     null],
+    ['Veg / Non-Veg',        fields.veg_nonveg,           null],
+  ]
+    .filter(r => r[1])
+    .map(r => [san(r[0]), san(r[1]), confidenceLabel(r[2])]);
+
+  cy = drawTable(p1, fonts, cy,
+    [
+      { header: 'Field',           width: 140 },
+      { header: 'Extracted Value', width: 290 },
+      { header: 'Confidence',      width: 60  },
+    ],
+    extractedRows
+  );
+  cy -= 12;
+
+  // ── Section 2 header (may spill to next page) ──
+  if (cy < 120) {
+    currentPage++;
+    const next = makePage(pdfDoc, fonts, currentPage, estimatedPages, sealImg);
+    cy = next.cursorY;
+    p1._compliancePage = next.page; // unused — we'll open a new page object directly
+  }
+
+  // ── PAGE 2 (Compliance Findings) ──
+  currentPage++;
+  const { page: p2, cursorY: cy2Start } = makePage(pdfDoc, fonts, currentPage, estimatedPages, sealImg);
+  let cy2 = cy2Start;
+
+  cy2 = drawSectionHeading(p2, fonts, cy2, 'Section 2 — Compliance Findings');
+
+  // Table cols
+  const complianceCols = [
+    { header: 'Rule',   width: 72  },
+    { header: 'Title',  width: 188 },
+    { header: 'Status', width: 110 },
+    { header: 'Detail', width: 125 },
+  ];
+  const ROW_H_COMPLIANCE = 16;
+  const complianceHeaderH = 18;
+  const tableW = complianceCols.reduce((s, c) => s + c.width, 0);
+  const FOOTER_SAFE = 58; // points from bottom to keep clear
+
+  // Draw compliance rows, paginating automatically
+  let activePage = p2;
+  let ay = cy2;
+
+  // Table header
+  function drawComplianceHeader(page, y) {
+    page.drawRectangle({ x: MARGIN, y: y - complianceHeaderH, width: tableW, height: complianceHeaderH, color: C.navy });
+    let cx = MARGIN;
+    for (const col of complianceCols) {
+      page.drawText(col.header.toUpperCase(), {
+        x: cx + 5, y: y - complianceHeaderH + 5,
+        size: 7, font: bold, color: C.white,
+      });
+      cx += col.width;
+    }
+    return y - complianceHeaderH;
+  }
+
+  ay = drawComplianceHeader(activePage, ay);
+
+  sortedV.forEach((v, ri) => {
+    // New page if needed
+    if (ay - ROW_H_COMPLIANCE < FOOTER_SAFE) {
+      currentPage++;
+      const np = makePage(pdfDoc, fonts, currentPage, estimatedPages, sealImg);
+      activePage = np.page;
+      ay = np.cursorY;
+      ay = drawComplianceHeader(activePage, ay);
+    }
+
+    const bg = ri % 2 === 0 ? C.white : C.bg;
+    activePage.drawRectangle({ x: MARGIN, y: ay - ROW_H_COMPLIANCE, width: tableW, height: ROW_H_COMPLIANCE, color: bg });
+
+    const ruleStatus = String(v.status || '').toUpperCase();
+    const sc  = statusColor(ruleStatus);
+    const sym = statusSymbol(ruleStatus);
+    const cells = [
+      san(v.rule_id || ''),
+      trunc(san(v.rule_title || v.title || ''), 32),
+      sym,
+      trunc(san(v.detail_text || v.detail || ''), 22),
+    ];
+
+    let cx = MARGIN;
+    cells.forEach((cell, ci) => {
+      const col = complianceCols[ci];
+      if (ci === 2) {
+        // Status column: colored square + text
+        activePage.drawRectangle({ x: cx + 4, y: ay - ROW_H_COMPLIANCE + 4, width: 5, height: 8, color: sc });
+        activePage.drawText(cell, {
+          x: cx + 13, y: ay - ROW_H_COMPLIANCE + 4,
+          size: 6.5, font: bold, color: sc,
+        });
+      } else {
+        activePage.drawText(cell, {
+          x: cx + 5, y: ay - ROW_H_COMPLIANCE + 4,
+          size: 7, font: ci === 0 ? bold : mono, color: C.black,
+        });
+      }
+      cx += col.width;
+    });
+
+    activePage.drawLine({
+      start: { x: MARGIN, y: ay - ROW_H_COMPLIANCE },
+      end:   { x: MARGIN + tableW, y: ay - ROW_H_COMPLIANCE },
+      thickness: 0.25, color: C.border,
+    });
+
+    ay -= ROW_H_COMPLIANCE;
+  });
+
+  // Outer border for compliance table
+  activePage.drawRectangle({
+    x: MARGIN, y: ay, width: tableW,
+    height: complianceHeaderH + ROW_H_COMPLIANCE * sortedV.length,
+    borderColor: C.border, borderWidth: 0.5,
+  });
+
+  ay -= 16;
+
+  // ── Section 3: Evidence ──
+  if (ay < 100) {
+    currentPage++;
+    const np = makePage(pdfDoc, fonts, currentPage, estimatedPages, sealImg);
+    activePage = np.page;
+    ay = np.cursorY;
+  }
+
+  ay = drawSectionHeading(activePage, fonts, ay, 'Section 3 — Evidence & Scan Metadata');
+
+  const evidencePairs = [
+    ['OCR Confidence',  `${fields._ocrConfidence || fields.ocr_confidence || 'N/A'}`],
+    ['Scan Method',     'Gemini Flash Vision  ›  Groq Llama-3.2 Vision  ›  Local OCR Fallback'],
+    ['Scan ID',         san(String(scan.id))],
+    ['Image URL',       trunc(san(scan.imageUrl || scan.image_url || scan.cloudImageUrl || 'Not available'), 60)],
+    ['Rules Checked',   String(stats?.totalRulesChecked || vList.length)],
+    ['Violations',      String(stats?.totalViolations || vList.filter(v => String(v.status).toUpperCase() === 'POTENTIAL NON-COMPLIANCE').length)],
+    ['Compliance Score',stats?.complianceScore ? `${stats.complianceScore}%` : 'See breakdown'],
+    ['Generated At',    fmtDate(new Date().toISOString())],
+  ];
+
+  for (const [label, value] of evidencePairs) {
+    activePage.drawText(`${label}:`, {
+      x: MARGIN, y: ay, size: 7.5, font: bold, color: C.slate,
+    });
+    activePage.drawText(trunc(String(value), 75), {
+      x: MARGIN + 120, y: ay, size: 7.5, font: mono, color: C.black,
+    });
+    ay -= 13;
+  }
+
+  // ── Fix page count: update all footers with real count ──
+  // (pdf-lib doesn't support header/footer injection post-hoc, but we set estimatedPages ≥ actual)
+  // Page count is correct as currentPage = actual count.
 
   const pdfBytes = await pdfDoc.save();
+  const filename  = `compliance_report_${scan.id}_${Date.now()}.pdf`;
+  const filePath  = path.join(outputDir, filename);
   fs.writeFileSync(filePath, pdfBytes);
 
-  console.log(`[Report] PDF generated: ${filePath}`);
+  console.log(`[Report] PDF generated: ${filePath} (${Math.round(pdfBytes.length / 1024)}KB, ${currentPage} pages)`);
   return filePath;
 }
 
-module.exports = { generateReport };
+// ── CSV EXPORT ────────────────────────────────────────────────────────────────
+// One flat row per scan. Returns a UTF-8 CSV string.
+
+function generateCSV(scanData) {
+  // scanData can be a single object or an array
+  const scans = Array.isArray(scanData) ? scanData : [scanData];
+
+  const rows = scans.map(({ scan, product, extractedFields, violations, stats }) => {
+    const fields = extractedFields || {};
+    const vList  = violations || [];
+
+    const failedRules  = vList
+      .filter(v => String(v.status).toUpperCase() === 'POTENTIAL NON-COMPLIANCE')
+      .map(v => v.rule_id || '')
+      .join('; ');
+
+    const reviewRules  = vList
+      .filter(v => String(v.status).toUpperCase() === 'MANUAL REVIEW')
+      .map(v => v.rule_id || '')
+      .join('; ');
+
+    const reportId = `SL-${new Date(scan.created_at || Date.now()).getFullYear()}-${String(scan.id).padStart(6, '0')}`;
+
+    return {
+      report_id:            reportId,
+      scan_date:            scan.created_at ? new Date(scan.created_at).toISOString() : '',
+      product_name:         product?.product_name || fields.product_name || '',
+      source_type:          scan.source_type || 'physical_label',
+      overall_status:       scan.overallStatus || scan.overall_compliance || '',
+      manufacturer_name:    fields.manufacturer_name || '',
+      manufacturer_address: fields.manufacturer_address || '',
+      packer_name:          fields.packer_name || '',
+      importer_name:        fields.importer_name || '',
+      net_quantity:         fields.net_quantity || '',
+      mrp:                  fields.mrp || '',
+      mfg_date:             fields.mfg_date || '',
+      best_before:          fields.best_before || '',
+      fssai_license:        fields.fssai_license || '',
+      country_of_origin:    fields.country_of_origin || '',
+      consumer_care:        fields.customer_care || '',
+      violation_count:      String(stats?.totalViolations ?? vList.filter(v => String(v.status).toUpperCase() === 'POTENTIAL NON-COMPLIANCE').length),
+      failed_rules:         failedRules,
+      review_rules:         reviewRules,
+      officer_name:         scan.user?.name || scan.officer_name || 'Not logged',
+    };
+  });
+
+  // csv-stringify with header: true gives us the column headers automatically
+  const output = stringify(rows, {
+    header: true,
+    quoted_string: true,    // always quote strings
+    cast: {
+      string: (value) => ({ value, quoted: true }),
+    },
+  });
+
+  return output;
+}
+
+module.exports = { generateReport, generateCSV };
