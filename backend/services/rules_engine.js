@@ -356,7 +356,8 @@ function checkUnitConvention(fields) {
   }
 
   // No recognized unit
-  if (!unit || !/^(g|kg|ml|l|cm|m|nos|pieces|n|u)$/i.test(unit)) {
+  const fullStr = `${qty} ${unit}`;
+  if (!/(g|kg|mg|ml|l|cm|m|nos|pieces|n|u)\b/i.test(fullStr) && !/^(g|kg|mg|ml|l|cm|m|nos|pieces|n|u)$/i.test(unit)) {
     return pnoc(R, T, f, 'medium',
       `Net quantity "${qty} ${unit}" does not contain a recognized standard unit. ` +
       'Valid units include: g, kg, ml, L, cm, m, nos., pieces. ' +
