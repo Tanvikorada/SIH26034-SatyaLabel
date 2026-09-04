@@ -997,6 +997,33 @@ const { GoogleGenerativeAI } = require('@google/generative-ai');
 // Groq removed
 const config = require('../config');
 
+function checkFssaiLicense(fields, options = {}) {
+  const R = 'FSSAI Act';
+  const T = 'FSSAI License Number';
+  const f = 'fssai_license';
+  
+  const category = String(fields.category || options.category || '').toLowerCase();
+  const productName = String(fields.product_name || fields.common_name || '').toLowerCase();
+  
+  const perishable = /food|beverage|drink|snack|biscuit|chip|juice|milk|dairy|bread|bakery|meat|fish|egg|sweet|masala|spice|oil|ghee/i;
+  const isLikelyFood = perishable.test(category) || perishable.test(productName);
+  
+  if (!isLikelyFood) {
+    return { rule_id: R, rule_title: T, field: f, status: 'pass', severity: 'low', detail: 'FSSAI License is typically not required for non-food products.', confidence: 'estimated' };
+  }
+
+  if (!fields.fssai_license || String(fields.fssai_license).trim() === '') {
+    return { rule_id: R, rule_title: T, field: f, status: 'fail', severity: 'high', detail: 'FSSAI License Number is missing. Mandatory for all food/beverage products under FSSAI.', confidence: 'high' };
+  }
+  
+  const fssai = String(fields.fssai_license).replace(/\D/g, '');
+  if (fssai.length !== 14) {
+    return { rule_id: R, rule_title: T, field: f, status: 'fail', severity: 'medium', detail: `FSSAI License Number must be exactly 14 digits. Found: ${fields.fssai_license}`, confidence: 'high' };
+  }
+
+  return { rule_id: R, rule_title: T, field: f, status: 'pass', severity: 'low', detail: 'Valid 14-digit FSSAI License Number is present.', confidence: 'high' };
+}
+
 function validateCompliance(fieldsMap = {}, rawText = '', options = {}) {
   const results = [
     checkRule6_1_a_name(fieldsMap),
@@ -1010,6 +1037,10 @@ function validateCompliance(fieldsMap = {}, rawText = '', options = {}) {
     checkRule7_3_letterHeight(fieldsMap),
     checkRule7_pdp(fieldsMap),
     checkRule6_10_ecommerce(fieldsMap, options),
+    checkFssaiLicense(fieldsMap, options),
+    checkCountryOfOrigin(fieldsMap, options),
+    checkBestBefore(fieldsMap, options),
+    checkMisleadingQuantityWording(fieldsMap),
     ...(checkContradictoryDeclarationsCompatibility(fieldsMap) || []),
   ].filter(Boolean);
 
