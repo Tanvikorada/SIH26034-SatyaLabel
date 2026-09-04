@@ -264,13 +264,9 @@ router.post('/', requireAuth, (req, res, next) => {
             const fileBuffer = require('fs').readFileSync(f.path);
             const fileName = `${Date.now()}_${require('path').basename(f.originalname)}`;
             
-            const { data: uploadData, error: uploadError } = await supabase
-              .storage
-              .from('uploads')
-              .upload(fileName, fileBuffer, {
-                contentType: f.mimetype,
-                upsert: true
-              });
+            // BYPASS SUPABASE TO PREVENT HANGING.
+            // Some free-tier projects or restrictive RLS policies cause the Supabase SDK to hang indefinitely on upload.
+            const uploadError = true; 
     
             let cUrl;
             if (!uploadError && supabase && supabase.storage) {

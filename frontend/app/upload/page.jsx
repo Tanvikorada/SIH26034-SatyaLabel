@@ -120,11 +120,16 @@ export default function UploadPage() {
         headers: { 'Authorization': `Bearer ${sessionStorage.getItem('token')}` },
         body: formData
       });
-      if (!res.ok) throw new Error("API Error");
-      const json = await res.json();
-      const responseData = json.data || json;
       
+      const json = await res.json();
+      
+      if (!res.ok) {
+        throw new Error(json.error || json.message || "Upload failed");
+      }
+      
+      const responseData = json.data || json;
       const batchId = responseData.batch_id || responseData.id || responseData.scan_id;
+      
       if (!batchId) {
         toast.warning('Scan submitted. Check history for results.', { id: toastId });
         setTimeout(() => router.push('/history'), 1500);
@@ -147,7 +152,7 @@ export default function UploadPage() {
           } else if (data.status === 'failed') {
             sse.close();
             setLogs(prev => [...prev, `> ERROR: ${data.errorMessage || 'Scan failed'}`]);
-            toast.error('Scan failed', { id: toastId });
+            toast.error('Scan failed: ' + (data.errorMessage || 'Unknown error'), { id: toastId });
             setLoading(false);
           }
         } catch (e) {
@@ -161,9 +166,10 @@ export default function UploadPage() {
       };
 
     } catch (err) {
-      await saveToSyncQueue(files[0], metadata);
-      toast.warning('Network Offline', { id: toastId, description: 'Scan queued locally.' });
-      setTimeout(() => router.push('/dashboard'), 3000); 
+      toast.error(err.message || 'Upload failed', { id: toastId });
+      setLoading(false);
+      // Fire-and-forget sync queue so it doesn't block the UI if IDB hangs
+      saveToSyncQueue(files[0], metadata).catch(console.error);
     }
   };
 
