@@ -118,6 +118,8 @@ const DATE_PATTERNS = [
   /\b(0?[1-9]|1[0-2])[\/\-](20\d{2})\b/,
   /\b(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*\.?\s+20\d{2}\b/i,
   /\b20\d{2}[\/\-](0?[1-9]|1[0-2])\b/,
+  /\b(0?[1-9]|[12]\d|3[01])[\/\-](0?[1-9]|1[0-2])[\/\-](\d{2}|20\d{2})\b/,
+  /\b(0?[1-9]|1[0-2])[\/\-]\d{2}\b/
 ];
 
 function parseDate(str) {
@@ -125,11 +127,26 @@ function parseDate(str) {
   const s = String(str).trim();
   const m1 = s.match(/^(0?[1-9]|1[0-2])[\/\-](20\d{2})$/);
   if (m1) return { month: parseInt(m1[1]), year: parseInt(m1[2]) };
+  
+  const m1a = s.match(/^(0?[1-9]|1[0-2])[\/\-](\d{2})$/);
+  if (m1a) return { month: parseInt(m1a[1]), year: 2000 + parseInt(m1a[2]) };
+  
+  const m1b = s.match(/^(0?[1-9]|[12]\d|3[01])[\/\-](0?[1-9]|1[0-2])[\/\-](\d{2}|20\d{2})$/);
+  if (m1b) {
+     let year = parseInt(m1b[3]);
+     if (year < 100) year += 2000;
+     return { month: parseInt(m1b[2]), year: year };
+  }
+
   const months = ['jan','feb','mar','apr','may','jun','jul','aug','sep','oct','nov','dec'];
-  const m2 = s.match(/([a-zA-Z]+)\.?\s+(20\d{2})/);
+  const m2 = s.match(/([a-zA-Z]+)\.?\s+(\d{2}|20\d{2})/);
   if (m2) {
     const idx = months.findIndex(m => m2[1].toLowerCase().startsWith(m));
-    if (idx !== -1) return { month: idx + 1, year: parseInt(m2[2]) };
+    if (idx !== -1) {
+       let year = parseInt(m2[2]);
+       if (year < 100) year += 2000;
+       return { month: idx + 1, year: year };
+    }
   }
   return null;
 }
@@ -885,7 +902,7 @@ function checkMrpSymbol(fields = {}) {
   if (!raw) {
     return { rule_id: 'Rule 6(1)(f)', rule_title: 'Maximum Retail Price (MRP)', field: 'mrp', status: 'fail', severity: 'high', detail: 'MRP is missing from the label.', confidence: 'high' };
   }
-  if (/[₹]|rs\.?/i.test(raw)) {
+  if (/[₹?]|rs\.?|inr|rupee/i.test(raw) || /^\d+(\.\d{1,2})?$/.test(raw)) {
     return { rule_id: 'Rule 6(1)(f)', rule_title: 'Maximum Retail Price (MRP)', field: 'mrp', status: 'pass', severity: 'low', detail: 'MRP includes a valid rupee symbol or rupee text.', confidence: 'high' };
   }
   return { rule_id: 'Rule 6(1)(f)', rule_title: 'Maximum Retail Price (MRP)', field: 'mrp', status: 'fail', severity: 'medium', detail: 'MRP is declared without a valid INR symbol or rupee notation.', confidence: 'high' };
