@@ -319,7 +319,7 @@
 .active-press:active { transform: scale(0.92); }
 
 @media (max-width: 768px) {
-  body { padding-bottom: 80px; }
+  body { padding-bottom: calc(88px + env(safe-area-inset-bottom)); }
   
   /* Stack tables automatically into cards on mobile */
   .mello-table-mobile-card { display: flex; flex-direction: column; gap: 12px; }
@@ -355,7 +355,6 @@ html, body {
   ────────────────────────────────────────────────────────────────── */
   min-height: 100dvh;
   background-color: var(--color-background);
-  padding-bottom: env(safe-area-inset-bottom);
 }
 
 /* Allow text selection ONLY where it makes sense (inputs, logs) */
@@ -366,7 +365,6 @@ input, textarea, [contenteditable="true"], .allow-select {
 
 @layer utilities {
   .pb-safe {
-    padding-bottom: env(safe-area-inset-bottom);
   }
   .pt-safe {
     padding-top: env(safe-area-inset-top);

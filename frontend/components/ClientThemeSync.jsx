@@ -1,3 +1,4 @@
+
 "use client";
 import { useTheme } from 'next-themes';
 import { useEffect } from 'react';
@@ -7,26 +8,13 @@ export default function ClientThemeSync() {
 
   useEffect(() => {
     if (!resolvedTheme) return;
-
-    let metaThemeColor = document.querySelector('meta[name="theme-color"]');
-    if (!metaThemeColor) {
-      metaThemeColor = document.createElement('meta');
-      metaThemeColor.name = 'theme-color';
-      document.head.appendChild(metaThemeColor);
-    }
-    metaThemeColor.content = resolvedTheme === 'dark' ? '#000000' : '#1E3A8A';
     
-    let appleMeta = document.querySelector('meta[name="apple-mobile-web-app-status-bar-style"]');
-    if (!appleMeta) {
-      appleMeta = document.createElement('meta');
-      appleMeta.name = 'apple-mobile-web-app-status-bar-style';
-      document.head.appendChild(appleMeta);
-    }
-    appleMeta.content = resolvedTheme === 'dark' ? 'black-translucent' : 'default';
-
+    // The theme-color meta tag is now handled statically by Next.js in layout.jsx 
+    // to prevent PWA flashing on initial load.
     
-
-    document.documentElement.style.backgroundColor = resolvedTheme === 'dark' ? '#000000' : '#1E3A8A';
+    // Sync the root HTML layer background to match the body background.
+    // This fixes the BOTTOM overscroll seam so you don't see a weird color when pulling up.
+    document.documentElement.style.backgroundColor = resolvedTheme === 'dark' ? '#000000' : '#ffffff';
     document.body.style.backgroundColor = resolvedTheme === 'dark' ? '#000000' : '#ffffff';
     
     // Enable iOS Safari :active pseudo-class tactile feedback
@@ -38,3 +26,4 @@ export default function ClientThemeSync() {
 
   return null;
 }
+
