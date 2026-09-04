@@ -902,7 +902,7 @@ function checkMrpSymbol(fields = {}) {
   if (!raw) {
     return { rule_id: 'Rule 6(1)(f)', rule_title: 'Maximum Retail Price (MRP)', field: 'mrp', status: 'fail', severity: 'high', detail: 'MRP is missing from the label.', confidence: 'high' };
   }
-  if (/[₹?]|rs\.?|inr|rupee/i.test(raw) || /^\d+(\.\d{1,2})?$/.test(raw)) {
+  if (/[₹?]|rs\.?|inr|rupee/i.test(raw)) {
     return { rule_id: 'Rule 6(1)(f)', rule_title: 'Maximum Retail Price (MRP)', field: 'mrp', status: 'pass', severity: 'low', detail: 'MRP includes a valid rupee symbol or rupee text.', confidence: 'high' };
   }
   return { rule_id: 'Rule 6(1)(f)', rule_title: 'Maximum Retail Price (MRP)', field: 'mrp', status: 'fail', severity: 'medium', detail: 'MRP is declared without a valid INR symbol or rupee notation.', confidence: 'high' };
