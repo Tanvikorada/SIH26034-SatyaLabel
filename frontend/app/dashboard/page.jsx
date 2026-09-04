@@ -224,6 +224,43 @@ export default function Dashboard() {
           </div>
 
         </div>
+
+        {/* ── PHASE 4: Worst Offenders Brand Leaderboard ── */}
+        {(stats.top_non_compliant || []).length > 0 && (
+          <div className="mt-8 bg-white dark:bg-[#11131a] rounded-xl border border-red-200 dark:border-red-900/30 shadow-sm p-6 lg:p-8">
+            <div className="flex items-center justify-between mb-6">
+              <div>
+                <h2 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                  <span className="text-red-500">🏴</span> Repeat Non-Compliance Offenders
+                </h2>
+                <p className="text-sm text-slate-500 dark:text-slate-400 mt-0.5">Brands with the most failed scans across all inspections</p>
+              </div>
+            </div>
+            <div className="space-y-3">
+              {(stats.top_non_compliant || []).map((brand, i) => (
+                <div key={i} className="flex items-center gap-4 p-4 rounded-xl bg-red-50 dark:bg-red-900/10 border border-red-100 dark:border-red-900/20">
+                  <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-black shrink-0 ${i === 0 ? 'bg-red-500 text-white' : i === 1 ? 'bg-red-400 text-white' : 'bg-red-200 dark:bg-red-900/40 text-red-700 dark:text-red-300'}`}>
+                    #{i + 1}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="font-semibold text-slate-900 dark:text-slate-100 text-sm truncate">
+                      {brand.productName || 'Unknown Product'}
+                    </div>
+                    <div className="text-xs text-slate-500 dark:text-slate-400 truncate">
+                      {brand.brandName || 'Unknown Brand'} · {brand.totalScans} scan{brand.totalScans !== 1 ? 's' : ''} total
+                    </div>
+                  </div>
+                  <div className="shrink-0 text-right">
+                    <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 text-xs font-bold border border-red-200 dark:border-red-800">
+                      {brand.failScans} FAIL{brand.failScans !== 1 ? 'S' : ''}
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
       </main>
     </div>
   );

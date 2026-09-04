@@ -32,6 +32,14 @@ export default function ResultsPage({ params }) {
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('summary');
 
+  // Phase 1: Human-in-the-Loop edit state
+  const [isEditing, setIsEditing] = useState(false);
+  const [editedFields, setEditedFields] = useState({});
+  const [isSaving, setIsSaving] = useState(false);
+
+  // Phase 3: Voice audio summary state
+  const [isSpeaking, setIsSpeaking] = useState(false);
+
   const API = process.env.NEXT_PUBLIC_API_URL || 'https://satyalabel-backend.onrender.com/api/v1';
 
   useEffect(() => {
@@ -68,6 +76,175 @@ export default function ResultsPage({ params }) {
       }
     } catch (err) {
       toast.error('Error deleting scan.');
+    }
+  };
+
+  // Phase 1: Save edited fields back to server
+  const handleStartEdit = () => {
+    const f = report.extractedFields || report.extracted_fields || {};
+    const editable = {};
+    ['product_name','brand_name','mrp','net_quantity','net_quantity_unit','mfg_date','best_before','fssai_license','manufacturer_name','manufacturer_address','country_of_origin','customer_care'].forEach(k => {
+      if (f[k] !== undefined && f[k] !== null) editable[k] = f[k];
+    });
+    setEditedFields(editable);
+    setIsEditing(true);
+  };
+
+  const handleSaveEdits = async () => {
+    setIsSaving(true);
+    try {
+      const res = await fetch(`${API}/scans/${resolvedParams.id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${sessionStorage.getItem('token')}`
+        },
+        body: JSON.stringify({ extractedFields: editedFields })
+      });
+      if (!res.ok) throw new Error('Save failed');
+      toast.success('Fields saved. Compliance re-evaluated.');
+      setIsEditing(false);
+      // Reload to get fresh compliance
+      const refreshed = await fetch(`${API}/scans/${resolvedParams.id}`, {
+        headers: { 'Authorization': `Bearer ${sessionStorage.getItem('token')}` }
+      });
+      const json = await refreshed.json();
+      setReport(json.data);
+    } catch (err) {
+      toast.error('Could not save: ' + err.message);
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  // Phase 3: Voice summary using browser's built-in speech API
+  const handleVoiceSummary = () => {
+    if (typeof window === 'undefined' || !window.speechSynthesis) {
+      toast.error('Voice not supported on this browser.');
+      return;
+    }
+    if (isSpeaking) {
+      window.speechSynthesis.cancel();
+      setIsSpeaking(false);
+      return;
+    }
+    const f = report.extractedFields || report.extracted_fields || {};
+    const text = f.ai_summary || `Scan complete. ${report.product?.product_name || f.product_name || 'Unknown product'}. Overall status: ${report.overallStatus || report.overall_compliance}. ${report.totalViolations || 0} violations found.`;
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.rate = 0.88;
+    utterance.pitch = 1.0;
+    utterance.onend = () => setIsSpeaking(false);
+    utterance.onerror = () => setIsSpeaking(false);
+    window.speechSynthesis.speak(utterance);
+    setIsSpeaking(true);
+  };
+
+  // Phase 2: Generate Show-Cause Notice PDF using jsPDF (client-side, zero backend)
+  const generateShowCauseNotice = async () => {
+    toast.info('Generating Show-Cause Notice...');
+    try {
+      const { jsPDF } = await import('jspdf');
+      const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+      const f = report.extractedFields || report.extracted_fields || {};
+      const violations = (report.violations || []).filter(v => String(v.status).toUpperCase() !== 'PASS' && String(v.status).toUpperCase() !== 'NOT APPLICABLE');
+      const today = new Date().toLocaleDateString('en-IN', { day: '2-digit', month: 'long', year: 'numeric' });
+      const officerEmail = typeof sessionStorage !== 'undefined' ? sessionStorage.getItem('email') || 'Field Officer' : 'Field Officer';
+      const productName = f.product_name || report.product?.product_name || 'Unknown Product';
+      const brandName = f.brand_name || report.product?.brand_name || '';
+      const mfrAddress = f.manufacturer_address || 'Address not available on label';
+      const mfrName = f.manufacturer_name || brandName || 'Unknown Manufacturer';
+
+      // Header
+      doc.setFillColor(11, 31, 58);
+      doc.rect(0, 0, 210, 32, 'F');
+      doc.setTextColor(255, 255, 255);
+      doc.setFontSize(13);
+      doc.setFont('helvetica', 'bold');
+      doc.text('MINISTRY OF CONSUMER AFFAIRS, FOOD & PUBLIC DISTRIBUTION', 105, 11, { align: 'center' });
+      doc.setFontSize(9);
+      doc.setFont('helvetica', 'normal');
+      doc.text('Department of Consumer Affairs — Legal Metrology Division', 105, 17, { align: 'center' });
+      doc.setFontSize(8);
+      doc.text('SatyaLabel Compliance Platform · SIH26034', 105, 23, { align: 'center' });
+
+      // Title
+      doc.setTextColor(0, 0, 0);
+      doc.setFontSize(14);
+      doc.setFont('helvetica', 'bold');
+      doc.text('SHOW-CAUSE NOTICE', 105, 44, { align: 'center' });
+      doc.setFontSize(9);
+      doc.setFont('helvetica', 'normal');
+      doc.setTextColor(100, 100, 100);
+      doc.text(`Under Section 33 of the Legal Metrology Act, 2009`, 105, 51, { align: 'center' });
+
+      // Meta info
+      doc.setTextColor(0, 0, 0);
+      doc.setFontSize(9);
+      let y = 62;
+      const addRow = (label, value) => {
+        doc.setFont('helvetica', 'bold'); doc.text(label + ':', 14, y);
+        doc.setFont('helvetica', 'normal');
+        const lines = doc.splitTextToSize(String(value || 'N/A'), 130);
+        doc.text(lines, 60, y);
+        y += 6 * lines.length;
+      };
+      addRow('Case Reference ID', report.id);
+      addRow('Date of Inspection', today);
+      addRow('Inspecting Officer', officerEmail);
+      addRow('Product Name', productName + (brandName ? ` (${brandName})` : ''));
+      addRow('Manufacturer / Marketer', mfrName);
+      addRow('Address on Label', mfrAddress);
+      addRow('FSSAI License No.', f.fssai_license || 'Not declared');
+      addRow('MRP', f.mrp ? `Rs. ${f.mrp}/-` : 'Not declared');
+      addRow('Overall Compliance', report.overallStatus || report.overall_compliance);
+
+      y += 4;
+      doc.setDrawColor(200, 200, 200); doc.line(14, y, 196, y); y += 8;
+
+      // Violations
+      doc.setFontSize(11); doc.setFont('helvetica', 'bold');
+      doc.setTextColor(180, 0, 0);
+      doc.text(`VIOLATIONS DETECTED (${violations.length})`, 14, y); y += 7;
+      doc.setTextColor(0, 0, 0); doc.setFontSize(8.5);
+
+      violations.forEach((v, i) => {
+        if (y > 250) { doc.addPage(); y = 20; }
+        doc.setFont('helvetica', 'bold');
+        doc.text(`${i + 1}. [${v.rule_id}] ${v.rule_title}`, 14, y); y += 5;
+        doc.setFont('helvetica', 'normal');
+        const detail = doc.splitTextToSize(v.detail || v.detail_text || '', 175);
+        doc.text(detail, 20, y); y += 5 * detail.length + 2;
+      });
+
+      y += 4;
+      doc.setDrawColor(200, 200, 200); doc.line(14, y, 196, y); y += 8;
+
+      // Legal Notice Body
+      if (y > 230) { doc.addPage(); y = 20; }
+      doc.setFontSize(9); doc.setFont('helvetica', 'bold');
+      doc.text('NOTICE:', 14, y); y += 6;
+      doc.setFont('helvetica', 'normal');
+      const body = `You are hereby required to show cause, within 15 days of receipt of this notice, as to why legal action should not be initiated against you under the provisions of the Legal Metrology Act, 2009 and the Legal Metrology (Packaged Commodities) Rules, 2011, as amended, for the violations detailed above. Failure to respond shall result in further enforcement action.`;
+      const bodyLines = doc.splitTextToSize(body, 180);
+      doc.text(bodyLines, 14, y); y += 6 * bodyLines.length + 10;
+
+      // Signature block
+      doc.setFont('helvetica', 'bold');
+      doc.text('Signature of Inspecting Officer:', 14, y); y += 8;
+      doc.line(14, y, 90, y); y += 6;
+      doc.setFont('helvetica', 'normal');
+      doc.text(officerEmail, 14, y); y += 5;
+      doc.text(today, 14, y);
+
+      // Footer
+      doc.setFontSize(7); doc.setTextColor(150, 150, 150);
+      doc.text('This notice was generated by SatyaLabel AI Compliance Platform (SIH26034). For official use only.', 105, 290, { align: 'center' });
+
+      doc.save(`ShowCauseNotice_${productName.replace(/\s+/g, '_')}_${report.id.slice(0, 8)}.pdf`);
+      toast.success('Show-Cause Notice downloaded!');
+    } catch (err) {
+      console.error(err);
+      toast.error('Failed to generate notice: ' + err.message);
     }
   };
 
@@ -214,12 +391,49 @@ export default function ResultsPage({ params }) {
             
             {/* Action Buttons */}
           <div className="flex flex-wrap gap-3 mt-8 pt-6 border-t border-border/50">
+
+            {/* Phase 1: Edit/Save/Cancel buttons */}
+            {!isEditing ? (
+              <button onClick={handleStartEdit} className="mello-btn-secondary flex items-center gap-2">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                Edit Fields
+              </button>
+            ) : (
+              <>
+                <button onClick={handleSaveEdits} disabled={isSaving} className="mello-btn-primary flex items-center gap-2 disabled:opacity-50">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="20 6 9 17 4 12"/></svg>
+                  {isSaving ? 'Saving...' : 'Save & Re-evaluate'}
+                </button>
+                <button onClick={() => setIsEditing(false)} className="mello-btn-secondary flex items-center gap-2">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                  Cancel
+                </button>
+              </>
+            )}
+
+            {/* Phase 3: Voice Summary button */}
+            <button onClick={handleVoiceSummary} className={`mello-btn-secondary flex items-center gap-2 ${isSpeaking ? 'border-accent text-accent' : ''}`}>
+              {isSpeaking ? (
+                <><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg> Stop Audio</>
+              ) : (
+                <><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/></svg> Read Summary</>
+              )}
+            </button>
+
+            {/* Phase 2: Show-Cause Notice — only shown for violations */}
+            {(overallStatusRaw === 'POTENTIAL NON-COMPLIANCE' || overallStatusRaw === 'NON_COMPLIANT' || overallStatusRaw === 'FAIL') && (
+              <button onClick={generateShowCauseNotice} className="mello-btn-primary flex items-center gap-2 bg-red-600 hover:bg-red-700 shadow-red-500/20">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
+                Show-Cause Notice
+              </button>
+            )}
+
             <button onClick={downloadPDF} className="mello-btn-primary flex items-center gap-2">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
               Download Notice
             </button>
             <button onClick={downloadCSV} className="mello-btn-secondary flex items-center gap-2">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="3" y1="9" x2="21" y2="9"></line><line x1="9" y1="21" x2="9" y2="9"></line></svg>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg>
               Export CSV
             </button>
           </div>
@@ -464,17 +678,29 @@ export default function ResultsPage({ params }) {
             <div className="animate-fade-in flex flex-col md:flex-row gap-6 items-start w-full">
                {/* Left Column: Professional Structured Data */}
                <div className="w-full md:w-7/12 flex flex-col gap-4">
-                 <h3 className="text-[13px] font-bold tracking-widest uppercase text-text-muted px-1">Structured Telemetry</h3>
+                 <div className="flex items-center justify-between px-1">
+                   <h3 className="text-[13px] font-bold tracking-widest uppercase text-text-muted">Structured Telemetry</h3>
+                   {isEditing && <span className="text-[11px] text-accent font-semibold tracking-wide animate-pulse">✎ Edit mode — click Save in the header to apply</span>}
+                 </div>
                  <div className="glass rounded-[24px] overflow-hidden border border-border/50 shadow-sm">
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-px bg-border/40">
-                    {Object.entries(fields).filter(([k, v]) => !k.startsWith('_') && v).map(([k, v], i) => (
+                    {Object.entries(isEditing ? editedFields : fields).filter(([k, v]) => !k.startsWith('_') && v !== null && v !== undefined).map(([k, v]) => (
                       <div key={k} className="bg-background/80 backdrop-blur-md p-5 hover:bg-black/5 dark:hover:bg-white/5 transition-colors">
                         <div className="text-[11px] font-bold tracking-widest uppercase text-text-muted mb-1.5">
                           {k.replace(/_/g, ' ')}
                         </div>
-                        <div className="text-[14px] text-text-primary font-medium break-words leading-relaxed">
-                          {String(v)}
-                        </div>
+                        {isEditing && editedFields.hasOwnProperty(k) ? (
+                          <input
+                            type="text"
+                            value={editedFields[k] ?? ''}
+                            onChange={e => setEditedFields(prev => ({ ...prev, [k]: e.target.value }))}
+                            className="w-full text-[14px] text-text-primary font-medium bg-background border border-accent/50 rounded-lg px-2 py-1 focus:ring-1 focus:ring-accent outline-none"
+                          />
+                        ) : (
+                          <div className="text-[14px] text-text-primary font-medium break-words leading-relaxed">
+                            {String(v)}
+                          </div>
+                        )}
                       </div>
                     ))}
                     </div>
