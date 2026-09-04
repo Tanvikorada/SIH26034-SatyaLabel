@@ -463,57 +463,14 @@ async function runOcrPipeline(imagePaths, metadata = {}) {
       }
     }
     
-    // 4. THE BULLETPROOF DEMO FALLBACK (GOD MODE)
-    // Only triggered if EVERYTHING above utterly fails.
-    console.warn("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
-    console.warn("[OCR] ALL CLOUD ENGINES FAILED! TRIGGERING LOCAL DEMO FALLBACK");
-    console.warn("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+    // 4. FAIL CLEANLY (User requested removal of backup OCR)
+    console.error("[OCR] ALL CLOUD ENGINES FAILED!");
     
-    
-      const Tesseract = require('tesseract.js');
-      let combinedText = "";
-      for (const p of processedPaths) {
-        console.warn("[OCR] Running local Tesseract on: ", p);
-        try {
-          const ret = await Tesseract.recognize(p, 'eng');
-          combinedText += ret.data.text + "\n";
-        } catch (e) {
-          console.error("[OCR] Local Tesseract failed on " + p, e.message);
-        }
-      }
-
-      const fallbackStructuredData = {
-        products: [{
-          ai_summary: "OFFLINE MODE: Cloud AI engines (Gemini/Groq) were unavailable. Text was extracted using a genuine local Tesseract OCR fallback. Some structured fields were inferred via heuristic regex, meaning data may be incomplete or less accurate.",
-          raw_text_transcript: combinedText,
-          product_name: "Unknown Product (Offline Scan)",
-          brand_name: null,
-          net_quantity: (combinedText.match(/(\d+)\s*(g|kg|ml|l|oz|lb)\b/i) || [])[1] || null,
-          net_quantity_unit: (combinedText.match(/(\d+)\s*(g|kg|ml|l|oz|lb)\b/i) || [])[2] || null,
-          mrp: (combinedText.match(/MRP(?:[\s\.\:]|Rs\.?|₹)*(\d+(?:\.\d{1,2})?)/i) || [])[1] || null,
-          mrp_includes_tax_statement: /incl(?:usive)?\s+of\s+all\s+taxes/i.test(combinedText),
-          mfg_date: (combinedText.match(/MF[GD](?:\s*Date|\.|:)?\s*(\d{2}[/\.-]\d{2,4}|\d{2,4}[/\.-]\d{2})/i) || [])[1] || null,
-          best_before: (combinedText.match(/BEST\s+BEFORE\s+([a-zA-Z0-9\s]+)/i) || [])[1] || null,
-          fssai_license: (combinedText.match(/fssai[a-z\s\.:]*(\d{14})/i) || [])[1] || null,
-          ingredient_analysis: {
-            harmful_additives_found: [],
-            health_risks: ["Local OCR mode active. Advanced biochemical AI analysis is disabled."],
-            allergens_detected: [],
-            ingredient_dictionary: []
-          },
-          _is_fallback: true
-        }]
-      };
-
-      return {
-      text: fallbackStructuredData.products[0].raw_text_transcript,
-      engine: "offline_cache",
-      confidenceAvg: 99,
-      geminiStructuredData: fallbackStructuredData,
-      _fontMetrics: [],
-      _jsonText: JSON.stringify(fallbackStructuredData)
-    };
-
+    throw new Error("AI Vision Engines unavailable or failed to process the image. " + 
+      (geminiErrStr || groqErrStr || "Please check your network and try again."));
+  } catch (err) {
+    console.error('[OCR] Pipeline Error:', err.message);
+    return null;
   } finally {
     for (const p of processedPaths) {
       if (require('fs').existsSync(p)) {
