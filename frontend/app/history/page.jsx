@@ -9,15 +9,21 @@ const API = process.env.NEXT_PUBLIC_API_URL || 'https://satyalabel-backend.onren
 // ─── Delete Confirm Modal ─────────────────────────────────────────────────────
 function DeleteModal({ onConfirm, onCancel }) {
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm px-4">
-      <div className="glass rounded-[20px] p-6 max-w-sm w-full border border-border shadow-xl">
-        <h3 className="text-[16px] font-bold text-text-primary mb-2">Delete Scan Record?</h3>
-        <p className="text-[13px] text-text-secondary mb-6">This action cannot be undone. The scan, violations, and report will be permanently deleted.</p>
+    <div className="fixed inset-0 z-[99999] flex items-center justify-center bg-black/60 backdrop-blur-md px-4 transition-all">
+      <div className="bg-[var(--color-surface)] rounded-[24px] p-6 max-w-sm w-full border border-[var(--color-border)] shadow-2xl relative overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+        {/* Red accent bar at the top for destructive action */}
+        <div className="absolute top-0 left-0 w-full h-1.5 bg-red-500"></div>
+        
+        <h3 className="text-[18px] font-bold text-[var(--color-text-primary)] mt-1 mb-2">Delete Scan Record?</h3>
+        <p className="text-[14px] leading-relaxed text-[var(--color-text-secondary)] mb-8">
+          This action cannot be undone. The scan data, identified violations, and associated reports will be permanently erased.
+        </p>
+        
         <div className="flex gap-3">
-          <button onClick={onCancel} className="flex-1 py-2.5 rounded-xl border border-border text-text-secondary text-[13px] font-medium hover:bg-surface transition-colors">
+          <button onClick={onCancel} className="flex-1 py-3 rounded-xl border border-[var(--color-border)] text-[var(--color-text-secondary)] text-[14px] font-semibold hover:bg-[var(--color-background)] active:scale-95 transition-all">
             Cancel
           </button>
-          <button onClick={onConfirm} className="flex-1 py-2.5 rounded-xl bg-red-500 text-white text-[13px] font-bold hover:bg-red-600 transition-colors">
+          <button onClick={onConfirm} className="flex-1 py-3 rounded-xl bg-red-500 text-white text-[14px] font-bold hover:bg-red-600 shadow-[0_4px_14px_rgba(239,68,68,0.4)] active:scale-95 transition-all">
             Delete
           </button>
         </div>
