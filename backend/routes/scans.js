@@ -204,7 +204,7 @@ async function runBatchPipeline(batch, imagePath, metadata = {}) {
     }
     successfulScans++;
       
-    await batch.update({ status: 'complete', successfulScans });
+    await batch.update({ status: 'completed' });
     emitProgress(batch.id, 6, 'Complete!');
   } catch (err) {
     console.error('[Pipeline] Fatal error processing batch', batch.id, err);
