@@ -107,8 +107,8 @@ const MISLEADING_QUALIFIERS = /\b(minimum|not\s+less\s+than|average|about|approx
 const MRP_SYMBOL = /[₹]|rs\.?/i;
 const INCL_TAX   = /incl(?:usive)?\.?\s+(?:of\s+)?all\s+tax|incl\.?\s+all\s+taxes?|all\s+taxes?\s+incl|inclusive\s+of\s+taxes?/i;
 
-// PIN code pattern (6 digits)
-const PIN_CODE = /\b[1-9][0-9]{5}\b/;
+// PIN code pattern (6 digits, optional space)
+const PIN_CODE = /\b[1-9][0-9]{2}\s?[0-9]{3}\b/;
 
 // Indian city / state keywords for address heuristic
 const ADDRESS_KEYWORDS = /\b(mumbai|delhi|bangalore|bengaluru|chennai|kolkata|hyderabad|pune|ahmedabad|jaipur|lucknow|navi\s*mumbai|gurugram|noida|gurgaon|thane|surat|vadodara|maharashtra|karnataka|tamil\s*nadu|gujarat|rajasthan|uttar\s*pradesh|west\s*bengal|andhra|telangana|haryana|punjab|kerala|india)\b/i;
