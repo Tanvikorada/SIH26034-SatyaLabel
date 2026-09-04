@@ -19,6 +19,12 @@ export default function SettingsPage() {
   const [email, setEmail]           = useState('');
   const [role, setRole]             = useState('');
 
+  // Admin Provisioning State
+  const [provisionName, setProvisionName] = useState('');
+  const [provisionEmail, setProvisionEmail] = useState('');
+  const [provisionPassword, setProvisionPassword] = useState('');
+  const [isProvisioning, setIsProvisioning] = useState(false);
+
   useEffect(() => {
     setMounted(true);
     const t = sessionStorage.getItem('token');
@@ -26,6 +32,34 @@ export default function SettingsPage() {
     setEmail(sessionStorage.getItem('email') || '');
     setRole(sessionStorage.getItem('role') || 'officer');
   }, [router]);
+
+  const handleProvisionOfficer = async (e) => {
+    e.preventDefault();
+    setIsProvisioning(true);
+    try {
+      const res = await fetch(process.env.NEXT_PUBLIC_API_URL + '/auth/provision-officer', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ' + sessionStorage.getItem('token')
+        },
+        body: JSON.stringify({
+          name: provisionName,
+          email: provisionEmail,
+          password: provisionPassword,
+          role: 'officer'
+        })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to create officer account');
+      toast.success(data.message || 'Officer account created successfully!');
+      setProvisionName(''); setProvisionEmail(''); setProvisionPassword('');
+    } catch (err) {
+      toast.error(err.message);
+    } finally {
+      setIsProvisioning(false);
+    }
+  };
 
   const handleLogout = () => {
     sessionStorage.removeItem('token');
@@ -57,6 +91,24 @@ export default function SettingsPage() {
               <p className="text-[12px] text-text-muted capitalize">{role} · SatyaLabel v{APP_VERSION}</p>
             </div>
           </div>
+
+          {/* ✨ Admin: Officer Management ✨ */}
+          {role === 'admin' && (
+            <section className="flex flex-col gap-3">
+              <h2 className="text-[13px] font-bold tracking-widest uppercase text-text-muted px-2">Officer Management (Admin)</h2>
+              <div className="glass rounded-[24px] border border-border/50 overflow-hidden shadow-sm p-5">
+                <p className="text-[13px] text-text-secondary mb-4">Provision secure credentials for field officers. They will use this email and password to log in to their device.</p>
+                <form onSubmit={handleProvisionOfficer} className="flex flex-col gap-3">
+                  <input type="text" placeholder="Officer Full Name" value={provisionName} onChange={e => setProvisionName(e.target.value)} required className="w-full px-4 py-2.5 rounded-[12px] bg-background border border-border text-[15px] focus:border-accent focus:ring-1 focus:ring-accent outline-none transition-all" />
+                  <input type="email" placeholder="Official Email Address" value={provisionEmail} onChange={e => setProvisionEmail(e.target.value)} required className="w-full px-4 py-2.5 rounded-[12px] bg-background border border-border text-[15px] focus:border-accent focus:ring-1 focus:ring-accent outline-none transition-all" />
+                  <input type="text" placeholder="Temporary Password" value={provisionPassword} onChange={e => setProvisionPassword(e.target.value)} required className="w-full px-4 py-2.5 rounded-[12px] bg-background border border-border text-[15px] focus:border-accent focus:ring-1 focus:ring-accent outline-none transition-all" />
+                  <button type="submit" disabled={isProvisioning} className="mt-2 flex items-center justify-center gap-2 px-5 py-2.5 bg-accent text-white font-medium rounded-[12px] hover:opacity-90 transition-colors shadow-lg shadow-accent/20 disabled:opacity-50 disabled:cursor-not-allowed">
+                    {isProvisioning ? 'Creating...' : '+ Create Officer Account'}
+                  </button>
+                </form>
+              </div>
+            </section>
+          )}
 
           {/* ── Appearance ───────────────────────────────────────── */}
           <section className="flex flex-col gap-3">
