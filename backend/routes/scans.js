@@ -381,6 +381,14 @@ router.get('/debug-db', async (req, res) => {
   } catch(e) { res.json({ error: e.message }); }
 });
 
+router.get('/debug-env', (req, res) => {
+  res.json({
+    gemini: !!process.env.GEMINI_API_KEY,
+    groq: !!process.env.GROQ_API_KEY,
+    nvidia: !!process.env.NVIDIA_API_KEY
+  });
+});
+
 router.get('/debug-err', (req, res) => {
   let crash = 'No crash';
   try {

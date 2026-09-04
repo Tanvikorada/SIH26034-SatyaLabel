@@ -502,6 +502,11 @@ async function runOcrPipeline(imagePaths, metadata = {}) {
     let groqResult = null; let geminiResult = null;
     let geminiErrStr = ''; let groqErrStr = ''; 
     
+    if (metadata.forceEngine === 'nvidia' && config.nvidia?.enabled) {
+      console.log("[OCR] FORCING NVIDIA NIM Vision due to metadata flag...");
+      return await runNvidiaVision(processedPaths, 1, 'meta/llama-3.2-90b-vision-instruct');
+    }
+    
     // 1. Attempt Gemini 2.5 Flash First (Fastest)
     if (config.gemini?.enabled && config.gemini?.apiKey) {
       console.log("[OCR] Attempting Gemini 2.5 Flash...");
