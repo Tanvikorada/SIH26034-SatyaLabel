@@ -111,60 +111,32 @@ export default function AboutPage() {
 
         </div>
 
-        {/* Crafted By Tanvi Section */}
-        <div className="mt-16 mb-8 flex flex-col items-center justify-center opacity-90 hover:opacity-100 transition-opacity">
+                {/* Crafted By Tanvi Section */}
+        <div className="mt-16 mb-10 flex flex-col items-center justify-center">
           
-          <div className="relative w-16 h-16 mb-6 mt-4" style={{ perspective: '1000px' }}>
-            <style>{`
-              @keyframes spin3D {
-                0% { transform: rotateX(-20deg) rotateY(0deg); }
-                100% { transform: rotateX(-20deg) rotateY(360deg); }
-              }
-              .cube-3d {
-                transform-style: preserve-3d;
-                animation: spin3D 8s infinite linear;
-              }
-              .cube-face {
-                position: absolute;
-                width: 100%;
-                height: 100%;
-                background: linear-gradient(135deg, #0F172A, #1E293B);
-                border: 2px solid #EA580C;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                font-weight: 900;
-                font-size: 36px;
-                color: #EA580C;
-                text-shadow: 0 0 10px rgba(234,88,12,0.5);
-                border-radius: 8px;
-                box-shadow: inset 0 0 15px rgba(234,88,12,0.2);
-                backface-visibility: hidden;
-              }
-              .face-front  { transform: translateZ(32px); }
-              .face-back   { transform: rotateY(180deg) translateZ(32px); }
-              .face-right  { transform: rotateY(90deg) translateZ(32px); }
-              .face-left   { transform: rotateY(-90deg) translateZ(32px); }
-              .face-top    { transform: rotateX(90deg) translateZ(32px); background: #0F172A; }
-              .face-bottom { transform: rotateX(-90deg) translateZ(32px); background: #0F172A; box-shadow: 0 0 30px rgba(234, 88, 12, 0.8); }
-            `}</style>
-            <div className="cube-3d relative w-full h-full">
-              <div className="cube-face face-front">T</div>
-              <div className="cube-face face-back">T</div>
-              <div className="cube-face face-right">T</div>
-              <div className="cube-face face-left">T</div>
-              <div className="cube-face face-top"></div>
-              <div className="cube-face face-bottom"></div>
-            </div>
+          <style>{`
+            @keyframes levitatePremium {
+              0%, 100% { transform: translateY(0); box-shadow: 0 10px 30px -10px rgba(15, 23, 42, 0.1); }
+              50% { transform: translateY(-6px); box-shadow: 0 20px 40px -10px rgba(15, 23, 42, 0.05); }
+            }
+            @keyframes sweepPremium {
+              0% { transform: translateX(-150%) skewX(-15deg); }
+              100% { transform: translateX(150%) skewX(-15deg); }
+            }
+          `}</style>
+          
+          <div className="relative w-14 h-14 mb-6 rounded-2xl bg-gradient-to-br from-white to-slate-100 border border-slate-200/60 flex items-center justify-center overflow-hidden animate-[levitatePremium_5s_ease-in-out_infinite]">
+            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/90 to-transparent w-full h-full animate-[sweepPremium_4s_infinite_linear] opacity-70"></div>
+            <span className="font-semibold text-[26px] text-slate-800 relative z-10 tracking-tighter">T</span>
           </div>
           
-          <div className="flex items-center gap-1.5 mb-1 text-[13px] font-bold tracking-[0.2em] text-text-muted uppercase">
-            Crafted with <Heart size={14} className="text-accent inline-block mx-0.5 fill-accent animate-pulse" /> by
+          <div className="text-[10px] font-bold tracking-[0.3em] text-slate-400 uppercase mb-2">
+            Engineered By
           </div>
-          <h3 className="text-[26px] font-black text-primary tracking-tight mt-1 bg-clip-text">
+          <h3 className="text-[20px] font-medium text-slate-800 tracking-tight">
             Tanvi
           </h3>
-          <p className="text-[13px] text-text-secondary mt-1 font-medium bg-slate-100 px-3 py-1 rounded-full border border-slate-200">
+          <p className="text-[12px] text-slate-500 mt-1 tracking-wider">
             Lead Developer & Architect
           </p>
         </div>
