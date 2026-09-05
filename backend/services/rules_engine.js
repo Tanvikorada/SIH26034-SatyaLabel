@@ -115,20 +115,25 @@ const ADDRESS_KEYWORDS = /\b(mumbai|delhi|bangalore|bengaluru|chennai|kolkata|hy
 
 // Date patterns: MM/YYYY, Month YYYY, YYYY-MM
 const DATE_PATTERNS = [
-  /\b(0?[1-9]|1[0-2])[\/\-](20\d{2})\b/,
-  /\b(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*\.?\s+20\d{2}\b/i,
-  /\b20\d{2}[\/\-](0?[1-9]|1[0-2])\b/,
-  /\b(0?[1-9]|[12]\d|3[01])[\/\-](0?[1-9]|1[0-2])[\/\-](\d{2}|20\d{2})\b/,
-  /\b(0?[1-9]|1[0-2])[\/\-]\d{2}\b/
+  /\b(0?[1-9]|1[0-2])[\/\-\.](20\d{2})\b/,
+  /\b(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*\.?[\s\-]+20\d{2}\b/i,
+  /\b20\d{2}[\/\-\.](0?[1-9]|1[0-2])\b/,
+  /\b(0?[1-9]|[12]\d|3[01])[\/\-\.](0?[1-9]|1[0-2])[\/\-\.](\d{2}|20\d{2})\b/,
+  /\b(0?[1-9]|1[0-2])[\/\-\.]\d{2}\b/
 ];
 
 function parseDate(str) {
   if (!str) return null;
   const s = String(str).trim();
-  const m1 = s.match(/^(0?[1-9]|1[0-2])[\/\-](20\d{2})$/);
+  
+  // Try DD/MM/YYYY or DD.MM.YYYY
+  const m0 = s.match(/^(?:0?[1-9]|[12]\d|3[01])[\/\-\.](0?[1-9]|1[0-2])[\/\-\.](\d{2}|20\d{2})$/);
+  if (m0) return { month: parseInt(m0[1]), year: m0[2].length === 2 ? 2000 + parseInt(m0[2]) : parseInt(m0[2]) };
+
+  const m1 = s.match(/^(0?[1-9]|1[0-2])[\/\-\.](20\d{2})$/);
   if (m1) return { month: parseInt(m1[1]), year: parseInt(m1[2]) };
   
-  const m1a = s.match(/^(0?[1-9]|1[0-2])[\/\-](\d{2})$/);
+  const m1a = s.match(/^(0?[1-9]|1[0-2])[\/\-\.](\d{2})$/);
   if (m1a) return { month: parseInt(m1a[1]), year: 2000 + parseInt(m1a[2]) };
   
   const m1b = s.match(/^(0?[1-9]|[12]\d|3[01])[\/\-](0?[1-9]|1[0-2])[\/\-](\d{2}|20\d{2})$/);
@@ -383,7 +388,7 @@ function checkMfgDate(fields) {
     }
     return pnoc(R, T, f, 'high',
       'Month and year of manufacture/packing/import is not declared. ' +
-      'This is mandatory under Rule 6. Required format: MM/YYYY (e.g. 03/2025) or Month YYYY (e.g. Mar 2025).');
+      'This is mandatory under Rule 6. Required format: MM/YYYY, DD/MM/YYYY, or Month YYYY.');
   }
 
   const str = String(fields.mfg_date).trim();
@@ -392,7 +397,7 @@ function checkMfgDate(fields) {
   if (!validFormat) {
     return pnoc(R, T, f, 'medium',
       `Manufacturing date "${str}" does not match a valid format. ` +
-      'Required format: MM/YYYY (e.g. 03/2025) or Month YYYY (e.g. Mar 2025) per Rule 6.');
+      'Required format: MM/YYYY, DD/MM/YYYY, or Month YYYY per Rule 6.');
   }
 
   const parsed = parseDate(str);
@@ -459,7 +464,7 @@ function checkBestBefore(fields, options) {
   if (!validFormat) {
     return review(R, T, f, 'low',
       `Best before / use by value "${str}" was detected but could not be validated against a standard format. ` +
-      'Expected format: MM/YYYY or Month YYYY. Officer should verify this field physically.');
+      'Expected format: MM/YYYY, DD/MM/YYYY, or Month YYYY. Officer should verify this field physically.');
   }
 
   // Check that best_before is not in the past by more than 5 years (OCR misread)
@@ -1139,3 +1144,6 @@ module.exports = {
   checkContradictoryDeclarations: checkContradictoryDeclarationsCompatibility,
   getRequiredNumeralHeight,
 };
+
+
+
