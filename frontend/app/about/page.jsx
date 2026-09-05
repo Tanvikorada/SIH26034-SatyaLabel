@@ -113,12 +113,48 @@ export default function AboutPage() {
 
         {/* Crafted By Tanvi Section */}
         <div className="mt-16 mb-8 flex flex-col items-center justify-center opacity-90 hover:opacity-100 transition-opacity">
-          <div className="relative group cursor-pointer mb-4">
-            <div className="absolute inset-0 bg-accent/20 rounded-full blur-xl group-hover:bg-accent/40 transition-colors duration-500"></div>
-            <div className="w-16 h-16 rounded-full bg-gradient-to-tr from-accent to-amber-500 p-[3px] shadow-xl relative z-10">
-              <div className="w-full h-full bg-surface rounded-full flex items-center justify-center bg-white border-[3px] border-white">
-                <span className="font-extrabold text-accent text-2xl tracking-tighter">T</span>
-              </div>
+          
+          <div className="relative w-16 h-16 mb-6 mt-4" style={{ perspective: '1000px' }}>
+            <style>{`
+              @keyframes spin3D {
+                0% { transform: rotateX(-20deg) rotateY(0deg); }
+                100% { transform: rotateX(-20deg) rotateY(360deg); }
+              }
+              .cube-3d {
+                transform-style: preserve-3d;
+                animation: spin3D 8s infinite linear;
+              }
+              .cube-face {
+                position: absolute;
+                width: 100%;
+                height: 100%;
+                background: linear-gradient(135deg, #0F172A, #1E293B);
+                border: 2px solid #EA580C;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-weight: 900;
+                font-size: 36px;
+                color: #EA580C;
+                text-shadow: 0 0 10px rgba(234,88,12,0.5);
+                border-radius: 8px;
+                box-shadow: inset 0 0 15px rgba(234,88,12,0.2);
+                backface-visibility: hidden;
+              }
+              .face-front  { transform: translateZ(32px); }
+              .face-back   { transform: rotateY(180deg) translateZ(32px); }
+              .face-right  { transform: rotateY(90deg) translateZ(32px); }
+              .face-left   { transform: rotateY(-90deg) translateZ(32px); }
+              .face-top    { transform: rotateX(90deg) translateZ(32px); background: #0F172A; }
+              .face-bottom { transform: rotateX(-90deg) translateZ(32px); background: #0F172A; box-shadow: 0 0 30px rgba(234, 88, 12, 0.8); }
+            `}</style>
+            <div className="cube-3d relative w-full h-full">
+              <div className="cube-face face-front">T</div>
+              <div className="cube-face face-back">T</div>
+              <div className="cube-face face-right">T</div>
+              <div className="cube-face face-left">T</div>
+              <div className="cube-face face-top"></div>
+              <div className="cube-face face-bottom"></div>
             </div>
           </div>
           
@@ -137,3 +173,4 @@ export default function AboutPage() {
     </div>
   );
 }
+
