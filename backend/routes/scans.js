@@ -788,3 +788,12 @@ router.put('/:id', requireAuth, async (req, res) => {
 
 module.exports = router;
 
+router.get('/debug-batches', async (req, res) => {
+  try {
+    const { Batch } = require('../models');
+    const batches = await Batch.findAll({ limit: 5, order: [['created_at', 'DESC']] });
+    res.json(batches);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
