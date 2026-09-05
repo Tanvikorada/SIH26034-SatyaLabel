@@ -29,7 +29,7 @@ router.get('/stats', requireAuth, async (req, res) => {
         COALESCE(ROUND(AVG(compliance_score)::NUMERIC, 1), 0)                           AS "avgComplianceScore"
       FROM scans
       WHERE status = 'complete'
-      ${req.user && req.user.role !== 'admin' ? ` AND uploaded_by = '${req.user.id}'` : ''}
+      ${req.user && req.user.id && req.user.role !== 'admin' ? ` AND uploaded_by = '${req.user.id}'` : ''}
     `, { type: QueryTypes.SELECT });
 
     // ── Top violated rules (most common, across all scans) ───────────────────
