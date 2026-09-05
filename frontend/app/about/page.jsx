@@ -2,6 +2,7 @@
 import { useRouter } from 'next/navigation';
 import { ArrowLeft, ShieldCheck, Scale, Cpu, FileText } from 'lucide-react';
 import { triggerHaptic } from '@/utils/haptics';
+import SatyaLogo from '@/components/SatyaLogo';
 
 export default function AboutPage() {
   const router = useRouter();
@@ -27,10 +28,7 @@ export default function AboutPage() {
         
         {/* ── Header / Logo Area ───────────────────────────────── */}
         <div className="flex flex-col items-center text-center mb-10">
-          <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-[#D4500A] to-[#F59E0B] flex items-center justify-center shadow-lg shadow-amber-500/20 mb-5 relative overflow-hidden">
-            <div className="absolute inset-0 bg-white/20" style={{ backgroundImage: "url('data:image/svg+xml,%3Csvg viewBox=%220 0 200 200%22 xmlns=%22http://www.w3.org/2000/svg%22%3E%3Cfilter id=%22noiseFilter%22%3E%3CfeTurbulence type=%22fractalNoise%22 baseFrequency=%220.65%22 numOctaves=%223%22 stitchTiles=%22stitch%22/%3E%3C/filter%3E%3Crect width=%22100%25%22 height=%22100%25%22 filter=%22url(%23noiseFilter)%22/%3E%3C/svg%3E')" }}></div>
-            <ShieldCheck size={40} className="text-white relative z-10" />
-          </div>
+          <SatyaLogo className="mb-6 transform scale-110" />
           <h2 className="text-[28px] font-bold tracking-tight text-text-primary">SatyaLabel</h2>
           <p className="text-[15px] font-medium text-accent uppercase tracking-widest mt-1">SIH26034</p>
           <p className="text-[14px] text-text-secondary mt-3 max-w-md mx-auto leading-relaxed">
@@ -129,3 +127,4 @@ export default function AboutPage() {
     </div>
   );
 }
+
