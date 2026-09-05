@@ -45,8 +45,8 @@ export default function RootLayout({ children }) {
         <SplashScreen />
         <ThemeProvider
           attribute="class"
-          defaultTheme="system"
-          enableSystem
+          defaultTheme="light" forcedTheme="light"
+          enableSystem={false}
           disableTransitionOnChange={false}
           storageKey="satya-theme"
         >
