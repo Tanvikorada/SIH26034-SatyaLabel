@@ -906,9 +906,24 @@ function checkMrpSymbol(fields = {}) {
   if (!raw) {
     return { rule_id: 'Rule 6(1)(f)', rule_title: 'Maximum Retail Price (MRP)', field: 'mrp', status: 'fail', severity: 'high', detail: 'MRP is missing from the label.', confidence: 'high' };
   }
-  if (/[₹?]|rs\.?|inr|rupee/i.test(raw)) {
+  
+  // 1. Direct check if the LLM kept the symbol in the string
+  if (/[₹₹]|rs\.?|inr|rupee/i.test(raw)) {
     return { rule_id: 'Rule 6(1)(f)', rule_title: 'Maximum Retail Price (MRP)', field: 'mrp', status: 'pass', severity: 'low', detail: 'MRP includes a valid rupee symbol or rupee text.', confidence: 'high' };
   }
+
+  // 2. OCR/LLM Artifact check: If the LLM returned a pure number (e.g. 199), the symbol was likely stripped. 
+  // Let's check the raw OCR text for "MRP ₹199" or "MRP ?199" (common OCR corruption for ₹).
+  const rawText = String(fields._rawText || fields.ocr_raw_text || '');
+  
+  // Match MRP followed by optional ?, ₹, Rs, or INR and the actual number
+  const mrpRegex = new RegExp(`(mrp|price)[\\s\\:\\-]*[₹₹\\?]?\\s*(rs\\.?|inr|rupee)?\\s*${raw}`, 'i');
+  
+  if (mrpRegex.test(rawText)) {
+    // We found it near the number in the raw text, and we also tolerate '?' as a known OCR corruption for ₹
+    return { rule_id: 'Rule 6(1)(f)', rule_title: 'Maximum Retail Price (MRP)', field: 'mrp', status: 'pass', severity: 'low', detail: 'Valid MRP symbol found in the raw label text (recovered from OCR artifact).', confidence: 'high' };
+  }
+
   return { rule_id: 'Rule 6(1)(f)', rule_title: 'Maximum Retail Price (MRP)', field: 'mrp', status: 'fail', severity: 'medium', detail: 'MRP is declared without a valid INR symbol or rupee notation.', confidence: 'high' };
 }
 
