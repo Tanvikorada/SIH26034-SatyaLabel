@@ -212,7 +212,7 @@ async function runBatchPipeline(batch, imagePath, metadata = {}) {
   } finally {
     const clients = batchClients.get(String(batch.id)) || [];
     clients.forEach(clientRes => {
-      clientRes.write(`data: ${JSON.stringify({ status: batch.status, scanId: finalScanId })}\n\n`);
+      clientRes.write(`data: ${JSON.stringify({ status: batch.status, scanId: finalScanId, errorMessage: batch.errorMessage })}\n\n`);
       clientRes.end();
     });
     batchClients.delete(String(batch.id));
