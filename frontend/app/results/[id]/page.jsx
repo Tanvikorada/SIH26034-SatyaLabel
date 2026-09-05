@@ -310,7 +310,7 @@ export default function ResultsPage({ params }) {
   const allRules = report.violations || [];
   const ruleCounts = {
     pass:       allRules.filter(v => String(v.status).toUpperCase() === 'PASS').length,
-    fail:       allRules.filter(v => String(v.status).toUpperCase() === 'POTENTIAL NON-COMPLIANCE').length,
+    fail:       allRules.filter(v => ['POTENTIAL NON-COMPLIANCE', 'FAIL', 'NON_COMPLIANT'].includes(String(v.status).toUpperCase())).length,
     manual:     allRules.filter(v => String(v.status).toUpperCase() === 'MANUAL REVIEW').length,
     na:         allRules.filter(v => String(v.status).toUpperCase() === 'NOT APPLICABLE').length,
     unverified: allRules.filter(v => String(v.status).toUpperCase() === 'NOT VERIFIED').length,
@@ -727,3 +727,4 @@ export default function ResultsPage({ params }) {
     </div>
   );
 }
+
