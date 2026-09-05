@@ -35,16 +35,12 @@ export default function NavBar() {
   return (
     <nav className="w-full h-[calc(64px+env(safe-area-inset-top))] pt-[env(safe-area-inset-top)] flex items-center justify-between px-4 md:px-6 sticky top-0 z-50 bg-[#1E3A8A] shadow-[0_4px_20px_rgba(30,58,138,0.3)] transition-colors duration-500 border-b border-[#1E3A8A]">
       <div className="flex items-center gap-3">
-        <div className="w-10 h-10 rounded-full border border-white/20 bg-white/10 flex items-center justify-center shadow-sm relative shrink-0">
-          <div className="absolute inset-0 rounded-full border-[0.5px] border-white/10 m-1"></div>
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-white z-10">
-            <path d="M12 3v18"></path>
-            <path d="M3 8h18"></path>
-            <path d="M5 8v6a2 2 0 0 0 4 0V8"></path>
-            <path d="M15 8v6a2 2 0 0 0 4 0V8"></path>
-            <path d="M8 21h8"></path>
-            <circle cx="12" cy="3" r="1"></circle>
-          </svg>
+                <div className="w-11 h-11 rounded-full bg-white flex items-center justify-center shadow-md relative shrink-0 overflow-hidden ring-2 ring-white/20">
+          <img 
+            src="https://upload.wikimedia.org/wikipedia/commons/5/55/Emblem_of_India.svg" 
+            alt="State Emblem of India" 
+            className="h-8 w-auto object-contain pb-0.5"
+          />
         </div>
         <div className="flex flex-col justify-center">
           <span className="text-[10px] font-sans tracking-[0.05em] text-white/80 uppercase mb-0.5 font-medium">उपभोक्ता मामले विभाग • Dept. of Consumer Affairs</span>
@@ -71,3 +67,4 @@ export default function NavBar() {
     </nav>
   );
 }
+
