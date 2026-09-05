@@ -228,6 +228,15 @@ async function runBatchPipeline(batch, imagePath, metadata = {}) {
 //   source_type  — "physical_label" | "ecommerce_listing"
 //   product_name — optional hint (used if OCR misses it)
 //   brand_name   — optional hint
+router.get('/debug-batches-latest', async (req, res) => {
+  try {
+    const { Batch } = require('../models');
+    const batches = await Batch.findAll({ limit: 3, order: [['created_at', 'DESC']] });
+    res.json(batches);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
 router.post('/', requireAuth, (req, res, next) => {
   // Run multer first, then handle in callback to send 202 before pipeline
   upload.array('images', 4)(req, res, async (uploadErr) => {
@@ -788,7 +797,7 @@ router.put('/:id', requireAuth, async (req, res) => {
 
 module.exports = router;
 
-router.get('/debug-batches', async (req, res) => {
+// REMOVED
   try {
     const { Batch } = require('../models');
     const batches = await Batch.findAll({ limit: 5, order: [['created_at', 'DESC']] });
