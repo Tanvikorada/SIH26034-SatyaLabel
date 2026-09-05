@@ -35,11 +35,11 @@ export default function NavBar() {
   return (
     <nav className="w-full h-[calc(64px+env(safe-area-inset-top))] pt-[env(safe-area-inset-top)] flex items-center justify-between px-4 md:px-6 sticky top-0 z-50 bg-[#1E3A8A] shadow-[0_4px_20px_rgba(30,58,138,0.3)] transition-colors duration-500 border-b border-[#1E3A8A]">
       <div className="flex items-center gap-3">
-                <div className="w-11 h-11 rounded-full bg-white flex items-center justify-center shadow-md relative shrink-0 overflow-hidden ring-2 ring-white/20">
+                        <div className="flex items-center justify-center shrink-0 mr-1">
           <img 
             src="https://upload.wikimedia.org/wikipedia/commons/5/55/Emblem_of_India.svg" 
             alt="State Emblem of India" 
-            className="h-8 w-auto object-contain pb-0.5"
+            className="h-9 w-auto object-contain brightness-0 invert opacity-90"
           />
         </div>
         <div className="flex flex-col justify-center">
@@ -67,4 +67,5 @@ export default function NavBar() {
     </nav>
   );
 }
+
 
