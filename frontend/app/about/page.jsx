@@ -1,19 +1,18 @@
 "use client";
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, ShieldCheck, Scale, Cpu, FileText } from 'lucide-react';
+import { ArrowLeft, ShieldCheck, Scale, Cpu, FileText, Heart } from 'lucide-react';
 import { triggerHaptic } from '@/utils/haptics';
-import SatyaLogo from '@/components/SatyaLogo';
 
 export default function AboutPage() {
   const router = useRouter();
-  const RULES_VERSION = 'v1.4 — LM(PC) Rules 2011, Amendment 2022';
+  const RULES_VERSION = 'v1.4 - LM(PC) Rules 2011, Amendment 2022';
   const APP_VERSION   = '2.5.0';
   const BUILD_DATE    = '2026-09-04';
 
   return (
     <div className="min-h-screen bg-background text-text-primary pb-20">
       
-      {/* ── App Bar ────────────────────────────────────────────── */}
+      {/* App Bar */}
       <div className="sticky top-0 z-40 bg-background/80 backdrop-blur-xl border-b border-[var(--color-border)] h-16 flex items-center px-4 md:px-6">
         <button 
           onClick={() => { triggerHaptic('light'); router.back(); }}
@@ -26,17 +25,25 @@ export default function AboutPage() {
 
       <main className="max-w-[700px] mx-auto px-4 md:px-6 py-8 animate-fade-in">
         
-        {/* ── Header / Logo Area ───────────────────────────────── */}
-        <div className="flex flex-col items-center text-center mb-10">
-          <SatyaLogo className="mb-6 transform scale-110" />
-          <h2 className="text-[28px] font-bold tracking-tight text-text-primary">SatyaLabel</h2>
+        {/* Header / Logo Area */}
+        <div className="flex flex-col items-center text-center mb-10 mt-4">
+          {/* State Emblem of India */}
+          <div className="mb-6 relative">
+            <div className="absolute inset-0 bg-accent/5 rounded-full blur-2xl transform scale-150"></div>
+            <img 
+              src="https://upload.wikimedia.org/wikipedia/commons/5/55/Emblem_of_India.svg" 
+              alt="State Emblem of India" 
+              className="h-32 w-auto relative z-10 drop-shadow-lg"
+            />
+          </div>
+          <h2 className="text-[32px] font-bold tracking-tight text-text-primary">SatyaLabel</h2>
           <p className="text-[15px] font-medium text-accent uppercase tracking-widest mt-1">SIH26034</p>
           <p className="text-[14px] text-text-secondary mt-3 max-w-md mx-auto leading-relaxed">
             AI-driven compliance engine for the Legal Metrology (Packaged Commodities) Rules, 2011.
           </p>
         </div>
 
-        {/* ── Info Cards ───────────────────────────────────────── */}
+        {/* Info Cards */}
         <div className="flex flex-col gap-6">
           
           <section className="glass rounded-[24px] border border-border/50 p-6 shadow-sm">
@@ -102,29 +109,31 @@ export default function AboutPage() {
             </div>
           </section>
 
-          {/* THE SIGNATURE PILL */}
-          <div className="mt-16 pb-12 flex justify-center">
-            <div className="relative group cursor-pointer select-none">
-              {/* Ambient Glow */}
-              <div className="absolute inset-0 bg-gradient-to-r from-accent/30 via-rose-500/30 to-amber-500/30 rounded-full blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-700"></div>
-              
-              {/* Glass Capsule */}
-              <div className="relative glass border border-border/50 rounded-full px-6 py-3 flex items-center gap-2.5 transition-all duration-300 group-hover:border-accent/40 group-active:scale-95 shadow-sm">
-                <span className="text-[11px] font-mono tracking-[0.2em] uppercase text-text-secondary">Crafted with</span>
-                <svg className="w-4 h-4 text-rose-500 animate-pulse drop-shadow-[0_0_8px_rgba(244,63,94,0.6)]" fill="currentColor" viewBox="0 0 24 24">
-                   <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
-                </svg>
-                <span className="text-[11px] font-mono tracking-[0.2em] uppercase text-text-secondary">by</span>
-                <span className="text-[14px] font-bold tracking-wide bg-clip-text text-transparent bg-gradient-to-r from-accent to-amber-400 drop-shadow-sm ml-1">
-                  Tanvi
-                </span>
+        </div>
+
+        {/* Crafted By Tanvi Section */}
+        <div className="mt-16 mb-8 flex flex-col items-center justify-center opacity-90 hover:opacity-100 transition-opacity">
+          <div className="relative group cursor-pointer mb-4">
+            <div className="absolute inset-0 bg-accent/20 rounded-full blur-xl group-hover:bg-accent/40 transition-colors duration-500"></div>
+            <div className="w-16 h-16 rounded-full bg-gradient-to-tr from-accent to-amber-500 p-[3px] shadow-xl relative z-10">
+              <div className="w-full h-full bg-surface rounded-full flex items-center justify-center bg-white border-[3px] border-white">
+                <span className="font-extrabold text-accent text-2xl tracking-tighter">T</span>
               </div>
             </div>
           </div>
-
+          
+          <div className="flex items-center gap-1.5 mb-1 text-[13px] font-bold tracking-[0.2em] text-text-muted uppercase">
+            Crafted with <Heart size={14} className="text-accent inline-block mx-0.5 fill-accent animate-pulse" /> by
+          </div>
+          <h3 className="text-[26px] font-black text-primary tracking-tight mt-1 bg-clip-text">
+            Tanvi
+          </h3>
+          <p className="text-[13px] text-text-secondary mt-1 font-medium bg-slate-100 px-3 py-1 rounded-full border border-slate-200">
+            Lead Developer & Architect
+          </p>
         </div>
+
       </main>
     </div>
   );
 }
-
