@@ -856,19 +856,22 @@ function checkRule6_1_c_presence(fields = {}) {
 
 function checkRule6_1_c_unit(fields = {}) {
   const qty = String(fields.net_quantity || '').trim();
+  const unitStr = String(fields.net_quantity_unit || '').trim();
+  const fullQty = `${qty} ${unitStr}`;
+
   if (!qty) {
     return { rule_id: 'Rule 6(1)(c)', rule_title: 'Net Quantity Declaration', field: 'net_quantity', status: 'fail', severity: 'high', detail: 'Net quantity is missing from the package label.', confidence: 'high' };
   }
-  if (!/\d/.test(qty)) {
+  if (!/\d/.test(fullQty)) {
     return { rule_id: 'Rule 6(1)(c)', rule_title: 'Net Quantity Declaration', field: 'net_quantity', status: 'fail', severity: 'high', detail: 'Net quantity does not contain a numeric value.', confidence: 'high' };
   }
-  if (/(oz|ounce|ounces|lb|lbs|pound|pounds)/i.test(qty)) {
+  if (/(oz|ounce|ounces|lb|lbs|pound|pounds)/i.test(fullQty)) {
     return { rule_id: 'Rule 6(1)(c)', rule_title: 'Net Quantity Declaration', field: 'net_quantity', status: 'fail', severity: 'high', detail: 'Non-metric unit detected; legal metrology requires standard metric units.', confidence: 'high' };
   }
-  if (/\b(family\s*size|jumbo|large|small|medium|regular|super|economy\s*pack)\b/i.test(qty)) {
+  if (/\b(family\s*size|jumbo|large|small|medium|regular|super|economy\s*pack)\b/i.test(fullQty)) {
     return { rule_id: 'Rule 6(1)(c)', rule_title: 'Net Quantity Declaration', field: 'net_quantity', status: 'fail', severity: 'high', detail: 'Vague or non-quantitative packaging term is not an acceptable net quantity declaration.', confidence: 'high' };
   }
-  if (!/(g|kg|mg|ml|l|cm|m|nos|pieces|pcs|unit|units)/i.test(qty)) {
+  if (!/(g|kg|mg|ml|l|cm|m|nos|pieces|pcs|unit|units)/i.test(fullQty)) {
     return { rule_id: 'Rule 6(1)(c)', rule_title: 'Net Quantity Declaration', field: 'net_quantity', status: 'fail', severity: 'medium', detail: 'Net quantity does not contain a recognized standard unit.', confidence: 'high' };
   }
   return { rule_id: 'Rule 6(1)(c)', rule_title: 'Net Quantity Declaration', field: 'net_quantity', status: 'pass', severity: 'low', detail: 'Net quantity uses a valid metric or count unit.', confidence: 'high' };
