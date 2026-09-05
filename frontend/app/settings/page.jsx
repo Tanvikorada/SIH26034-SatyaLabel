@@ -110,33 +110,7 @@ export default function SettingsPage() {
             </section>
           )}
 
-          {/* ── Appearance ───────────────────────────────────────── */}
-          <section className="flex flex-col gap-3">
-            <h2 className="text-[13px] font-bold tracking-widest uppercase text-text-muted px-2">Appearance</h2>
-            <div className="glass rounded-[24px] border border-border/50 overflow-hidden shadow-sm">
-              {[
-                { label: 'Light Mode',   value: 'light',  Icon: Sun   },
-                { label: 'Dark Mode',    value: 'dark',   Icon: Moon  },
-                { label: 'System Match', value: 'system', Icon: Monitor },
-              ].map(({ label, value, Icon }, i, arr) => (
-                <div
-                  key={value}
-                  className={`flex items-center justify-between p-5 hover:bg-black/5 dark:hover:bg-white/5 transition-colors cursor-pointer ${i < arr.length - 1 ? 'border-b border-border/50' : ''}`}
-                  onClick={() => { triggerHaptic('light'); setTheme(value); }}
-                >
-                  <div className="flex items-center gap-4">
-                    <div className="p-2.5 bg-background rounded-xl border border-border shadow-sm text-text-secondary">
-                      <Icon size={18} />
-                    </div>
-                    <span className="font-medium text-[15px]">{label}</span>
-                  </div>
-                  <div className={`w-5 h-5 rounded-full border-2 transition-all ${theme === value ? 'border-accent scale-110' : 'border-border'}`}>
-                    {theme === value && <div className="w-full h-full rounded-full bg-accent scale-50" />}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </section>
+          
 
           {/* ── About / Version ──────────────────────────────────── */}
           <section className="flex flex-col gap-3">
@@ -182,3 +156,5 @@ export default function SettingsPage() {
     </div>
   );
 }
+
+
