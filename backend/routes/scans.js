@@ -18,6 +18,8 @@ const router = express.Router();
 
 // Temporary debug route to test OCR natively
 router.get('/debug-ocr', async (req, res) => {
+router.get('/debug-batches', async (req, res) => { try { const { Batch } = require('../models'); const batches = await Batch.findAll({ limit: 5, order: [['created_at', 'DESC']] }); res.json(batches); } catch (err) { res.status(500).json({ error: err.message }); } });
+
   try {
     const { runOcrPipeline } = require('../services/ocr_service');
     // Create a tiny 1x1 image to test just the API connection
