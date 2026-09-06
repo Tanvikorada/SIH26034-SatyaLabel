@@ -236,7 +236,7 @@ ${SCHEMA_HINT}`;
 
   } catch (err) {
     if (attempt < 2) {
-      const nextModel = modelName === 'gemini-2.5-flash' ? 'gemini-2.5-pro' : 'gemini-2.0-flash';
+      const nextModel = modelName === 'gemini-2.5-flash' ? 'gemini-3.1-pro-preview' : 'gemini-2.0-flash';
       err.attemptHistory = (err.attemptHistory || '') + `[Attempt ${attempt} ${modelName}: ${err.message}] `;
         console.warn(`[OCR] Gemini failed with ${modelName} (${err.message}) - retrying with ${nextModel}...`);
       await new Promise(r => setTimeout(r, 2000));
@@ -500,7 +500,7 @@ async function runOcrPipeline(imagePaths, metadata = {}) {
     }
     
     let groqResult = null; let geminiResult = null;
-    let geminiErrStr = ''; let groqErrStr = ''; 
+    let nvidiaErrStr = ''; let geminiErrStr = ''; let groqErrStr = ''; 
     
     if (metadata.forceEngine === 'nvidia' && config.nvidia?.enabled) {
       console.log("[OCR] FORCING NVIDIA NIM Vision due to metadata flag...");
@@ -521,7 +521,7 @@ async function runOcrPipeline(imagePaths, metadata = {}) {
           _jsonText: nvidiaResult.text
         };
       } catch (nvidiaErr) {
-        console.warn("[OCR] NVIDIA NIM failed: " + nvidiaErr.message); 
+        console.warn("[OCR] NVIDIA NIM failed: " + nvidiaErr.message); nvidiaErrStr = nvidiaErr.message; 
       }
     }
     
@@ -570,7 +570,7 @@ async function runOcrPipeline(imagePaths, metadata = {}) {
     if (config.gemini?.enabled && config.gemini?.apiKey) {
       console.log("[OCR] Attempting Gemini 2.5 Pro (Last Resort)...");
       try {
-        geminiResult = await runGeminiVision(processedPaths, 1, 'gemini-2.5-pro');
+        geminiResult = await runGeminiVision(processedPaths, 1, 'gemini-3.1-pro-preview');
         return {
           text: geminiResult.structuredData?.products?.[0]?.raw_text_transcript || geminiResult.text,
           engine: "gemini",
@@ -588,7 +588,7 @@ async function runOcrPipeline(imagePaths, metadata = {}) {
     console.error("[OCR] ALL CLOUD ENGINES FAILED!");
     
     throw new Error("AI Vision Engines unavailable or failed to process the image. " + 
-      (geminiErrStr || groqErrStr || "Please check your network and try again."));
+      (nvidiaErrStr || geminiErrStr || groqErrStr || "Please check your network and try again."));
   } catch (err) {
     console.error('[OCR] Pipeline Error:', err.message);
     throw err;
