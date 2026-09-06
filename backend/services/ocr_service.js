@@ -200,7 +200,7 @@ ${SCHEMA_HINT}`;
     };
 
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 180000);
+    const timeoutId = setTimeout(() => controller.abort(), 45000);
 
     const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${config.gemini.apiKey}`, {
       method: 'POST',
@@ -471,7 +471,7 @@ ${SCHEMA_HINT}`;
     };
 
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 60000);
+    const timeoutId = setTimeout(() => controller.abort(), 30000);
 
     const response = await fetch('https://integrate.api.nvidia.com/v1/chat/completions', {
       method: 'POST',
@@ -520,7 +520,7 @@ ${SCHEMA_HINT}`;
     };
 
   } catch (err) {
-    if (attempt < 3) {
+    if (attempt < 1) {
       err.attemptHistory = (err.attemptHistory || '') + '[Attempt ' + attempt + ' NVIDIA: ' + err.message + '] ';
       console.warn('[OCR] NVIDIA failed (' + err.message + ') - retrying...');
       await new Promise(r => setTimeout(r, 2000));
