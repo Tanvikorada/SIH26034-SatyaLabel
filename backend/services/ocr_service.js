@@ -507,9 +507,27 @@ async function runOcrPipeline(imagePaths, metadata = {}) {
       return await runNvidiaVision(processedPaths, 1, 'meta/llama-3.2-90b-vision-instruct');
     }
     
-    // 1. Attempt Gemini 2.5 Flash First (Fastest)
+    // 1. Attempt NVIDIA NIM Primary (Free meta/llama-3.2-90b-vision-instruct)
+    if (config.nvidia?.enabled && config.nvidia?.apiKey) {
+      console.log("[OCR] Attempting NVIDIA NIM Vision Primary...");
+      try {
+        const nvidiaResult = await runNvidiaVision(processedPaths, 1, 'meta/llama-3.2-90b-vision-instruct');
+        return {
+          text: nvidiaResult.structuredData?.products?.[0]?.raw_text_transcript || nvidiaResult.text,
+          engine: "nvidia",
+          confidenceAvg: nvidiaResult.confidence,
+          geminiStructuredData: nvidiaResult.structuredData,
+          _fontMetrics: [],
+          _jsonText: nvidiaResult.text
+        };
+      } catch (nvidiaErr) {
+        console.warn("[OCR] NVIDIA NIM failed: " + nvidiaErr.message); 
+      }
+    }
+    
+    // 2. Attempt Gemini 2.5 Flash Fallback
     if (config.gemini?.enabled && config.gemini?.apiKey) {
-      console.log("[OCR] Attempting Gemini 2.5 Flash...");
+      console.log("[OCR] Attempting Gemini 2.5 Flash Fallback...");
       try {
         geminiResult = await runGeminiVision(processedPaths, 1, 'gemini-2.5-flash');
         return {
@@ -546,16 +564,7 @@ async function runOcrPipeline(imagePaths, metadata = {}) {
       }
     }
 
-    // 3. Attempt NVIDIA NIM Fallback (Free meta/llama-3.2-90b-vision-instruct)
-    if (config.nvidia?.enabled && config.nvidia?.apiKey) {
-      console.log("[OCR] Attempting NVIDIA NIM Vision Fallback...");
-      try {
-        const nvidiaResult = await runNvidiaVision(processedPaths, 1, 'meta/llama-3.2-90b-vision-instruct');
-        return nvidiaResult;
-      } catch (nvidiaErr) {
-        console.warn("[OCR] NVIDIA NIM failed: " + nvidiaErr.message); 
-      }
-    }
+
 
     // 4. Last Resort API: Attempt Gemini 2.5 Pro (Slower, higher rate limit capacity)
     if (config.gemini?.enabled && config.gemini?.apiKey) {
@@ -582,7 +591,7 @@ async function runOcrPipeline(imagePaths, metadata = {}) {
       (geminiErrStr || groqErrStr || "Please check your network and try again."));
   } catch (err) {
     console.error('[OCR] Pipeline Error:', err.message);
-    return null;
+    throw err;
   } finally {
     for (const p of processedPaths) {
       if (require('fs').existsSync(p)) {
