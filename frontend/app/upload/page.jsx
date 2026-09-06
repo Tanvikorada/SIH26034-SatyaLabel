@@ -22,21 +22,6 @@ export default function UploadPage() {
     if (!sessionStorage.getItem('token')) router.push('/login');
   }, [router]);
 
-  const saveToSyncQueue = async (fileBlob, metadata) => {
-    try {
-      const db = await openDB('SatyaLabelDB', 1, {
-        upgrade(db) {
-          if (!db.objectStoreNames.contains('sync-queue')) {
-            db.createObjectStore('sync-queue', { keyPath: 'id', autoIncrement: true });
-          }
-        },
-      });
-      await db.add('sync-queue', { file: fileBlob, metadata, status: 'pending', timestamp: Date.now() });
-    } catch (e) {
-      console.error('IDB Error', e);
-    }
-  };
-
   const handleFile = (e) => {
     triggerHaptic('medium');
     const selected = e.target.files?.[0];
@@ -44,68 +29,22 @@ export default function UploadPage() {
       setFiles(prev => [...prev, selected]);
       setPreviews(prev => [...prev, URL.createObjectURL(selected)]);
     }
-    // reset input so the same file can be selected again if needed
     e.target.value = null;
   };
 
   const removeFile = (index) => {
-    URL.revokeObjectURL(previews[index]); // prevent memory leak
+    URL.revokeObjectURL(previews[index]);
     setFiles(prev => prev.filter((_, i) => i !== index));
     setPreviews(prev => prev.filter((_, i) => i !== index));
-  };
-
-  const stitchImages = async (imageFiles) => {
-    if (imageFiles.length === 0) return null;
-    
-    
-    const loadImg = (f) => new Promise((resolve) => {
-      const img = new Image();
-      img.onload = () => resolve(img);
-      img.src = URL.createObjectURL(f);
-    });
-
-    const imgs = await Promise.all(imageFiles.map(loadImg));
-    
-    // Calculate original sizes
-    const origTotalWidth = imgs.reduce((sum, img) => sum + img.width, 0);
-    const origMaxHeight = Math.max(...imgs.map(img => img.height));
-
-    // Calculate scaling factor to prevent massive files (max 1500px height)
-    const MAX_HEIGHT = 1500;
-    const scale = origMaxHeight > MAX_HEIGHT ? MAX_HEIGHT / origMaxHeight : 1;
-    
-    const finalWidth = Math.floor(origTotalWidth * scale);
-    const finalHeight = Math.floor(origMaxHeight * scale);
-
-    const canvas = document.createElement('canvas');
-    canvas.width = finalWidth;
-    canvas.height = finalHeight;
-    const ctx = canvas.getContext('2d');
-    
-    ctx.fillStyle = '#ffffff';
-    ctx.fillRect(0, 0, finalWidth, finalHeight);
-
-    let currentX = 0;
-    imgs.forEach(img => {
-      const drawWidth = Math.floor(img.width * scale);
-      const drawHeight = Math.floor(img.height * scale);
-      ctx.drawImage(img, currentX, 0, drawWidth, drawHeight);
-      currentX += drawWidth;
-    });
-
-      canvas.toBlob((blob) => {
-        resolve(new File([blob], "stitched_label.jpg", { type: "image/jpeg" }));
-      }, 'image/jpeg', 0.7);
-    });
   };
 
   const handleUpload = async (e) => {
     e.preventDefault();
     if (files.length === 0) return toast.error('No image selected');
-    
     setLoading(true);
-    const toastId = toast.loading(files.length > 1 ? 'Processing multi-angle context...' : 'Initializing compliance scan...');
-    
+    setLogs([]);
+    const toastId = toast.loading('Uploading image...');
+
     try {
       const formData = new FormData();
       files.forEach(f => formData.append('images', f));
@@ -117,88 +56,75 @@ export default function UploadPage() {
         headers: { 'Authorization': `Bearer ${sessionStorage.getItem('token')}` },
         body: formData
       });
-      
+
       const json = await res.json();
-      
-      if (!res.ok) {
-        throw new Error(json.error?.message || json.error || json.message || 'Upload failed');
-      }
-      
-      const responseData = json.data || json;
-      const batchId = responseData.batch_id || responseData.id || responseData.scan_id;
-      
+      if (!res.ok) throw new Error(json.error?.message || json.error || json.message || 'Upload failed');
+
+      const batchId = (json.data || json).batch_id;
       if (!batchId) {
-        toast.warning('Scan submitted. Check history for results.', { id: toastId });
+        toast.warning('Check History for results.', { id: toastId });
         setTimeout(() => router.push('/history'), 1500);
         return;
       }
 
-      // ─── POLL until complete (SSE is unreliable on Render free tier) ───
+      // Poll every 3s — SSE is unreliable on Render free tier (connections drop silently)
       const steps = [
         'Initializing Vision Engine...',
-        'Extracting textual tokens from image...',
-        'Applying Legal Metrology Act rules...',
-        'Computing compliance vectors...',
-        'Saving final report data...',
-        'Complete!'
+        'Extracting text from image...',
+        'Applying Legal Metrology rules...',
+        'Computing compliance score...',
+        'Saving compliance report...',
+        'Finalizing...'
       ];
       let stepIdx = 0;
-      const pollInterval = setInterval(async () => {
+
+      const poll = setInterval(async () => {
         try {
-          // Animate progress messages
           if (stepIdx < steps.length) {
             toast.loading(steps[stepIdx], { id: toastId });
             setLogs(prev => [...prev, `> ${steps[stepIdx]}`]);
             stepIdx++;
           }
 
-          const batchRes = await fetch(`${API}/scans/batch/${batchId}`, {
+          const br = await fetch(`${API}/scans/batch/${batchId}`, {
             headers: { 'Authorization': `Bearer ${sessionStorage.getItem('token')}` }
           });
-          if (!batchRes.ok) return; // keep polling
+          if (!br.ok) return;
 
-          const batchJson = await batchRes.json();
-          const batchData = batchJson.data || batchJson;
-          const status = batchData.status;
-          const scan = batchData.scans?.[0];
+          const bd = (await br.json()).data;
+          if (!bd) return;
 
-          if (status === 'completed' || status === 'complete') {
-            clearInterval(pollInterval);
-            const scanId = scan?.id;
-            if (!scanId) {
-              // scan id not attached yet, keep polling briefly
-              return;
-            }
-            toast.success('Scan complete! Redirecting to results...', { id: toastId });
-            setTimeout(() => router.push(`/results/${scanId}`), 500);
-          } else if (status === 'failed') {
-            clearInterval(pollInterval);
-            const errMsg = batchData.error_message || batchData.errorMessage || 'Scan failed';
-            setLogs(prev => [...prev, `> ERROR: ${errMsg}`]);
-            toast.error(`Scan failed: ${errMsg}`, { id: toastId });
+          if (bd.status === 'completed' || bd.status === 'complete') {
+            clearInterval(poll);
+            const scanId = bd.scans?.[0]?.id;
+            if (!scanId) return; // keep polling until scan row appears
+            toast.success('Scan complete! Loading results...', { id: toastId });
+            setTimeout(() => router.push(`/results/${scanId}`), 400);
+          } else if (bd.status === 'failed') {
+            clearInterval(poll);
+            const msg = bd.error_message || 'Scan failed';
+            setLogs(prev => [...prev, `> ERROR: ${msg}`]);
+            toast.error(`Scan failed: ${msg}`, { id: toastId });
             setLoading(false);
           }
         } catch (_) {
-          // keep polling on transient errors
+          // Keep polling on transient network errors
         }
       }, 3000);
 
-      // Safety timeout: stop polling after 3 minutes
+      // Safety: stop after 3 minutes
       setTimeout(() => {
-        clearInterval(pollInterval);
+        clearInterval(poll);
         toast.error('Scan timed out. Check History for results.', { id: toastId });
         setLoading(false);
         router.push('/history');
-      }, 3 * 60 * 1000);
+      }, 180000);
 
     } catch (err) {
       toast.error(err.message || 'Upload failed', { id: toastId });
       setLoading(false);
     }
   };
-
-  useEffect(() => {
-    // Real SSE telemetry handles this now.
 
   return (
     <div className="min-h-screen bg-background text-text-primary">
@@ -227,7 +153,7 @@ export default function UploadPage() {
                           </button>
                         </div>
                       ))}
-                      
+
                       {previews.length < 3 && (
                         <div className="flex flex-col gap-3 w-[100px] h-[140px]">
                           <div className="relative h-1/2 rounded-lg border border-border bg-background flex flex-col items-center justify-center cursor-pointer hover:border-primary transition-colors">
@@ -248,7 +174,7 @@ export default function UploadPage() {
                   <div className="flex flex-col items-center gap-4 relative z-10 w-full py-8">
                      <span className="text-sm font-semibold text-slate-500 mb-4 text-center px-4">Capture product label clearly. Make sure all text is readable.</span>
                      <div className="flex gap-4 w-full justify-center px-4">
-                       
+
                        <div className="relative overflow-hidden mello-btn-secondary !bg-surface !border-border !px-4 !py-3 flex flex-col items-center gap-2 hover:!border-primary cursor-pointer w-[140px] shadow-sm">
                          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
                          <span className="text-[12px] font-medium text-text-primary">Take Photo</span>
@@ -292,7 +218,6 @@ export default function UploadPage() {
               Processing Steps
             </h3>
             <div className="flex-1 font-mono text-[12px] allow-select cursor-text leading-relaxed text-text-muted flex flex-col gap-2 overflow-y-auto bg-slate-50 rounded-xl p-5 border border-slate-200 shadow-inner">
-              
               {!loading && logs.length === 0 && <span>Awaiting input payload...</span>}
               {logs.map((log, i) => (
                 <span key={i} className="text-slate-700 font-medium animate-in fade-in slide-in-from-bottom-2 duration-300">{log}</span>
