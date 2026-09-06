@@ -18,8 +18,6 @@ const router = express.Router();
 
 // Temporary debug route to test OCR natively
 router.get('/debug-ocr', async (req, res) => {
-router.get('/debug-batches', async (req, res) => { try { const { Batch } = require('../models'); const batches = await Batch.findAll({ limit: 5, order: [['created_at', 'DESC']] }); res.json(batches); } catch (err) { res.status(500).json({ error: err.message }); } });
-
   try {
     const { runOcrPipeline } = require('../services/ocr_service');
     // Create a tiny 1x1 image to test just the API connection
@@ -107,6 +105,8 @@ const emitProgress = (batchId, step, message) => {
 
 async function runBatchPipeline(batch, imagePath, metadata = {}) {
   let finalScanId = null;
+  let finalStatus = 'failed';
+  let finalError  = 'Unknown pipeline error';
   try {
     const { Scan, Product, Violation, Report, Batch } = require('../models');
     const { runOcrPipeline } = require('../services/ocr_service');
@@ -123,7 +123,8 @@ async function runBatchPipeline(batch, imagePath, metadata = {}) {
     emitProgress(batch.id, 2, 'Extracting textual tokens from image...');
     const ocrResult = await runOcrPipeline(filePathsArray, metadata.forceEngine);
     if (!ocrResult) {
-      await batch.update({ status: 'failed', errorMessage: 'Could not extract text.' });
+      finalError = 'Could not extract text.';
+      await batch.update({ status: 'failed', errorMessage: finalError });
       return;
     }
     
@@ -132,7 +133,8 @@ async function runBatchPipeline(batch, imagePath, metadata = {}) {
     
     const rawProductData = productsArray[0];
     if (!rawProductData || Object.keys(rawProductData).length === 0) {
-      await batch.update({ status: 'failed', errorMessage: 'No consumer packaging found.' });
+      finalError = 'No consumer packaging found.';
+      await batch.update({ status: 'failed', errorMessage: finalError });
       return;
     }
     
@@ -208,13 +210,19 @@ async function runBatchPipeline(batch, imagePath, metadata = {}) {
       
     await batch.update({ status: 'completed' });
     emitProgress(batch.id, 6, 'Complete!');
+    // ─── SET SUCCESS STATE before finally fires ───
+    finalStatus = 'complete';
+    finalError  = null;
   } catch (err) {
     console.error('[Pipeline] Fatal error processing batch', batch.id, err);
-    await batch.update({ status: 'failed', errorMessage: err.message }).catch(() => {});
+    finalError  = err.message || 'Unknown pipeline error';
+    finalStatus = 'failed';
+    await batch.update({ status: 'failed', errorMessage: finalError }).catch(() => {});
   } finally {
+    // ─── CORE FIX: use explicit local vars, NOT stale batch.status ───
     const clients = batchClients.get(String(batch.id)) || [];
     clients.forEach(clientRes => {
-      clientRes.write(`data: ${JSON.stringify({ status: batch.status, scanId: finalScanId, errorMessage: batch.errorMessage })}\n\n`);
+      clientRes.write(`data: ${JSON.stringify({ status: finalStatus, scanId: finalScanId, errorMessage: finalError })}\n\n`);
       clientRes.end();
     });
     batchClients.delete(String(batch.id));
