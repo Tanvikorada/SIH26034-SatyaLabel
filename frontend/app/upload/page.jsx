@@ -94,6 +94,102 @@ export default function UploadPage() {
     });
 
     return new Promise((resolve) => {
+"use client";
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { toast } from 'sonner';
+import { triggerHaptic } from '@/utils/haptics';
+import { openDB } from 'idb';
+import NavBar from '@/components/NavBar';
+import DynamicLoader from '@/components/DynamicLoader';
+
+const API = process.env.NEXT_PUBLIC_API_URL || 'https://satyalabel-backend.onrender.com/api/v1';
+
+export default function UploadPage() {
+  const router = useRouter();
+  const [files, setFiles] = useState([]);
+  const [previews, setPreviews] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [productName, setProductName] = useState('');
+  const [sourceType, setSourceType] = useState('physical_label');
+  const [logs, setLogs] = useState([]);
+
+  useEffect(() => {
+    if (!sessionStorage.getItem('token')) router.push('/login');
+  }, [router]);
+
+  const saveToSyncQueue = async (fileBlob, metadata) => {
+    try {
+      const db = await openDB('SatyaLabelDB', 1, {
+        upgrade(db) {
+          if (!db.objectStoreNames.contains('sync-queue')) {
+            db.createObjectStore('sync-queue', { keyPath: 'id', autoIncrement: true });
+          }
+        },
+      });
+      await db.add('sync-queue', { file: fileBlob, metadata, status: 'pending', timestamp: Date.now() });
+    } catch (e) {
+      console.error('IDB Error', e);
+    }
+  };
+
+  const handleFile = (e) => {
+    triggerHaptic('medium');
+    const selected = e.target.files?.[0];
+    if (selected && files.length < 3) {
+      setFiles(prev => [...prev, selected]);
+      setPreviews(prev => [...prev, URL.createObjectURL(selected)]);
+    }
+    // reset input so the same file can be selected again if needed
+    e.target.value = null;
+  };
+
+  const removeFile = (index) => {
+    URL.revokeObjectURL(previews[index]); // prevent memory leak
+    setFiles(prev => prev.filter((_, i) => i !== index));
+    setPreviews(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const stitchImages = async (imageFiles) => {
+    if (imageFiles.length === 0) return null;
+    
+    
+    const loadImg = (f) => new Promise((resolve) => {
+      const img = new Image();
+      img.onload = () => resolve(img);
+      img.src = URL.createObjectURL(f);
+    });
+
+    const imgs = await Promise.all(imageFiles.map(loadImg));
+    
+    // Calculate original sizes
+    const origTotalWidth = imgs.reduce((sum, img) => sum + img.width, 0);
+    const origMaxHeight = Math.max(...imgs.map(img => img.height));
+
+    // Calculate scaling factor to prevent massive files (max 1500px height)
+    const MAX_HEIGHT = 1500;
+    const scale = origMaxHeight > MAX_HEIGHT ? MAX_HEIGHT / origMaxHeight : 1;
+    
+    const finalWidth = Math.floor(origTotalWidth * scale);
+    const finalHeight = Math.floor(origMaxHeight * scale);
+
+    const canvas = document.createElement('canvas');
+    canvas.width = finalWidth;
+    canvas.height = finalHeight;
+    const ctx = canvas.getContext('2d');
+    
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 0, finalWidth, finalHeight);
+
+    let currentX = 0;
+    imgs.forEach(img => {
+      const drawWidth = Math.floor(img.width * scale);
+      const drawHeight = Math.floor(img.height * scale);
+      ctx.drawImage(img, currentX, 0, drawWidth, drawHeight);
+      currentX += drawWidth;
+    });
+
+    return new Promise((resolve) => {
       canvas.toBlob((blob) => {
         resolve(new File([blob], "stitched_label.jpg", { type: "image/jpeg" }));
       }, 'image/jpeg', 0.7);
@@ -106,14 +202,12 @@ export default function UploadPage() {
     
     setLoading(true);
     const toastId = toast.loading(files.length > 1 ? 'Processing multi-angle context...' : 'Initializing compliance scan...');
-    const metadata = { productName: productName || 'Unknown', sourceType, forceEngine: 'gemini', timestamp: new Date().toISOString() };
     
     try {
       const formData = new FormData();
       files.forEach(f => formData.append('images', f));
       formData.append('product_name', productName || '');
       formData.append('source_type', sourceType || 'physical_label');
-      formData.append('metadata', JSON.stringify(metadata));
 
       const res = await fetch(`${API}/scans`, {
         method: 'POST',
@@ -124,7 +218,7 @@ export default function UploadPage() {
       const json = await res.json();
       
       if (!res.ok) {
-        throw new Error(json.error || json.message || "Upload failed");
+        throw new Error(json.error?.message || json.error || json.message || 'Upload failed');
       }
       
       const responseData = json.data || json;
@@ -136,46 +230,72 @@ export default function UploadPage() {
         return;
       }
 
-      // Connect to true SSE stream
-      const sseUrl = `${API}/scans/batch/${batchId}/stream?token=${sessionStorage.getItem('token')}`;
-      const sse = new EventSource(sseUrl);
-      
-      sse.onmessage = (event) => {
+      // ─── POLL until complete (SSE is unreliable on Render free tier) ───
+      const steps = [
+        'Initializing Vision Engine...',
+        'Extracting textual tokens from image...',
+        'Applying Legal Metrology Act rules...',
+        'Computing compliance vectors...',
+        'Saving final report data...',
+        'Complete!'
+      ];
+      let stepIdx = 0;
+      const pollInterval = setInterval(async () => {
         try {
-          const data = JSON.parse(event.data);
-          if (data.type === 'progress') {
-            setLogs(prev => [...prev, `> ${data.message}`]);
-          } else if (data.status === 'complete' || data.status === 'completed') {
-            sse.close();
-            toast.success('Scan complete', { id: toastId });
-            router.push(`/results/${data.scanId || batchId}`);
-          } else if (data.status === 'failed') {
-            sse.close();
-            setLogs(prev => [...prev, `> ERROR: ${data.errorMessage || 'Scan failed'}`]);
-            toast.error('Scan failed: ' + (data.errorMessage || 'Unknown error'), { id: toastId });
+          // Animate progress messages
+          if (stepIdx < steps.length) {
+            toast.loading(steps[stepIdx], { id: toastId });
+            setLogs(prev => [...prev, `> ${steps[stepIdx]}`]);
+            stepIdx++;
+          }
+
+          const batchRes = await fetch(`${API}/scans/batch/${batchId}`, {
+            headers: { 'Authorization': `Bearer ${sessionStorage.getItem('token')}` }
+          });
+          if (!batchRes.ok) return; // keep polling
+
+          const batchJson = await batchRes.json();
+          const batchData = batchJson.data || batchJson;
+          const status = batchData.status;
+          const scan = batchData.scans?.[0];
+
+          if (status === 'completed' || status === 'complete') {
+            clearInterval(pollInterval);
+            const scanId = scan?.id;
+            if (!scanId) {
+              // scan id not attached yet, keep polling briefly
+              return;
+            }
+            toast.success('Scan complete! Redirecting to results...', { id: toastId });
+            setTimeout(() => router.push(`/results/${scanId}`), 500);
+          } else if (status === 'failed') {
+            clearInterval(pollInterval);
+            const errMsg = batchData.error_message || batchData.errorMessage || 'Scan failed';
+            setLogs(prev => [...prev, `> ERROR: ${errMsg}`]);
+            toast.error(`Scan failed: ${errMsg}`, { id: toastId });
             setLoading(false);
           }
-        } catch (e) {
-          // ignore
+        } catch (_) {
+          // keep polling on transient errors
         }
-      };
-      
-      sse.onerror = () => {
-        sse.close();
-        setTimeout(() => router.push(`/results/${batchId}`), 2000);
-      };
+      }, 3000);
+
+      // Safety timeout: stop polling after 3 minutes
+      setTimeout(() => {
+        clearInterval(pollInterval);
+        toast.error('Scan timed out. Check History for results.', { id: toastId });
+        setLoading(false);
+        router.push('/history');
+      }, 3 * 60 * 1000);
 
     } catch (err) {
       toast.error(err.message || 'Upload failed', { id: toastId });
       setLoading(false);
-      // Fire-and-forget sync queue so it doesn't block the UI if IDB hangs
-      saveToSyncQueue(files[0], metadata).catch(console.error);
     }
   };
 
   useEffect(() => {
     // Real SSE telemetry handles this now.
-  }, [loading]);
 
   return (
     <div className="min-h-screen bg-background text-text-primary">
