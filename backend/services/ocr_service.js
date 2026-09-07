@@ -196,7 +196,11 @@ ${SCHEMA_HINT}`;
 
     const payload = {
       contents: [{ parts }],
-      generationConfig: { temperature: 0.0 }
+      systemInstruction: { parts: [{ text: 'Extract exactly what you see into the requested JSON schema. Do not hallucinate or invent data. If blurry, use null.' }] },
+      generationConfig: { 
+        temperature: 0.0,
+        responseMimeType: 'application/json'
+      }
     };
 
     const controller = new AbortController();
