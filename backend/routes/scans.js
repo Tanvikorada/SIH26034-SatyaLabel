@@ -269,6 +269,7 @@ router.post('/', requireAuth, (req, res, next) => {
 
     const sourceType    = req.body.source_type || 'physical_label';
     const productNameHint = req.body.product_name || null;
+    const rawText = req.body.raw_text || null;
     const brandNameHint   = req.body.brand_name   || null;
 
     // Validate source_type
@@ -312,7 +313,7 @@ router.post('/', requireAuth, (req, res, next) => {
 
         ok(res, { batch_id: batch.id, status: 'processing' }, 202);
 
-        setImmediate(() => runBatchPipeline(batch, filePaths, { forceEngine: req.body.forceEngine }));
+        setImmediate(() => runBatchPipeline(batch, filePaths, { forceEngine: req.body.forceEngine, rawText }));
 
       } catch (err) {
       return fail(res, 500, 'INTERNAL_ERROR', err.message);

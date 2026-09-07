@@ -532,6 +532,47 @@ ${SCHEMA_HINT}`;
 
 
 async function runOcrPipeline(imagePaths, metadata = {}) {
+  try {
+    if (metadata.rawText && config.groq?.apiKey) {
+      console.log('[OCR] Client provided raw Tesseract text! Bypassing Vision APIs and using ultra-fast LLM...');
+      const payload = {
+        model: 'llama-3.1-70b-versatile',
+        messages: [
+          { role: 'system', content: 'You are an AI brain for Legal Metrology. You receive raw OCR text from a product label. Extract it into the strict JSON schema provided. Schema: ' + SCHEMA_HINT },
+          { role: 'user', content: 'Here is the raw text from the label: \n\n' + metadata.rawText }
+        ],
+        temperature: 0.0,
+        response_format: { type: 'json_object' }
+      };
+
+      const c = new AbortController();
+      const t = setTimeout(() => c.abort(), 15000); // 15s max!
+      const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+        method: 'POST',
+        headers: { 'Authorization': 'Bearer ' + config.groq.apiKey, 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+        signal: c.signal
+      });
+      clearTimeout(t);
+      if (res.ok) {
+        const data = await res.json();
+        const jsonStr = data.choices[0].message.content;
+        const toValidate = JSON.parse(jsonStr);
+        const structuredData = AIResponseSchema.parse(toValidate.products ? toValidate : { products: [toValidate] });
+        return {
+          text: metadata.rawText,
+          engine: 'groq_llama_text_hybrid',
+          confidenceAvg: 90,
+          geminiStructuredData: structuredData,
+          _fontMetrics: [],
+          _jsonText: jsonStr
+        };
+      }
+    }
+  } catch (err) {
+    console.warn('[OCR] Hybrid text-fallback failed, continuing to standard Vision pipeline...', err.message);
+  }
+
   let processedPaths = [];
   try {
     const paths = Array.isArray(imagePaths) ? imagePaths : [imagePaths];

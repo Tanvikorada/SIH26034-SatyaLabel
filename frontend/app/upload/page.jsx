@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
+import Tesseract from 'tesseract.js';
 import { triggerHaptic } from '@/utils/haptics';
 import { openDB } from 'idb';
 import NavBar from '@/components/NavBar';
@@ -43,13 +44,26 @@ export default function UploadPage() {
     if (files.length === 0) return toast.error('No image selected');
     setLoading(true);
     setLogs([]);
-    const toastId = toast.loading('Uploading image...');
+    const toastId = toast.loading('Running local OCR extraction...');
 
     try {
+      let rawText = '';
+      try {
+        const { data: { text } } = await Tesseract.recognize(files[0], 'eng', {
+           logger: m => console.log(m)
+        });
+        rawText = text;
+        toast.loading('Local OCR complete. Sending to AI Brain...', { id: toastId });
+      } catch (tessErr) {
+        console.warn('Tesseract failed locally:', tessErr);
+        toast.loading('Local OCR failed. Uploading to Cloud Vision...', { id: toastId });
+      }
+
       const formData = new FormData();
       files.forEach(f => formData.append('images', f));
       formData.append('product_name', productName || '');
       formData.append('source_type', sourceType || 'physical_label');
+      if (rawText) formData.append('raw_text', rawText);
 
       const res = await fetch(`${API}/scans`, {
         method: 'POST',
