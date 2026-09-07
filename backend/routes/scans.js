@@ -238,6 +238,7 @@ async function runBatchPipeline(batch, imagePath, metadata = {}) {
 //   source_type  — "physical_label" | "ecommerce_listing"
 //   product_name — optional hint (used if OCR misses it)
 //   brand_name   — optional hint
+
 router.get('/debug-batches-latest', async (req, res) => {
   try {
     const { Batch } = require('../models');
@@ -837,6 +838,7 @@ router.put('/:id', requireAuth, async (req, res) => {
 });
 
 module.exports = router;
+
 
 
 
