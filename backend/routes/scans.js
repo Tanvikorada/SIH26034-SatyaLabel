@@ -387,6 +387,37 @@ router.get('/batch/:id', requireAuth, async (req, res) => {
 
 // ─── GET /api/v1/scans ───────────────────────────────────────────────────────
 // Spec 05 query params: ?compliance=non_compliant&search=<name>&page=&limit=
+router.get('/debug-ai-ping', async (req, res) => {
+  try {
+    const config = require('../config');
+    const results = {};
+    // Test Gemini
+    try {
+      const c1 = new AbortController();
+      const t1 = setTimeout(() => c1.abort(), 10000);
+      const r1 = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${config.gemini.apiKey}`, {
+        method: 'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({contents:[{parts:[{text:"Reply 'pong'"}]}]}), signal: c1.signal
+      });
+      clearTimeout(t1);
+      results.gemini = { status: r1.status, body: await r1.text() };
+    } catch(e) { results.gemini = e.message; }
+    
+    // Test NVIDIA
+    try {
+      const c2 = new AbortController();
+      const t2 = setTimeout(() => c2.abort(), 10000);
+      const r2 = await fetch('https://integrate.api.nvidia.com/v1/chat/completions', {
+        method: 'POST', headers:{'Authorization':`Bearer ${config.nvidia.apiKey}`,'Content-Type':'application/json'},
+        body: JSON.stringify({model:"meta/llama-3.2-90b-vision-instruct",messages:[{role:"user",content:"Reply 'pong'"}]}), signal: c2.signal
+      });
+      clearTimeout(t2);
+      results.nvidia = { status: r2.status, body: await r2.text() };
+    } catch(e) { results.nvidia = e.message; }
+    
+    res.json(results);
+  } catch(err) { res.status(500).json({error: err.message}); }
+});
 router.get('/debug-db', async (req, res) => {
   try {
     const { Batch } = require('../models');
@@ -806,5 +837,6 @@ router.put('/:id', requireAuth, async (req, res) => {
 });
 
 module.exports = router;
+
 
 
