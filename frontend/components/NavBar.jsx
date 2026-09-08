@@ -26,7 +26,10 @@ export default function NavBar() {
     { name: 'Dashboard', path: '/dashboard' },
     { name: 'Upload Scan', path: '/upload' },
     { name: 'History', path: '/history' },
-    ...(role === 'admin' ? [{ name: 'Rules Config', path: '/rules' }] : []),
+    ...(role === 'admin' ? [
+      { name: 'Rules Config', path: '/rules' },
+      { name: 'Central Command', path: '/admin' }
+    ] : []),
     { name: 'Settings', path: '/settings' }
   ];
 
