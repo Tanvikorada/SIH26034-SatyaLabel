@@ -650,6 +650,29 @@ export default function ResultsPage({ params }) {
           {/* TAB 2: EVIDENCE */}
         {activeTab === 'evidence' && (
           <div className="animate-fade-in space-y-6">
+            
+            {report.latitude && report.longitude && (
+              <div className="glass rounded-[16px] md:rounded-[20px] p-5 md:p-6 mb-6">
+                <h3 className="text-[12px] font-mono tracking-[0.2em] uppercase text-text-primary mb-4 flex items-center gap-2">
+                  <svg className="w-4 h-4 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+                  Scan Location (GPS)
+                </h3>
+                <div className="w-full h-[250px] md:h-[350px] rounded-xl overflow-hidden border border-[var(--color-border)] relative">
+                  <iframe 
+                    width="100%" 
+                    height="100%" 
+                    frameBorder="0" 
+                    scrolling="no" 
+                    marginHeight="0" 
+                    marginWidth="0" 
+                    src={`https://www.openstreetmap.org/export/embed.html?bbox=${report.longitude - 0.005},${report.latitude - 0.005},${report.longitude + 0.005},${report.latitude + 0.005}&layer=mapnik&marker=${report.latitude},${report.longitude}`}
+                    style={{ border: 0, filter: 'invert(90%) hue-rotate(180deg) contrast(100%)' }} // Dark mode map trick
+                  ></iframe>
+                </div>
+                <p className="text-[11px] text-text-muted mt-3 text-right">LAT: {report.latitude.toFixed(6)} | LNG: {report.longitude.toFixed(6)}</p>
+              </div>
+            )}
+
             <h3 className="text-[18px] font-medium text-text-primary">Attached Photographic Evidence</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
               {(() => {
