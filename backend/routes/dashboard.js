@@ -219,14 +219,14 @@ router.get('/admin/officers', requireAuth, async (req, res) => {
 // ==========================================
 router.get('/network', requireAuth, async (req, res) => {
   try {
-    const scans = await sequelize.query(\
+    const scans = await sequelize.query(`
       SELECT id, product_name, extracted_fields->>'manufacturer_name' as mfg, 
              extracted_fields->>'brand_name' as brand, overall_compliance
       FROM scans
       WHERE extracted_fields->>'manufacturer_name' IS NOT NULL
          OR extracted_fields->>'brand_name' IS NOT NULL
       LIMIT 100
-    \, { type: QueryTypes.SELECT });
+    `, { type: QueryTypes.SELECT });
 
     const nodesMap = new Map();
     const edges = [];
@@ -280,13 +280,13 @@ router.get('/network', requireAuth, async (req, res) => {
 router.get('/predictions', requireAuth, async (req, res) => {
   try {
     // Generate AI-like forecast hotspots based on recent non-compliant areas + some fuzzing
-    const scans = await sequelize.query(\
+    const scans = await sequelize.query(`
       SELECT latitude, longitude, overall_compliance
       FROM scans
       WHERE latitude IS NOT NULL AND longitude IS NOT NULL
         AND overall_compliance IN ('POTENTIAL NON-COMPLIANCE', 'MANUAL REVIEW')
       LIMIT 50
-    \, { type: QueryTypes.SELECT });
+    `, { type: QueryTypes.SELECT });
 
     const predictions = scans.map(s => {
       // Fuzz the location slightly for a "predicted spread"

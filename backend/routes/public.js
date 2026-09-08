@@ -1,7 +1,8 @@
 const express = require('express');
 const multer = require('multer');
 const { runBatchPipeline } = require('../services/ocr_service');
-const { ok, fail } = require('./util');
+const ok = (res, data, status = 200) => res.status(status).json({ data });
+const fail = (res, status, code, msg) => res.status(status).json({ error: { code, message: msg } });
 
 // Memory storage so we can upload immediately to Supabase
 const upload = multer({ dest: 'uploads/' });

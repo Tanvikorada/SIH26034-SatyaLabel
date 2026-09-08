@@ -1,6 +1,6 @@
+const fs = require('fs');
 const cheerio = require('cheerio');
 const axios = require('axios');
-const fs = require('fs');
 // backend/routes/scans.js
 // ============================================================
 // Scan routes — Spec 05 API
@@ -24,8 +24,7 @@ router.get('/debug-ocr', async (req, res) => {
   try {
     const { runOcrPipeline } = require('../services/ocr_service');
     // Create a tiny 1x1 image to test just the API connection
-    const fs = require('fs');
-    const tinyImagePath = './tiny.jpg';
+        const tinyImagePath = './tiny.jpg';
     // 1x1 white pixel in base64
     const tinyBase64 = '/9j/4AAQSkZJRgABAQEASABIAAD/2wBDAP//////////////////////////////////////////////////////////////////////////////////////wgALCAABAAEBAREA/8QAFBABAAAAAAAAAAAAAAAAAAAAAP/aAAgBAQABPxA=';
     fs.writeFileSync(tinyImagePath, Buffer.from(tinyBase64, 'base64'));
@@ -53,7 +52,6 @@ router.get('/debug-models', async (req, res) => {
 });
 
 const path = require('path');
-const fs = require('fs');
 const { createClient } = require('@supabase/supabase-js');
 
 const supabase = createClient(
