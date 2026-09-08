@@ -224,26 +224,26 @@ export default function AdminDashboard() {
                 </h2>
                 
                 {/* Advanced Mode Toggles */}
-                                  <div className="flex gap-1 bg-[var(--color-surface)] p-1 rounded-lg border border-[var(--color-border)] shadow-sm">
-                    <button 
-                      onClick={() => setMapMode('cluster')}
-                      className={	ext-[11px] px-3 py-1 rounded-md transition-all \}
-                    >
-                      Feed
-                    </button>
-                    <button 
-                      onClick={() => setMapMode('heatmap')}
-                      className={	ext-[11px] px-3 py-1 rounded-md transition-all \}
-                    >
-                      Threats
-                    </button>
-                    <button 
-                      onClick={() => setMapMode('forecast')}
-                      className={	ext-[11px] px-3 py-1 rounded-md transition-all \}
-                    >
-                      Forecast
-                    </button>
-                  </div>
+                    <div className="flex gap-1 bg-[var(--color-surface)] p-1 rounded-lg border border-[var(--color-border)] shadow-sm">
+                      <button 
+                        onClick={() => setMapMode('cluster')}
+                        className={`text-[11px] px-3 py-1 rounded-md transition-all ${mapMode === 'cluster' ? 'bg-emerald-500/10 text-emerald-600 font-bold border border-emerald-500/20' : 'text-text-muted hover:text-text-primary'}`}
+                      >
+                        Feed
+                      </button>
+                      <button 
+                        onClick={() => setMapMode('heatmap')}
+                        className={`text-[11px] px-3 py-1 rounded-md transition-all ${mapMode === 'heatmap' ? 'bg-red-500/10 text-red-600 font-bold border border-red-500/20' : 'text-text-muted hover:text-text-primary'}`}
+                      >
+                        Threats
+                      </button>
+                      <button 
+                        onClick={() => setMapMode('forecast')}
+                        className={`text-[11px] px-3 py-1 rounded-md transition-all ${mapMode === 'forecast' ? 'bg-amber-500/10 text-amber-600 font-bold border border-amber-500/20' : 'text-text-muted hover:text-text-primary'}`}
+                      >
+                        Forecast
+                      </button>
+                    </div>
               </div>
 
               <div className="glass rounded-[20px] p-2 border border-[var(--color-border)] relative shadow-sm">

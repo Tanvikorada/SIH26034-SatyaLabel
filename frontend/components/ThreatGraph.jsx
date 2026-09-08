@@ -13,8 +13,8 @@ export default function ThreatGraph() {
     const fetchGraph = async () => {
       try {
         const API = process.env.NEXT_PUBLIC_API_URL || 'https://satyalabel-backend.onrender.com/api/v1';
-        const res = await fetch(\/dashboard/network, {
-          headers: { 'Authorization': \Bearer \\ }
+        const res = await fetch(`${API}/dashboard/network`, {
+          headers: { 'Authorization': `Bearer ${sessionStorage.getItem('token')}` }
         });
         const json = await res.json();
         if (json.data) setData(json.data);

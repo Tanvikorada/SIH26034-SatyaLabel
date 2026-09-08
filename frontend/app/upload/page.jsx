@@ -55,8 +55,8 @@ export default function UploadPage() {
   const pollScanResult = async (batchId) => {
     let attempts = 0;
     while(attempts < 60) {
-      const res = await fetch(\/scans/batch/\, {
-        headers: { 'Authorization': \Bearer \\ }
+      const res = await fetch(`${API}/scans/batch/${batchId}`, {
+        headers: { 'Authorization': `Bearer ${sessionStorage.getItem('token')}` }
       });
       const json = await res.json();
       if(json.status === 'complete' || json.status === 'completed') {
@@ -79,11 +79,11 @@ export default function UploadPage() {
     const toastId = toast.loading('Running E-Commerce Web Patrol...');
 
     try {
-      const res = await fetch(\/scans/url, {
+      const res = await fetch(`${API}/scans/url`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': \Bearer \\
+          'Authorization': `Bearer ${sessionStorage.getItem('token')}`
         },
         body: JSON.stringify({
           url,
@@ -105,7 +105,7 @@ export default function UploadPage() {
       
       toast.success('Web Patrol Complete!', { id: toastId });
       setLoading(false);
-      router.push(/results/\);
+      router.push(`/results/${scanId}`);
 
     } catch (err) {
       toast.error(err.message || 'Web Patrol failed', { id: toastId });
@@ -143,9 +143,9 @@ export default function UploadPage() {
         formData.append('longitude', location.lng);
       }
 
-      const res = await fetch(\/scans, {
+      const res = await fetch(`${API}/scans`, {
         method: 'POST',
-        headers: { 'Authorization': \Bearer \\ },
+        headers: { 'Authorization': `Bearer ${sessionStorage.getItem('token')}` },
         body: formData
       });
 
@@ -158,7 +158,7 @@ export default function UploadPage() {
       
       toast.success('Analysis Complete', { id: toastId });
       setLoading(false);
-      router.push(/results/\);
+      router.push(`/results/${scanId}`);
 
     } catch (err) {
       toast.error(err.message || 'Upload failed', { id: toastId });
@@ -177,22 +177,22 @@ export default function UploadPage() {
         </p>
 
         {/* Phase 1 Upgrade: Mode Tabs */}
-        <div className="flex bg-surface border border-border rounded-xl p-1 mb-6 w-full max-w-sm">
-          <button 
-            type="button"
-            onClick={() => setActiveMode('physical')}
-            className={\lex-1 py-2 rounded-lg text-[13px] font-medium transition-colors \\}
-          >
-            Physical Scan
-          </button>
-          <button 
-            type="button"
-            onClick={() => setActiveMode('web')}
-            className={\lex-1 py-2 rounded-lg text-[13px] font-medium transition-colors \\}
-          >
-            Web Patrol (URL)
-          </button>
-        </div>
+          <div className="flex bg-[var(--color-border)] p-1 rounded-xl w-full max-w-[300px] mb-2 mx-auto md:mx-0">
+            <button 
+              type="button"
+              onClick={() => setActiveMode('physical')}
+              className={`flex-1 py-2 rounded-lg text-[13px] font-medium transition-colors ${activeMode === 'physical' ? 'bg-[var(--color-surface)] text-text-primary shadow-sm' : 'text-text-muted hover:text-text-primary'}`}
+            >
+              Physical Scan
+            </button>
+            <button 
+              type="button"
+              onClick={() => setActiveMode('web')}
+              className={`flex-1 py-2 rounded-lg text-[13px] font-medium transition-colors ${activeMode === 'web' ? 'bg-[var(--color-surface)] text-text-primary shadow-sm' : 'text-text-muted hover:text-text-primary'}`}
+            >
+              Web Patrol (URL)
+            </button>
+          </div>
 
         <div className="grid grid-cols-1 md:grid-cols-5 gap-0 md:gap-6 flex-1 md:flex-none min-h-[calc(100vh-140px)] h-auto md:h-auto">
           
@@ -318,14 +318,14 @@ export default function UploadPage() {
               </>
             )}
 
-            <button type="submit" className={\w-full mt-auto md:mt-2 h-[56px] text-[16px] font-bold shadow-[0_10px_30px_rgba(11,31,58,0.3)] active-press md:h-[50px] md:text-[14px] rounded-[18px] text-white transition-colors \\} disabled={loading}>
+            <button type="submit" className={`w-full mt-auto md:mt-2 h-[56px] text-[16px] font-bold shadow-[0_10px_30px_rgba(11,31,58,0.3)] active-press md:h-[50px] md:text-[14px] rounded-[18px] text-white transition-colors ${loading ? 'bg-[var(--color-border)] text-text-muted' : 'bg-gradient-to-r from-[var(--color-primary)] to-[#0A1A3A] hover:shadow-[0_15px_40px_rgba(11,31,58,0.4)]'}`} disabled={loading}>
               {loading ? (activeMode === 'web' ? 'Scraping URL...' : 'Processing scan...') : (activeMode === 'web' ? 'Execute Web Patrol' : 'Run Compliance Check')}
             </button>
           </form>
 
           <div className="mello-card-flat p-6 col-span-2 flex flex-col h-[320px] md:h-[480px]">
             <h3 className="text-[14px] font-medium tracking-tight mb-4 flex items-center gap-2">
-              <div className={\w-2 h-2 rounded-full \\}></div>
+              <div className={`w-2 h-2 rounded-full ${loading ? 'bg-amber-500 animate-pulse' : 'bg-[var(--color-primary)]'}`}></div>
               Processing Steps
             </h3>
             <div className="flex-1 font-mono text-[12px] allow-select cursor-text leading-relaxed text-text-muted flex flex-col gap-2 overflow-y-auto bg-slate-50 rounded-xl p-5 border border-slate-200 shadow-inner">
