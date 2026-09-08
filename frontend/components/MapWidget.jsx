@@ -182,15 +182,25 @@ export default function MapWidget({ markers = [], height = '400px', focusLocatio
                       </div>
 
                       {/* Automated Enforcement Action */}
-                      {(marker.overall_compliance === 'POTENTIAL NON-COMPLIANCE' || marker.overall_compliance === 'fail') && (
+                      <div className="mt-3 space-y-2">
                         <button 
-                          onClick={() => generateLegalNotice(marker)}
-                          className="w-full bg-red-500/20 hover:bg-red-500/40 text-red-400 border border-red-500/30 py-1.5 rounded text-[11px] font-bold flex items-center justify-center gap-1.5 transition-colors"
+                          onClick={() => window.open(`https://www.google.com/maps/dir/?api=1&destination=${marker.latitude},${marker.longitude}`, '_blank')}
+                          className="w-full bg-emerald-500/20 hover:bg-emerald-500/40 text-emerald-400 border border-emerald-500/30 py-1.5 rounded text-[11px] font-bold flex items-center justify-center gap-1.5 transition-colors"
                         >
-                          <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
-                          ISSUE LEGAL NOTICE
+                          <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+                          NAVIGATE TO TARGET
                         </button>
-                      )}
+
+                        {(marker.overall_compliance === 'POTENTIAL NON-COMPLIANCE' || marker.overall_compliance === 'fail') && (
+                          <button 
+                            onClick={() => generateLegalNotice(marker)}
+                            className="w-full bg-red-500/20 hover:bg-red-500/40 text-red-400 border border-red-500/30 py-1.5 rounded text-[11px] font-bold flex items-center justify-center gap-1.5 transition-colors"
+                          >
+                            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+                            ISSUE LEGAL NOTICE
+                          </button>
+                        )}
+                      </div>
                     </div>
                   </div>
                 </Popup>
