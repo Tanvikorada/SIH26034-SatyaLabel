@@ -39,6 +39,14 @@ const MapController = ({ markers, focusLocation }) => {
   }, [focusLocation, map]);
 
   useEffect(() => {
+    const handleLocate = (e) => {
+      map.flyTo([e.detail.lat, e.detail.lng], 16, { animate: true, duration: 2 });
+    };
+    window.addEventListener('locate-command', handleLocate);
+    return () => window.removeEventListener('locate-command', handleLocate);
+  }, [map]);
+
+  useEffect(() => {
     // Only fit bounds initially or if we are not actively focusing on one location
     if (!focusLocation && markers && markers.length > 0) {
       const bounds = L.latLngBounds(markers.map(m => [m.latitude || m.lat, m.longitude || m.lng]));
@@ -123,6 +131,47 @@ export default function MapWidget({ markers = [], height = '400px', focusLocatio
 
   return (
     <div style={{ height, width: '100%', borderRadius: '14px', overflow: 'hidden', position: 'relative' }}>
+      
+      {/* 3D Radar Sweep Overlay */}
+      <div className="absolute inset-0 pointer-events-none z-[400] flex items-center justify-center overflow-hidden">
+        {/* Radar Spinner */}
+        <div className="absolute w-[150%] h-[150%] animate-radar-sweep rounded-full" style={{
+          background: 'conic-gradient(from 0deg at 50% 50%, rgba(16, 185, 129, 0) 0%, rgba(16, 185, 129, 0) 280deg, rgba(16, 185, 129, 0.05) 340deg, rgba(16, 185, 129, 0.4) 360deg)'
+        }}></div>
+        {/* Depth Grid / Crosshair */}
+        <div className="absolute w-full h-[1px] bg-emerald-500/10"></div>
+        <div className="absolute h-full w-[1px] bg-emerald-500/10"></div>
+        <div className="absolute w-32 h-32 border border-emerald-500/20 rounded-full flex items-center justify-center">
+          <div className="w-1.5 h-1.5 bg-emerald-500/80 rounded-full shadow-[0_0_10px_rgba(16,185,129,1)]"></div>
+        </div>
+      </div>
+
+      {/* Locate Command Button */}
+      <button
+        onClick={() => {
+          if (navigator.geolocation) {
+            toast.loading('Acquiring satellite lock...', { id: 'gps' });
+            navigator.geolocation.getCurrentPosition(
+              (pos) => {
+                toast.success('Location acquired. Relocating map.', { id: 'gps' });
+                const e = new CustomEvent('locate-command', { detail: { lat: pos.coords.latitude, lng: pos.coords.longitude }});
+                window.dispatchEvent(e);
+              },
+              () => toast.error('Geolocation access denied.', { id: 'gps' })
+            );
+          } else {
+            toast.error('Geolocation not supported by browser.', { id: 'gps' });
+          }
+        }}
+        className="absolute bottom-6 right-6 z-[500] bg-slate-900/90 backdrop-blur border border-slate-700/50 p-3 rounded-full text-emerald-400 hover:bg-slate-800 transition-colors shadow-[0_0_20px_rgba(0,0,0,0.5)] group"
+        title="Locate Command Center"
+      >
+        <svg className="w-5 h-5 group-hover:scale-110 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19.938 12.5A8.001 8.001 0 0012 4.584M12 4.584V2m0 2.584v2.5M12 19.416A8.001 8.001 0 0019.938 11.5M12 19.416v2.5m0-2.5v-2.5M4.062 11.5A8.001 8.001 0 0012 19.416M4.062 11.5H2m2.062 0h2.5M4.062 12.5A8.001 8.001 0 0012 4.584M4.062 12.5H2m2.062 0h2.5" />
+        </svg>
+      </button>
+
       <MapContainer 
         center={defaultCenter} 
         zoom={4} 
@@ -265,6 +314,15 @@ export default function MapWidget({ markers = [], height = '400px', focusLocatio
           font-family: inherit;
           border: 2px solid #fff;
           box-shadow: 0 0 15px rgba(16, 185, 129, 0.5);
+        }
+
+        /* 3D Radar Animation */
+        @keyframes radar-sweep {
+          from { transform: rotate(0deg); }
+          to { transform: rotate(360deg); }
+        }
+        .animate-radar-sweep {
+          animation: radar-sweep 3s linear infinite;
         }
       `}</style>
     </div>
