@@ -46,11 +46,10 @@ export default function MapWidget({ markers = [], height = '400px' }) {
         style={{ height: '100%', width: '100%', background: '#0B101E' }}
         zoomControl={false}
       >
-        {/* True Free OpenStreetMap Tiles with CSS Dark Mode filter applied */}
+        {/* Google Maps Satellite Hybrid Tiles - Extremely Premium, No API Key Required */}
         <TileLayer
-          className="map-tiles-dark"
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+          url="https://mt1.google.com/vt/lyrs=y&x={x}&y={y}&z={z}"
+          attribution="&copy; Google Maps"
         />
         
         {markers.map((marker, idx) => (
@@ -75,9 +74,6 @@ export default function MapWidget({ markers = [], height = '400px' }) {
       <style jsx global>{`
         .leaflet-container {
           font-family: inherit;
-        }
-        .map-tiles-dark {
-          filter: invert(100%) hue-rotate(180deg) brightness(95%) contrast(90%);
         }
         .premium-popup .leaflet-popup-content-wrapper {
           background: rgba(255, 255, 255, 0.95);
