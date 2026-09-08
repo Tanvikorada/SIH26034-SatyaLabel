@@ -146,7 +146,7 @@ export default function MapWidget({ markers = [], height = '400px', focusLocatio
         </div>
       </div>
 
-      {/* Locate Command Button */}
+      {/* Locate Command Button (Google Maps Style) */}
       <button
         onClick={() => {
           if (navigator.geolocation) {
@@ -163,12 +163,12 @@ export default function MapWidget({ markers = [], height = '400px', focusLocatio
             toast.error('Geolocation not supported by browser.', { id: 'gps' });
           }
         }}
-        className="absolute bottom-6 right-6 z-[500] bg-slate-900/90 backdrop-blur border border-slate-700/50 p-3 rounded-full text-emerald-400 hover:bg-slate-800 transition-colors shadow-[0_0_20px_rgba(0,0,0,0.5)] group"
-        title="Locate Command Center"
+        className="absolute bottom-6 right-6 z-[500] bg-white text-[#666666] hover:text-[#1A73E8] flex items-center justify-center rounded-full transition-colors shadow-[0_2px_6px_rgba(0,0,0,0.3)]"
+        style={{ width: '40px', height: '40px' }}
+        title="My Location"
       >
-        <svg className="w-5 h-5 group-hover:scale-110 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19.938 12.5A8.001 8.001 0 0012 4.584M12 4.584V2m0 2.584v2.5M12 19.416A8.001 8.001 0 0019.938 11.5M12 19.416v2.5m0-2.5v-2.5M4.062 11.5A8.001 8.001 0 0012 19.416M4.062 11.5H2m2.062 0h2.5M4.062 12.5A8.001 8.001 0 0012 4.584M4.062 12.5H2m2.062 0h2.5" />
+        <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+          <path d="M12 8c-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4-1.79-4-4-4zm8.94 3c-.46-4.17-3.77-7.48-7.94-7.94V1h-2v2.06C6.83 3.52 3.52 6.83 3.06 11H1v2h2.06c.46 4.17 3.77 7.48 7.94 7.94V23h2v-2.06c4.17-.46 7.48-3.77 7.94-7.94H23v-2h-2.06zM12 19c-3.87 0-7-3.13-7-7s3.13-7 7-7 7 3.13 7 7-3.13 7-7 7z"/>
         </svg>
       </button>
 
@@ -234,10 +234,10 @@ export default function MapWidget({ markers = [], height = '400px', focusLocatio
                       <div className="mt-3 space-y-2">
                         <button 
                           onClick={() => window.open(`https://www.google.com/maps/dir/?api=1&destination=${marker.latitude},${marker.longitude}`, '_blank')}
-                          className="w-full bg-emerald-500/20 hover:bg-emerald-500/40 text-emerald-400 border border-emerald-500/30 py-1.5 rounded text-[11px] font-bold flex items-center justify-center gap-1.5 transition-colors"
+                          className="w-full bg-[#1A73E8] hover:bg-[#1557B0] text-white py-1.5 rounded-[18px] text-[12px] font-medium flex items-center justify-center gap-1.5 transition-colors shadow-sm"
                         >
-                          <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
-                          NAVIGATE TO TARGET
+                          <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M21.71 11.29l-9-9c-.39-.39-1.02-.39-1.41 0l-9 9c-.39.39-.39 1.02 0 1.41l9 9c.39.39 1.02.39 1.41 0l9-9c.39-.38.39-1.01 0-1.41zM14 14.5V12h-4v3H8v-4c0-.55.45-1 1-1h5V7.5l3.5 3.5-3.5 3.5z"/></svg>
+                          Directions
                         </button>
 
                         {(marker.overall_compliance === 'POTENTIAL NON-COMPLIANCE' || marker.overall_compliance === 'fail') && (
