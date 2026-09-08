@@ -46,10 +46,11 @@ export default function MapWidget({ markers = [], height = '400px' }) {
         style={{ height: '100%', width: '100%', background: '#0B101E' }}
         zoomControl={false}
       >
-        {/* CARTO Dark Matter Premium Tiles - Free, no API key, extremely sleek */}
+        {/* True Free OpenStreetMap Tiles with CSS Dark Mode filter applied */}
         <TileLayer
-          url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> &copy; <a href="https://carto.com/attributions">CARTO</a>'
+          className="map-tiles-dark"
+          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         />
         
         {markers.map((marker, idx) => (
@@ -74,6 +75,9 @@ export default function MapWidget({ markers = [], height = '400px' }) {
       <style jsx global>{`
         .leaflet-container {
           font-family: inherit;
+        }
+        .map-tiles-dark {
+          filter: invert(100%) hue-rotate(180deg) brightness(95%) contrast(90%);
         }
         .premium-popup .leaflet-popup-content-wrapper {
           background: rgba(255, 255, 255, 0.95);
