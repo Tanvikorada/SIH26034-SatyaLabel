@@ -181,7 +181,8 @@ router.get('/admin/officers', requireAuth, async (req, res) => {
         s.id as scan_id,
         s.original_image_url,
         s.overall_compliance,
-        s.compliance_score
+        s.compliance_score,
+        s.extracted_data
       FROM batches b
       JOIN users u ON u.id = b.uploaded_by
       LEFT JOIN scans s ON s.batch_id = b.id
@@ -190,7 +191,24 @@ router.get('/admin/officers', requireAuth, async (req, res) => {
       LIMIT 200
     `, { type: QueryTypes.SELECT });
 
-    res.json({ success: true, data: { officers, mapData } });
+    // High Risk Brands / Repeat Offenders Watchlist
+    const highRiskBrands = await sequelize.query(`
+      SELECT 
+        p.product_name,
+        p.brand_name,
+        COUNT(s.id) as total_scans,
+        COUNT(s.id) FILTER (WHERE s.overall_compliance IN ('POTENTIAL NON-COMPLIANCE', 'non_compliant', 'fail')) as violations
+      FROM scans s
+      JOIN products p ON p.id = s.product_id
+      WHERE s.status = 'complete' 
+        AND p.product_name IS NOT NULL
+      GROUP BY p.product_name, p.brand_name
+      HAVING COUNT(s.id) FILTER (WHERE s.overall_compliance IN ('POTENTIAL NON-COMPLIANCE', 'non_compliant', 'fail')) > 0
+      ORDER BY violations DESC
+      LIMIT 10
+    `, { type: QueryTypes.SELECT });
+
+    res.json({ success: true, data: { officers, mapData, highRiskBrands } });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
