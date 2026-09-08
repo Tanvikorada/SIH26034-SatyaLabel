@@ -517,11 +517,13 @@ router.get('/', requireAuth, async (req, res) => {
 //   violations: [...], created_at }
 router.get('/:id', requireAuth, async (req, res) => {
   try {
+    const { Batch } = require('../models');
     const scan = await Scan.findByPk(req.params.id, {
       include: [
         { model: Product,   as: 'product' },
         { model: Violation, as: 'violations' },
         { model: Report,    as: 'reports' },
+        { model: Batch,     as: 'batch' }
       ],
     });
 
@@ -566,6 +568,8 @@ function formatScanSummary(scan) {
     id: scan.id,
     status: scan.status,
     source_type: scan.sourceType,
+      latitude: scan.batch ? scan.batch.latitude : null,
+      longitude: scan.batch ? scan.batch.longitude : null,
     overall_compliance: scan.overallCompliance,
     compliance_score: scan.complianceScore,
     total_violations: scan.totalViolations,
@@ -597,6 +601,8 @@ function formatScanSummary(scan) {
       status: scan.status,
       image_url: JSON.stringify(imgUrl),
       source_type: scan.sourceType,
+      latitude: scan.batch ? scan.batch.latitude : null,
+      longitude: scan.batch ? scan.batch.longitude : null,
     overall_compliance: scan.overallCompliance,
     // overallStatus alias for frontend backward compat
     overallStatus: scan.overallCompliance,
