@@ -182,7 +182,7 @@ router.get('/admin/officers', requireAuth, async (req, res) => {
         s.original_image_url,
         s.overall_compliance,
         s.compliance_score,
-        s.extracted_data
+        s.extracted_fields as extracted_data
       FROM batches b
       JOIN users u ON u.id = b.uploaded_by
       LEFT JOIN scans s ON s.batch_id = b.id
