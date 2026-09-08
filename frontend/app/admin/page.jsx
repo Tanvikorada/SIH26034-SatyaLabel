@@ -4,8 +4,10 @@ import { useRouter } from 'next/navigation';
 import NavBar from '../../components/NavBar';
 import { toast } from 'sonner';
 import dynamic from 'next/dynamic';
+import { QRCodeSVG } from 'qrcode.react';
 
 const MapWidget = dynamic(() => import('../../components/MapWidget'), { ssr: false });
+const ThreatGraph = dynamic(() => import('../../components/ThreatGraph'), { ssr: false });
 
 export default function AdminDashboard() {
   const router = useRouter();
@@ -16,8 +18,10 @@ export default function AdminDashboard() {
   
   // Interactive Map States
   const [mapMode, setMapMode] = useState('cluster');
+    const [forecastData, setForecastData] = useState([]);
   const [focusLocation, setFocusLocation] = useState(null);
   const [isDeploying, setIsDeploying] = useState(false);
+  const [showQR, setShowQR] = useState(false);
 
   const API = process.env.NEXT_PUBLIC_API_URL || 'https://satyalabel-backend.onrender.com/api/v1';
 
@@ -84,10 +88,29 @@ export default function AdminDashboard() {
       <NavBar />
       
       <main className="max-w-7xl mx-auto px-6 py-12 space-y-8 animate-fade-in">
-        <header className="mb-10">
-          <h1 className="text-[32px] font-medium tracking-tight leading-[1.1] mb-2">Central Command</h1>
-          <p className="text-[15px] text-text-secondary">Enterprise Enforcement & Monitoring Console.</p>
+        <header className="mb-10 flex justify-between items-end">
+          <div>
+            <h1 className="text-[32px] font-medium tracking-tight leading-[1.1] mb-2">Central Command</h1>
+            <p className="text-[15px] text-text-secondary">Enterprise Enforcement & Monitoring Console.</p>
+          </div>
+          <button onClick={() => setShowQR(true)} className="bg-gradient-to-r from-amber-500 to-orange-600 text-white px-6 py-3 rounded-xl font-bold shadow-[0_0_20px_rgba(245,158,11,0.4)] flex items-center gap-2 hover:scale-105 transition-transform">
+            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm14 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z" /></svg>
+            Jury Live Demo QR
+          </button>
         </header>
+
+        {showQR && (
+          <div className="fixed inset-0 z-[99999] bg-black/80 backdrop-blur-md flex items-center justify-center p-6">
+            <div className="bg-white rounded-3xl p-10 max-w-md w-full flex flex-col items-center shadow-2xl">
+              <h2 className="text-2xl font-bold text-slate-900 mb-2">Scan to Report</h2>
+              <p className="text-slate-500 text-center mb-8">Point your phone camera here to access the live Citizen Reporting Portal. Submissions will appear instantly on this map.</p>
+              <div className="bg-white p-4 rounded-2xl shadow-inner border-4 border-slate-100">
+                <QRCodeSVG value={(typeof window !== 'undefined' ? window.location.origin : 'https://satyalabel.vercel.app') + '/report'} size={256} />
+              </div>
+              <button onClick={() => setShowQR(false)} className="mt-8 bg-slate-100 text-slate-600 hover:bg-slate-200 py-3 px-8 rounded-full font-bold transition-colors w-full">Close</button>
+            </div>
+          </div>
+        )}
 
         {loading ? (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -201,30 +224,36 @@ export default function AdminDashboard() {
                 </h2>
                 
                 {/* Advanced Mode Toggles */}
-                <div className="flex gap-1 bg-[var(--color-surface)] p-1 rounded-lg border border-[var(--color-border)] shadow-sm">
-                  <button 
-                    onClick={() => setMapMode('cluster')}
-                    className={`text-[11px] px-3 py-1 rounded-md transition-all ${mapMode === 'cluster' ? 'bg-emerald-500/10 text-emerald-600 font-bold border border-emerald-500/20' : 'text-text-muted hover:text-text-primary'}`}
-                  >
-                    Feed
-                  </button>
-                  <button 
-                    onClick={() => setMapMode('heatmap')}
-                    className={`text-[11px] px-3 py-1 rounded-md transition-all ${mapMode === 'heatmap' ? 'bg-red-500/10 text-red-600 font-bold border border-red-500/20' : 'text-text-muted hover:text-text-primary'}`}
-                  >
-                    Threats
-                  </button>
-                </div>
+                                  <div className="flex gap-1 bg-[var(--color-surface)] p-1 rounded-lg border border-[var(--color-border)] shadow-sm">
+                    <button 
+                      onClick={() => setMapMode('cluster')}
+                      className={	ext-[11px] px-3 py-1 rounded-md transition-all \}
+                    >
+                      Feed
+                    </button>
+                    <button 
+                      onClick={() => setMapMode('heatmap')}
+                      className={	ext-[11px] px-3 py-1 rounded-md transition-all \}
+                    >
+                      Threats
+                    </button>
+                    <button 
+                      onClick={() => setMapMode('forecast')}
+                      className={	ext-[11px] px-3 py-1 rounded-md transition-all \}
+                    >
+                      Forecast
+                    </button>
+                  </div>
               </div>
 
               <div className="glass rounded-[20px] p-2 border border-[var(--color-border)] relative shadow-sm">
                 <div className="w-full h-[450px] rounded-[14px] overflow-hidden relative bg-[var(--color-surface)]">
                   {mapData.length > 0 ? (
-                    <MapWidget 
-                      markers={mapData} 
+                                        <MapWidget 
+                      markers={mapMode === 'forecast' ? forecastData : mapData} 
                       height="100%" 
-                      mode={mapMode}
-                      focusLocation={focusLocation}
+                      mode={mapMode} 
+                      focusLocation={focusLocation} 
                     />
                   ) : (
                     <div className="w-full h-full flex flex-col items-center justify-center text-text-muted text-[13px] gap-3">
@@ -261,6 +290,11 @@ export default function AdminDashboard() {
                 )}
               </button>
 
+            </div>
+
+            {/* Threat Graph */}
+            <div className="lg:col-span-3 space-y-8 mt-8">
+              <ThreatGraph />
             </div>
 
           </div>

@@ -17,6 +17,7 @@ const authRouter     = require('./routes/auth');
 const rulesRouter    = require('./routes/rules');
 const modelsRouter   = require('./routes/models');
 const debugRouter    = require('./routes/debug');
+const publicRouter   = require('./routes/public');
 
 const app = express();
 
@@ -41,6 +42,7 @@ app.use(`${API}/debug`,     debugRouter);
 app.use(`${API}/reports`,   reportsRouter);
 app.use(`${API}/dashboard`, dashboardRouter);
 app.use(`${API}/rules`,     rulesRouter);
+app.use(`${API}/public`,    publicRouter);
 
 // ── Health check ──────────────────────────────────────────────────────────────
 app.get(`${API}/health`, (req, res) => {

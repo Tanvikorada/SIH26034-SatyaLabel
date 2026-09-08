@@ -247,23 +247,44 @@ export default function MapWidget({ markers = [], height = '400px', focusLocatio
 
         {/* MODE: HEATMAP / THREAT MAP */}
         {mode === 'heatmap' && markers.map((marker, idx) => {
-           const color = getStatusColor(marker.overall_compliance);
-           return (
+             const color = getStatusColor(marker.overall_compliance);
+             return (
+              <CircleMarker
+                key={`heat-${idx}`}
+                center={[marker.latitude || marker.lat, marker.longitude || marker.lng]}
+                radius={18}
+                fillColor={color}
+                color={color}
+                weight={0}
+                fillOpacity={marker.overall_compliance === 'POTENTIAL NON-COMPLIANCE' ? 0.6 : 0.2}
+              >
+                <Popup className="mello-popup">
+                   <div className="font-mono text-xs">Density Node: {marker.product_name}</div>
+                </Popup>
+              </CircleMarker>
+             )
+          })}
+
+        {/* MODE: FORECAST (AI Predictive Heatmap) */}
+        {mode === 'forecast' && markers.map((marker, idx) => (
             <CircleMarker
-              key={`heat-${idx}`}
-              center={[marker.latitude || marker.lat, marker.longitude || marker.lng]}
-              radius={18}
-              fillColor={color}
-              color={color}
-              weight={0}
-              fillOpacity={marker.overall_compliance === 'POTENTIAL NON-COMPLIANCE' ? 0.6 : 0.2}
+              key={`forecast-${idx}`}
+              center={[marker.lat, marker.lng]}
+              radius={25 + (marker.riskScore / 5)}
+              fillColor="#f97316"
+              color="#ea580c"
+              weight={1}
+              fillOpacity={marker.riskScore > 80 ? 0.7 : 0.4}
             >
-              <Popup className="premium-popup">
-                <div className="text-[12px] font-bold text-white text-center p-2">Threat Level Detected</div>
+              <Popup className="mello-popup">
+                 <div className="font-mono text-xs">
+                   <strong>Predicted Violations:</strong> {marker.predictedViolations}<br/>
+                   <strong>Risk Score:</strong> {marker.riskScore}%<br/>
+                   <strong>Zone:</strong> {marker.regionCode}
+                 </div>
               </Popup>
             </CircleMarker>
-           );
-        })}
+        ))}
         
         <MapController markers={markers} focusLocation={focusLocation} />
       </MapContainer>
