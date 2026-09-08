@@ -40,7 +40,7 @@ const MapController = ({ markers, focusLocation }) => {
 
   useEffect(() => {
     const handleLocate = (e) => {
-      map.flyTo([e.detail.lat, e.detail.lng], 16, { animate: true, duration: 2 });
+      map.flyTo([e.detail.lat, e.detail.lng], 18, { animate: true, duration: 2 });
     };
     window.addEventListener('locate-command', handleLocate);
     return () => window.removeEventListener('locate-command', handleLocate);
@@ -131,20 +131,7 @@ export default function MapWidget({ markers = [], height = '400px', focusLocatio
 
   return (
     <div className="isolate" style={{ height, width: '100%', borderRadius: '14px', overflow: 'hidden', position: 'relative', zIndex: 0 }}>
-      
-      {/* 3D Radar Sweep Overlay */}
-      <div className="absolute inset-0 pointer-events-none z-[400] flex items-center justify-center overflow-hidden">
-        {/* Radar Spinner */}
-        <div className="absolute w-[150%] h-[150%] animate-radar-sweep rounded-full" style={{
-          background: 'conic-gradient(from 0deg at 50% 50%, rgba(16, 185, 129, 0) 0%, rgba(16, 185, 129, 0) 280deg, rgba(16, 185, 129, 0.05) 340deg, rgba(16, 185, 129, 0.4) 360deg)'
-        }}></div>
-        {/* Depth Grid / Crosshair */}
-        <div className="absolute w-full h-[1px] bg-emerald-500/10"></div>
-        <div className="absolute h-full w-[1px] bg-emerald-500/10"></div>
-        <div className="absolute w-32 h-32 border border-emerald-500/20 rounded-full flex items-center justify-center">
-          <div className="w-1.5 h-1.5 bg-emerald-500/80 rounded-full shadow-[0_0_10px_rgba(16,185,129,1)]"></div>
-        </div>
-      </div>
+
 
       {/* Locate Command Button (Google Maps Style) */}
       <button
@@ -314,15 +301,6 @@ export default function MapWidget({ markers = [], height = '400px', focusLocatio
           font-family: inherit;
           border: 2px solid #fff;
           box-shadow: 0 0 15px rgba(16, 185, 129, 0.5);
-        }
-
-        /* 3D Radar Animation */
-        @keyframes radar-sweep {
-          from { transform: rotate(0deg); }
-          to { transform: rotate(360deg); }
-        }
-        .animate-radar-sweep {
-          animation: radar-sweep 3s linear infinite;
         }
       `}</style>
     </div>
