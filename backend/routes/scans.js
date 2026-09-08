@@ -248,6 +248,17 @@ router.get('/debug-batches-latest', async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
+router.get('/migrate-geotags', async (req, res) => {
+  try {
+    const { sequelize } = require('../models');
+    await sequelize.query('ALTER TABLE batches ADD COLUMN IF NOT EXISTS latitude FLOAT;');
+    await sequelize.query('ALTER TABLE batches ADD COLUMN IF NOT EXISTS longitude FLOAT;');
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 router.post('/', requireAuth, (req, res, next) => {
   // Run multer first, then handle in callback to send 202 before pipeline
   upload.array('images', 4)(req, res, async (uploadErr) => {
@@ -306,6 +317,8 @@ router.post('/', requireAuth, (req, res, next) => {
             originalImage: JSON.stringify(cloudUrls),
             uploadedBy: req.user?.id || null,
             status: 'processing',
+            latitude: req.body.latitude ? parseFloat(req.body.latitude) : null,
+            longitude: req.body.longitude ? parseFloat(req.body.longitude) : null,
           });
         batch.productNameHint = productNameHint;
         batch.brandNameHint   = brandNameHint;

@@ -147,4 +147,48 @@ router.get('/products', requireAuth, async (req, res) => {
   }
 });
 
+// GET /api/dashboard/admin/officers
+// List all officers and their scanning metrics (Admin Only)
+router.get('/admin/officers', requireAuth, async (req, res) => {
+  try {
+    if (req.user.role !== 'admin') {
+      return res.status(403).json({ error: 'Access denied. Admins only.' });
+    }
+    const officers = await sequelize.query(`
+      SELECT 
+        u.id, 
+        u.name, 
+        u.email, 
+        COUNT(b.id) AS total_batches,
+        COUNT(s.id) AS total_scans,
+        COUNT(s.id) FILTER (WHERE s.overall_compliance IN ('POTENTIAL NON-COMPLIANCE', 'non_compliant')) AS non_compliant_scans
+      FROM users u
+      LEFT JOIN batches b ON b.uploaded_by = u.id
+      LEFT JOIN scans s ON s.batch_id = b.id
+      WHERE u.role = 'officer'
+      GROUP BY u.id, u.name, u.email
+      ORDER BY total_scans DESC
+    `, { type: QueryTypes.SELECT });
+
+    // Also get all geotagged batches for the admin map
+    const mapData = await sequelize.query(`
+      SELECT 
+        b.id, 
+        b.latitude, 
+        b.longitude, 
+        u.name as officer_name,
+        b.created_at
+      FROM batches b
+      JOIN users u ON u.id = b.uploaded_by
+      WHERE b.latitude IS NOT NULL AND b.longitude IS NOT NULL
+      ORDER BY b.created_at DESC
+      LIMIT 100
+    `, { type: QueryTypes.SELECT });
+
+    res.json({ success: true, data: { officers, mapData } });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 module.exports = router;

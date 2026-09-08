@@ -108,7 +108,9 @@ const Batch = sequelize.define('Batch', {
     defaultValue: 'processing',
     validate: { isIn: [['processing', 'completed', 'failed']] },
   },
-  errorMessage: {
+  latitude: { type: DataTypes.FLOAT, allowNull: true },
+    longitude: { type: DataTypes.FLOAT, allowNull: true },
+    errorMessage: {
     type: DataTypes.TEXT,
     allowNull: true,
     field: 'error_message',
