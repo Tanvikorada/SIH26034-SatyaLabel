@@ -170,19 +170,24 @@ router.get('/admin/officers', requireAuth, async (req, res) => {
       ORDER BY total_scans DESC
     `, { type: QueryTypes.SELECT });
 
-    // Also get all geotagged batches for the admin map
+    // Also get all geotagged batches and their scan data for the rich popups
     const mapData = await sequelize.query(`
       SELECT 
-        b.id, 
+        b.id as batch_id, 
         b.latitude, 
         b.longitude, 
         u.name as officer_name,
-        b.created_at
+        b.created_at,
+        s.id as scan_id,
+        s.original_image_url,
+        s.overall_compliance,
+        s.compliance_score
       FROM batches b
       JOIN users u ON u.id = b.uploaded_by
+      LEFT JOIN scans s ON s.batch_id = b.id
       WHERE b.latitude IS NOT NULL AND b.longitude IS NOT NULL
       ORDER BY b.created_at DESC
-      LIMIT 100
+      LIMIT 200
     `, { type: QueryTypes.SELECT });
 
     res.json({ success: true, data: { officers, mapData } });
