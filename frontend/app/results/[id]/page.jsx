@@ -4,6 +4,9 @@ import { useEffect, useState, use } from 'react';
 import { useRouter } from 'next/navigation';
 import NavBar from '../../../components/NavBar';
 import { toast } from 'sonner';
+import dynamic from 'next/dynamic';
+
+const MapWidget = dynamic(() => import('../../../components/MapWidget'), { ssr: false });
 
 function EvidenceImage({ src }) {
   const [error, setError] = useState(false);
@@ -658,16 +661,7 @@ export default function ResultsPage({ params }) {
                   Scan Location (GPS)
                 </h3>
                 <div className="w-full h-[250px] md:h-[350px] rounded-xl overflow-hidden border border-[var(--color-border)] relative">
-                  <iframe 
-                    width="100%" 
-                    height="100%" 
-                    frameBorder="0" 
-                    scrolling="no" 
-                    marginHeight="0" 
-                    marginWidth="0" 
-                    src={`https://www.openstreetmap.org/export/embed.html?bbox=${report.longitude - 0.005},${report.latitude - 0.005},${report.longitude + 0.005},${report.latitude + 0.005}&layer=mapnik&marker=${report.latitude},${report.longitude}`}
-                    style={{ border: 0, filter: 'invert(90%) hue-rotate(180deg) contrast(100%)' }} // Dark mode map trick
-                  ></iframe>
+                  <MapWidget markers={[{ lat: report.latitude, lng: report.longitude, popup: 'Scan Location' }]} height="100%" />
                 </div>
                 <p className="text-[11px] text-text-muted mt-3 text-right">LAT: {report.latitude.toFixed(6)} | LNG: {report.longitude.toFixed(6)}</p>
               </div>

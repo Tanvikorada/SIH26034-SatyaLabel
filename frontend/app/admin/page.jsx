@@ -3,6 +3,9 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import NavBar from '../../components/NavBar';
 import { toast } from 'sonner';
+import dynamic from 'next/dynamic';
+
+const MapWidget = dynamic(() => import('../../components/MapWidget'), { ssr: false });
 
 export default function AdminDashboard() {
   const router = useRouter();
@@ -115,29 +118,11 @@ export default function AdminDashboard() {
               <div className="glass rounded-[20px] p-2 border border-[var(--color-border)]">
                 <div className="w-full h-[400px] rounded-[14px] overflow-hidden relative bg-slate-900">
                   {mapData.length > 0 ? (
-                    <iframe 
-                      width="100%" 
-                      height="100%" 
-                      frameBorder="0" 
-                      scrolling="no" 
-                      marginHeight="0" 
-                      marginWidth="0" 
-                      src={`https://www.openstreetmap.org/export/embed.html?bbox=${Math.min(...mapData.map(d => d.longitude)) - 0.5},${Math.min(...mapData.map(d => d.latitude)) - 0.5},${Math.max(...mapData.map(d => d.longitude)) + 0.5},${Math.max(...mapData.map(d => d.latitude)) + 0.5}&layer=mapnik`}
-                      style={{ border: 0, filter: 'invert(90%) hue-rotate(180deg) contrast(100%)' }}
-                    ></iframe>
+                    <MapWidget markers={mapData} height="400px" />
                   ) : (
                     <div className="w-full h-full flex flex-col items-center justify-center text-text-muted text-[13px] gap-3">
                       <svg className="w-8 h-8 opacity-50" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                       No geotagged scans yet.
-                    </div>
-                  )}
-                  {/* Overlay markers manually since iframe embed only supports 1 marker */}
-                  {mapData.length > 0 && (
-                    <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
-                      <div className="bg-background/80 backdrop-blur-sm px-3 py-1.5 rounded-full border border-[var(--color-border)] shadow-lg flex items-center gap-2">
-                        <svg className="w-3 h-3 text-accent" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0c-4.198 0-8 3.403-8 7.602 0 4.198 3.469 9.21 8 16.398 4.531-7.188 8-12.2 8-16.398 0-4.199-3.801-7.602-8-7.602zm0 11c-1.657 0-3-1.343-3-3s1.343-3 3-3 3 1.343 3 3-1.343 3-3 3z"/></svg>
-                        <span className="text-[11px] font-medium">{mapData.length} Recent Geotags</span>
-                      </div>
                     </div>
                   )}
                 </div>
