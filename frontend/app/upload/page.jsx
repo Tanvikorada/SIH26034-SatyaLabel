@@ -18,6 +18,17 @@ export default function UploadPage() {
   const [productName, setProductName] = useState('');
   const [sourceType, setSourceType] = useState('physical_label');
   const [logs, setLogs] = useState([]);
+  const [location, setLocation] = useState(null);
+  const [locError, setLocError] = useState(null);
+
+  useEffect(() => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (pos) => setLocation({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
+        (err) => setLocError('Location access denied')
+      );
+    }
+  }, []);
 
   useEffect(() => {
     if (!sessionStorage.getItem('token')) router.push('/login');
@@ -63,6 +74,10 @@ export default function UploadPage() {
       files.forEach(f => formData.append('images', f));
       formData.append('product_name', productName || '');
       formData.append('source_type', sourceType || 'physical_label');
+      if (location) {
+        formData.append('latitude', location.lat);
+        formData.append('longitude', location.lng);
+      }
       if (rawText) formData.append('raw_text', rawText);
 
       const res = await fetch(`${API}/scans`, {
@@ -151,7 +166,19 @@ export default function UploadPage() {
         <div className="grid grid-cols-1 md:grid-cols-5 gap-0 md:gap-6 flex-1 md:flex-none min-h-[calc(100vh-140px)] h-auto md:h-auto">
           <form onSubmit={handleUpload} className="mello-card p-4 md:p-8 col-span-3 flex flex-col gap-4 md:gap-6 h-full md:h-auto border-0 md:border md:shadow-sm bg-transparent md:bg-[var(--color-surface)]">
             <div className="flex flex-col gap-2">
-              <label className="text-[10px] font-mono tracking-[0.2em] uppercase text-text-primary">Product Image</label>
+              <div className="flex items-center justify-between">
+                <label className="text-[10px] font-mono tracking-[0.2em] uppercase text-text-primary">Product Image</label>
+                {location ? (
+                  <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 flex items-center gap-1">
+                    <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+                    GPS Active
+                  </span>
+                ) : (
+                  <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-slate-500/10 text-slate-500 border border-slate-500/20 flex items-center gap-1">
+                    {locError || 'Acquiring GPS...'}
+                  </span>
+                )}
+              </div>
               <div className="relative w-full flex-1 min-h-[200px] border-none sm:border-2 sm:border-dashed sm:border-slate-300 sm:hover:border-primary flex flex-col items-center justify-center rounded-2xl transition-colors bg-transparent sm:bg-slate-50">
                 {previews.length > 0 ? (
                   <div className="w-full flex flex-col gap-4">
