@@ -179,7 +179,7 @@ router.get('/admin/officers', requireAuth, async (req, res) => {
         u.name as officer_name,
         b.created_at,
         s.id as scan_id,
-        s.original_image_url,
+        s.image_path as original_image_url,
         s.overall_compliance,
         s.compliance_score,
         s.extracted_fields as extracted_data
