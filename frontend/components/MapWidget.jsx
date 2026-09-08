@@ -130,7 +130,7 @@ export default function MapWidget({ markers = [], height = '400px', focusLocatio
   };
 
   return (
-    <div style={{ height, width: '100%', borderRadius: '14px', overflow: 'hidden', position: 'relative' }}>
+    <div className="isolate" style={{ height, width: '100%', borderRadius: '14px', overflow: 'hidden', position: 'relative', zIndex: 0 }}>
       
       {/* 3D Radar Sweep Overlay */}
       <div className="absolute inset-0 pointer-events-none z-[400] flex items-center justify-center overflow-hidden">
