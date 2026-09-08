@@ -20,7 +20,7 @@ const { z } = require('zod');
 // ─── CONSTANTS ────────────────────────────────────────────────────────────────
 
 const MAX_DIMENSION_PX = 1400;         // Resize to max 1400px on longest edge for OCR accuracy
-const MIN_DIMENSION_PX = 600;           // Spec: reject below 600px shortest edge
+const MIN_DIMENSION_PX = 300;           // Spec: reject below 600px shortest edge
 const MIN_OCR_TEXT_LENGTH = 20;         // Below this = "no readable text"
 const OCR_CONFIDENCE_THRESHOLD = config.ocr?.confidenceThreshold ?? 50; // % below which Gemini kicks in
         // 45s timeout for Gemini API call
