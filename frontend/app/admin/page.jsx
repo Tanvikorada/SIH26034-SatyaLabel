@@ -27,8 +27,8 @@ export default function AdminDashboard() {
 
     const fetchAdminData = async () => {
       try {
-        const res = await fetch(\\/dashboard/admin/officers\, {
-          headers: { 'Authorization': \Bearer \\ }
+        const res = await fetch(`${API}/dashboard/admin/officers`, {
+          headers: { 'Authorization': `Bearer ${token}` }
         });
         const json = await res.json();
         if (!res.ok) throw new Error(json.error?.message || 'Failed to fetch admin data');
@@ -122,7 +122,7 @@ export default function AdminDashboard() {
                       scrolling="no" 
                       marginHeight="0" 
                       marginWidth="0" 
-                      src={\https://www.openstreetmap.org/export/embed.html?bbox=\,\,\,\&layer=mapnik\}
+                      src={`https://www.openstreetmap.org/export/embed.html?bbox=${Math.min(...mapData.map(d => d.longitude)) - 0.5},${Math.min(...mapData.map(d => d.latitude)) - 0.5},${Math.max(...mapData.map(d => d.longitude)) + 0.5},${Math.max(...mapData.map(d => d.latitude)) + 0.5}&layer=mapnik`}
                       style={{ border: 0, filter: 'invert(90%) hue-rotate(180deg) contrast(100%)' }}
                     ></iframe>
                   ) : (
