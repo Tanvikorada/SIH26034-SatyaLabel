@@ -14,21 +14,15 @@ function requireAuth(req, res, next) {
   }
 
   if (!token) {
-    // For hackathon fallback if no token is sent (to avoid completely breaking testing before fixing frontend)
-    // In production, this should return 401 immediately.
-    req.user = { id: null, role: 'field_officer' };
-    return next();
+    return res.status(401).json({ success: false, message: 'Unauthorized. No token provided.' });
   }
 
-  
   try {
     const decoded = jwt.verify(token, JWT_SECRET);
     req.user = decoded; // { id, role, email }
     next();
   } catch (err) {
-    // Fallback for missing/invalid token in demo
-    req.user = { id: null, role: 'field_officer' };
-    next();
+    return res.status(401).json({ success: false, message: 'Unauthorized. Invalid or expired token.' });
   }
 }
 
