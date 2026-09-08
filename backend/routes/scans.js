@@ -397,7 +397,7 @@ router.get('/debug-ai-ping', async (req, res) => {
     try {
       const c1 = new AbortController();
       const t1 = setTimeout(() => c1.abort(), 10000);
-      const r1 = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${config.gemini.apiKey}`, {
+      const r1 = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${config.gemini.apiKey}`, {
         method: 'POST', headers:{'Content-Type':'application/json'},
         body: JSON.stringify({contents:[{parts:[{text:"Reply 'pong'"}]}]}), signal: c1.signal
       });
