@@ -176,7 +176,7 @@ export default function MapWidget({ markers = [], height = '400px', focusLocatio
                             color: getStatusColor(marker.overall_compliance),
                             border: `1px solid ${getStatusColor(marker.overall_compliance)}40`
                           }}>
-                            {marker.overall_compliance === 'POTENTIAL NON-COMPLIANCE' ? 'FAIL' : marker.overall_compliance.toUpperCase()}
+                            {marker.overall_compliance === 'POTENTIAL NON-COMPLIANCE' ? 'FAIL' : (marker.overall_compliance || 'UNKNOWN').toUpperCase()}
                           </span>
                         </div>
                       </div>
