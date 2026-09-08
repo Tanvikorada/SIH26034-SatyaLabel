@@ -1,3 +1,6 @@
+const cheerio = require('cheerio');
+const axios = require('axios');
+const fs = require('fs');
 // backend/routes/scans.js
 // ============================================================
 // Scan routes — Spec 05 API
@@ -239,23 +242,66 @@ async function runBatchPipeline(batch, imagePath, metadata = {}) {
 //   product_name — optional hint (used if OCR misses it)
 //   brand_name   — optional hint
 
-router.get('/debug-batches-latest', async (req, res) => {
+// ==========================================
+// PHASE 1 UPGRADE: E-Commerce Web Patrol
+// ==========================================
+router.post('/url', requireAuth, async (req, res) => {
   try {
+    const { url, product_name, category, source_type = 'ecommerce_listing', forceEngine } = req.body;
+    if (!url) return res.status(400).json({ success: false, message: 'URL is required.' });
+
+    // 1. Scrape the URL
+    const { data: html } = await axios.get(url, {
+      headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36' }
+    });
+    
+    const $ = cheerio.load(html);
+    let imageUrl = $('meta[property="og:image"]').attr('content');
+    
+    if (!imageUrl) imageUrl = $('#landingImage').attr('src'); // Amazon
+    if (!imageUrl) imageUrl = $('img').first().attr('src'); // Fallback
+    
+    if (!imageUrl) {
+      return res.status(400).json({ success: false, message: 'Could not extract product image from URL.' });
+    }
+    
+    if (imageUrl.startsWith('/')) {
+       const urlObj = new URL(url);
+       imageUrl = `${urlObj.protocol}//${urlObj.host}${imageUrl}`;
+    }
+
+    // 2. Download the Image
+    const { data: imageBuffer } = await axios.get(imageUrl, { responseType: 'arraybuffer' });
+    
+    // Save to temp file so pipeline can process it
+    const tempFileName = Date.now() + '_webpatrol.jpg';
+    const tempPath = require('path').join(__dirname, '../uploads', tempFileName);
+    fs.writeFileSync(tempPath, imageBuffer);
+    
+    const cUrl = 'data:image/jpeg;base64,' + imageBuffer.toString('base64');
+    
+    // 3. Create Batch
     const { Batch } = require('../models');
-    const batches = await Batch.findAll({ limit: 3, order: [['created_at', 'DESC']] });
-    res.json(batches);
+    const batch = await Batch.create({
+      originalImage: JSON.stringify([cUrl]),
+      uploadedBy: req.user?.id || null,
+      status: 'processing',
+      latitude: req.body.latitude ? parseFloat(req.body.latitude) : null,
+      longitude: req.body.longitude ? parseFloat(req.body.longitude) : null,
+    });
+    batch.productNameHint = product_name || null;
+    batch.sourceType = source_type;
+
+    // 4. Return immediately for SSE
+    res.status(202).json({ success: true, data: { batch_id: batch.id, status: 'processing' } });
+
+    // 5. Run the background pipeline
+    const { runBatchPipeline } = require('../services/ocr_service');
+    setImmediate(() => runBatchPipeline(batch, [tempPath], { forceEngine }));
+
   } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
-router.get('/migrate-geotags', async (req, res) => {
-  try {
-    const { sequelize } = require('../models');
-    await sequelize.query('ALTER TABLE batches ADD COLUMN IF NOT EXISTS latitude FLOAT;');
-    await sequelize.query('ALTER TABLE batches ADD COLUMN IF NOT EXISTS longitude FLOAT;');
-    res.json({ success: true });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error('URL Patrol Error:', err);
+    res.status(500).json({ success: false, message: err.message });
   }
 });
 
