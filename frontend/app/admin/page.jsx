@@ -133,7 +133,6 @@ export default function AdminDashboard() {
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {highRiskBrands.map((brand, idx) => (
-                    <div key={idx} className="glass rounded-[16px] p-4 border border-red-500/20 relative overflow-hidden group">
                     <div key={idx} className="glass rounded-[16px] p-4 border border-[var(--color-noncompliant)]/20 relative overflow-hidden group">
                       <div className="absolute top-0 right-0 w-32 h-32 bg-[var(--color-noncompliant)]/5 rounded-full blur-2xl -mr-10 -mt-10 pointer-events-none"></div>
                       <div className="flex justify-between items-start mb-2 relative">
