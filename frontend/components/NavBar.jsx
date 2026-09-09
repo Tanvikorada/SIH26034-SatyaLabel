@@ -28,7 +28,8 @@ export default function NavBar() {
     { name: 'History', path: '/history' },
     ...(role === 'admin' ? [
       { name: 'Rules Config', path: '/rules' },
-      { name: 'Central Command', path: '/admin' }
+      { name: 'Central Command', path: '/admin' },
+      { name: 'Public Grievances', path: '/admin/reports' }
     ] : []),
     { name: 'Settings', path: '/settings' }
   ];
