@@ -8,6 +8,21 @@ export default function ThreatGraph() {
   const [data, setData] = useState({ nodes: [], edges: [] });
   const [loading, setLoading] = useState(true);
   const fgRef = useRef();
+  const containerRef = useRef(null);
+  const [dimensions, setDimensions] = useState({ width: 800 });
+
+  useEffect(() => {
+    if (containerRef.current) {
+      setDimensions({ width: containerRef.current.offsetWidth });
+      const handleResize = () => {
+        if (containerRef.current) {
+          setDimensions({ width: containerRef.current.offsetWidth });
+        }
+      };
+      window.addEventListener('resize', handleResize);
+      return () => window.removeEventListener('resize', handleResize);
+    }
+  }, [loading]);
 
   useEffect(() => {
     const fetchGraph = async () => {
