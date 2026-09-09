@@ -93,7 +93,7 @@ export default function AdminDashboard() {
             <h1 className="text-[32px] font-medium tracking-tight leading-[1.1] mb-2">Central Command</h1>
             <p className="text-[15px] text-text-secondary">Enterprise Enforcement & Monitoring Console.</p>
           </div>
-          <button onClick={() => setShowQR(true)} className="bg-gradient-to-r from-amber-500 to-orange-600 text-white px-6 py-3 rounded-xl font-bold shadow-[0_0_20px_rgba(245,158,11,0.4)] flex items-center gap-2 hover:scale-105 transition-transform">
+          <button onClick={() => setShowQR(true)} className="flex items-center gap-2 px-4 py-2.5 bg-white dark:bg-[#11131a] border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 rounded-[12px] font-semibold text-[13px] hover:border-orange-500 hover:text-orange-500 dark:hover:border-orange-500/50 dark:hover:text-orange-400 shadow-sm transition-all">
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm14 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z" /></svg>
             Jury Live Demo QR
           </button>
@@ -133,14 +133,14 @@ export default function AdminDashboard() {
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {highRiskBrands.map((brand, idx) => (
-                    <div key={idx} className="glass rounded-[16px] p-4 border border-[var(--color-noncompliant)]/20 relative overflow-hidden group">
+                    <div key={idx} className="bg-white dark:bg-[#11131a] rounded-[16px] p-5 border border-slate-200 dark:border-slate-800/80 hover:border-red-500/30 transition-all relative overflow-hidden group shadow-sm">
                       <div className="absolute top-0 right-0 w-32 h-32 bg-[var(--color-noncompliant)]/5 rounded-full blur-2xl -mr-10 -mt-10 pointer-events-none"></div>
                       <div className="flex justify-between items-start mb-2 relative">
                         <div>
                           <h3 className="font-bold text-text-primary text-[15px]">{brand.product_name}</h3>
                           <p className="text-[12px] text-text-muted">{brand.brand_name || 'Unknown Manufacturer'}</p>
                         </div>
-                        <span className="bg-[var(--color-noncompliant)]/10 text-[var(--color-noncompliant)] text-[10px] px-2 py-0.5 rounded-sm border border-[var(--color-noncompliant)]/20 font-bold tracking-wider">
+                        <span className="bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-400 text-[10px] px-2.5 py-1 rounded-md border border-red-200 dark:border-red-500/20 font-bold tracking-widest uppercase">
                           CRITICAL
                         </span>
                       </div>
@@ -150,7 +150,7 @@ export default function AdminDashboard() {
                           <span className="text-[var(--color-noncompliant)] font-medium">Violations: {brand.violations}</span>
                         </div>
                         <div className="w-full bg-[var(--color-border)] rounded-full h-1.5 overflow-hidden">
-                          <div className="bg-[var(--color-noncompliant)] h-1.5 rounded-full" style={{ width: `${Math.min((brand.violations / brand.total_scans) * 100, 100)}%` }}></div>
+                          <div className="bg-gradient-to-r from-orange-400 to-red-500 dark:from-orange-500/80 dark:to-red-500/80 h-1.5 rounded-full" style={{ width: `${Math.min((brand.violations / brand.total_scans) * 100, 100)}%` }}></div>
                         </div>
                       </div>
                     </div>
@@ -226,7 +226,7 @@ export default function AdminDashboard() {
                 <div className="flex gap-1 bg-[var(--color-surface)] p-1 rounded-lg border border-[var(--color-border)] shadow-sm">
                   <button 
                     onClick={() => setMapMode('cluster')}
-                    className={`text-[11px] px-3 py-1 rounded-md transition-all ${mapMode === 'cluster' ? 'bg-[var(--color-border)] text-text-primary font-bold' : 'text-text-muted hover:text-text-primary'}`}
+                    className={`text-[11px] px-3 py-1 rounded-md transition-all ${mapMode === 'cluster' ? 'bg-white dark:bg-slate-800 text-slate-900 dark:text-white font-bold shadow-sm' : 'text-text-muted hover:text-text-primary'}`}
                   >
                     Feed
                   </button>
@@ -302,3 +302,4 @@ export default function AdminDashboard() {
     </div>
   );
 }
+
