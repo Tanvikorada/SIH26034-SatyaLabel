@@ -294,7 +294,6 @@ router.post('/url', requireAuth, async (req, res) => {
     res.status(202).json({ success: true, data: { batch_id: batch.id, status: 'processing' } });
 
     // 5. Run the background pipeline
-    const { runBatchPipeline } = require('../services/ocr_service');
     setImmediate(() => runBatchPipeline(batch, [tempPath], { forceEngine }));
 
   } catch (err) {
