@@ -37,32 +37,34 @@ export default function ThreatGraph() {
   if (loading) return <div className="skeleton w-full h-[500px] rounded-2xl"></div>;
 
   if (data.nodes.length === 0) {
-    return <div className="w-full h-[500px] bg-slate-900 rounded-2xl flex items-center justify-center text-slate-500">No network data available</div>;
+    return <div className="w-full h-[500px] glass rounded-2xl flex items-center justify-center text-text-muted">No network data available</div>;
   }
 
   return (
-    <div className="w-full h-[500px] bg-slate-900 rounded-2xl overflow-hidden border border-slate-700 relative shadow-2xl">
-      <div className="absolute top-4 left-4 z-10 pointer-events-none">
-        <h3 className="text-white font-bold tracking-tight text-lg drop-shadow-md">Kingpin Threat Network</h3>
-        <p className="text-slate-400 text-xs">Real-time non-compliance syndicates</p>
+    <div className="w-full h-[500px] glass rounded-2xl overflow-hidden relative shadow-sm" ref={containerRef}>
+      <div className="absolute top-4 left-6 z-10 pointer-events-none">
+        <h3 className="text-text-primary font-bold tracking-tight text-lg">Kingpin Threat Network</h3>
+        <p className="text-text-muted text-xs">Real-time non-compliance syndicates</p>
       </div>
       <ForceGraph2D
         ref={fgRef}
+        width={dimensions.width}
+        height={500}
         graphData={{ nodes: data.nodes, links: data.edges }}
+        nodeLabel="name"
         nodeColor={node => {
-          if (node.group === 'authority') return '#3b82f6';
-          if (node.group === 'threat') return '#ef4444';
-          if (node.group === 'brand') return '#f59e0b';
-          if (node.group === 'violation') return '#f87171';
-          return '#10b981';
+          if (node.type === 'manufacturer') return '#F59E0B';
+          if (node.type === 'brand') return '#6366f1';
+          return '#F87171';
         }}
-        nodeRelSize={4}
-        nodeVal={node => node.size || 5}
+        nodeRelSize={6}
         linkColor={() => 'rgba(255,255,255,0.1)'}
-        linkWidth={1}
-        onNodeClick={handleNodeClick}
-        nodeLabel="label"
-        backgroundColor="#0f172a"
+        linkWidth={1.5}
+        backgroundColor="rgba(0,0,0,0)"
+        onNodeClick={node => {
+          console.log('Node clicked:', node);
+          handleNodeClick(node);
+        }}
         cooldownTicks={100}
       />
     </div>

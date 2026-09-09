@@ -134,23 +134,24 @@ export default function AdminDashboard() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {highRiskBrands.map((brand, idx) => (
                     <div key={idx} className="glass rounded-[16px] p-4 border border-red-500/20 relative overflow-hidden group">
-                      <div className="absolute top-0 right-0 w-32 h-32 bg-red-500/5 rounded-full blur-2xl -mr-10 -mt-10 pointer-events-none"></div>
+                    <div key={idx} className="glass rounded-[16px] p-4 border border-[var(--color-noncompliant)]/20 relative overflow-hidden group">
+                      <div className="absolute top-0 right-0 w-32 h-32 bg-[var(--color-noncompliant)]/5 rounded-full blur-2xl -mr-10 -mt-10 pointer-events-none"></div>
                       <div className="flex justify-between items-start mb-2 relative">
                         <div>
                           <h3 className="font-bold text-text-primary text-[15px]">{brand.product_name}</h3>
                           <p className="text-[12px] text-text-muted">{brand.brand_name || 'Unknown Manufacturer'}</p>
                         </div>
-                        <span className="bg-red-500/10 text-red-500 text-[10px] px-2 py-0.5 rounded-sm border border-red-500/20 font-bold tracking-wider">
+                        <span className="bg-[var(--color-noncompliant)]/10 text-[var(--color-noncompliant)] text-[10px] px-2 py-0.5 rounded-sm border border-[var(--color-noncompliant)]/20 font-bold tracking-wider">
                           CRITICAL
                         </span>
                       </div>
                       <div className="mt-3">
                         <div className="flex justify-between text-[11px] mb-1">
                           <span className="text-text-muted">Total Scans: {brand.total_scans}</span>
-                          <span className="text-red-500 font-medium">Violations: {brand.violations}</span>
+                          <span className="text-[var(--color-noncompliant)] font-medium">Violations: {brand.violations}</span>
                         </div>
                         <div className="w-full bg-[var(--color-border)] rounded-full h-1.5 overflow-hidden">
-                          <div className="bg-red-500 h-1.5 rounded-full" style={{ width: `${Math.min((brand.violations / brand.total_scans) * 100, 100)}%` }}></div>
+                          <div className="bg-[var(--color-noncompliant)] h-1.5 rounded-full" style={{ width: `${Math.min((brand.violations / brand.total_scans) * 100, 100)}%` }}></div>
                         </div>
                       </div>
                     </div>
@@ -189,7 +190,7 @@ export default function AdminDashboard() {
                           >
                             <td className="p-4">
                               <div className="flex items-center gap-3">
-                                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-accent to-emerald-500 flex items-center justify-center text-white font-bold text-[12px] shadow-sm">
+                                <div className="w-8 h-8 rounded-full bg-accent text-white flex items-center justify-center font-bold text-[12px] shadow-sm">
                                   {officer.name ? officer.name.charAt(0).toUpperCase() : 'O'}
                                 </div>
                                 <div>
@@ -200,7 +201,7 @@ export default function AdminDashboard() {
                             </td>
                             <td className="p-4 tabular-nums text-text-primary">{officer.total_batches || 0}</td>
                             <td className="p-4 tabular-nums text-text-primary">{officer.total_scans || 0}</td>
-                            <td className="p-4 tabular-nums text-red-500 font-medium">{officer.non_compliant_scans || 0}</td>
+                            <td className="p-4 tabular-nums text-[var(--color-noncompliant)] font-medium">{officer.non_compliant_scans || 0}</td>
                           </tr>
                         ))}
                         {officers.length === 0 && (
@@ -218,38 +219,37 @@ export default function AdminDashboard() {
               <div className="flex items-center justify-between">
                 <h2 className="text-[18px] font-medium text-text-primary flex items-center gap-2">
                   Tactical Map
-                  <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 border border-emerald-500/20 flex items-center gap-1">
-                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping"></span> Live
+                  <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-pass-bg text-pass border border-pass/20 flex items-center gap-1">
+                    <span className="w-1.5 h-1.5 rounded-full bg-pass animate-ping"></span> Live
                   </span>
                 </h2>
                 
-                {/* Advanced Mode Toggles */}
-                    <div className="flex gap-1 bg-[var(--color-surface)] p-1 rounded-lg border border-[var(--color-border)] shadow-sm">
-                      <button 
-                        onClick={() => setMapMode('cluster')}
-                        className={`text-[11px] px-3 py-1 rounded-md transition-all ${mapMode === 'cluster' ? 'bg-emerald-500/10 text-emerald-600 font-bold border border-emerald-500/20' : 'text-text-muted hover:text-text-primary'}`}
-                      >
-                        Feed
-                      </button>
-                      <button 
-                        onClick={() => setMapMode('heatmap')}
-                        className={`text-[11px] px-3 py-1 rounded-md transition-all ${mapMode === 'heatmap' ? 'bg-red-500/10 text-red-600 font-bold border border-red-500/20' : 'text-text-muted hover:text-text-primary'}`}
-                      >
-                        Threats
-                      </button>
-                      <button 
-                        onClick={() => setMapMode('forecast')}
-                        className={`text-[11px] px-3 py-1 rounded-md transition-all ${mapMode === 'forecast' ? 'bg-amber-500/10 text-amber-600 font-bold border border-amber-500/20' : 'text-text-muted hover:text-text-primary'}`}
-                      >
-                        Forecast
-                      </button>
-                    </div>
+                <div className="flex gap-1 bg-[var(--color-surface)] p-1 rounded-lg border border-[var(--color-border)] shadow-sm">
+                  <button 
+                    onClick={() => setMapMode('cluster')}
+                    className={`text-[11px] px-3 py-1 rounded-md transition-all ${mapMode === 'cluster' ? 'bg-[var(--color-border)] text-text-primary font-bold' : 'text-text-muted hover:text-text-primary'}`}
+                  >
+                    Feed
+                  </button>
+                  <button 
+                    onClick={() => setMapMode('heatmap')}
+                    className={`text-[11px] px-3 py-1 rounded-md transition-all ${mapMode === 'heatmap' ? 'bg-noncompliant-bg text-noncompliant font-bold border border-noncompliant/20' : 'text-text-muted hover:text-text-primary'}`}
+                  >
+                    Threats
+                  </button>
+                  <button 
+                    onClick={() => setMapMode('forecast')}
+                    className={`text-[11px] px-3 py-1 rounded-md transition-all ${mapMode === 'forecast' ? 'bg-review-bg text-review font-bold border border-review/20' : 'text-text-muted hover:text-text-primary'}`}
+                  >
+                    Forecast
+                  </button>
+                </div>
               </div>
 
               <div className="glass rounded-[20px] p-2 border border-[var(--color-border)] relative shadow-sm">
                 <div className="w-full h-[450px] rounded-[14px] overflow-hidden relative bg-[var(--color-surface)]">
                   {mapData.length > 0 ? (
-                                        <MapWidget 
+                    <MapWidget 
                       markers={mapMode === 'forecast' ? forecastData : mapData} 
                       height="100%" 
                       mode={mapMode} 
@@ -265,15 +265,15 @@ export default function AdminDashboard() {
               </div>
 
               {/* Action: Dispatch Task Force */}
-              <button 
-                onClick={handleDispatch}
-                disabled={isDeploying || mapData.length === 0}
-                className={`w-full py-3.5 rounded-[14px] font-bold text-[14px] flex items-center justify-center gap-2 transition-all ${
-                  isDeploying 
-                  ? 'bg-[var(--color-border)] text-text-muted cursor-not-allowed' 
-                  : 'bg-red-600 text-white shadow-sm hover:bg-red-700 hover:shadow-md border border-red-700'
-                }`}
-              >
+                <button 
+                  onClick={handleDispatch}
+                  disabled={isDeploying || mapData.length === 0}
+                  className={`btn w-full py-4 text-sm tracking-wide ${
+                    isDeploying || mapData.length === 0
+                    ? 'opacity-50 cursor-not-allowed bg-[var(--color-surface)] text-text-muted' 
+                    : 'bg-[var(--color-noncompliant)] text-white shadow-[0_0_20px_rgba(239,68,68,0.4)] hover:shadow-[0_0_30px_rgba(239,68,68,0.6)] border-none'
+                  }`}
+                >
                 {isDeploying ? (
                   <>
                     <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
