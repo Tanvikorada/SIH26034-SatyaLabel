@@ -311,8 +311,10 @@ router.post('/url', requireAuth, async (req, res) => {
          msg = 'Connection timed out. The website is too slow or blocking our scanner.';
       } else if (err.response && (err.response.status === 403 || err.response.status === 503)) {
          msg = 'The website blocked our automated scanner (anti-bot protection). Please use screenshot upload instead.';
+      } else if (err.message.includes('Invalid URL')) {
+         msg = 'Invalid URL format. Please include http:// or https://.';
       }
-      res.status(500).json({ success: false, message: msg });
+      res.status(400).json({ success: false, message: msg });
     }
 });
 
