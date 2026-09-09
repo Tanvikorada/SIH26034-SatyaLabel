@@ -153,7 +153,23 @@ router.post('/debug-url', async (req, res) => {
   }
 });
 
+
+router.get('/debug-recent', async (req, res) => {
+  try {
+    const { Batch, Scan } = require('../models');
+    const batches = await Batch.findAll({
+      order: [['created_at', 'DESC']],
+      limit: 3,
+      include: [{ model: Scan, as: 'scans' }]
+    });
+    res.json({ success: true, batches });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
 module.exports = router;
+
 
 
 
