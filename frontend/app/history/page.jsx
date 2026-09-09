@@ -27,7 +27,7 @@ function DeleteModal({ onConfirm, onCancel }) {
             Delete
           </button>
         </div>
-      </main>
+      </div>
     </div>
   );
 }

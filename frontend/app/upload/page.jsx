@@ -178,9 +178,10 @@ export default function UploadPage() {
       <main className="max-w-[1000px] mx-auto px-6 py-12 animate-fade-in relative z-10">
         <header className="mb-10">
           <h1 className="text-[32px] font-medium tracking-tight leading-[1.1] mb-2">Initialize Scan</h1>
-        <p className="text-[15px] text-text-secondary mb-10 flex items-center gap-3">
-          <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> OCR Pipeline Active. Awaiting payload.
-        </p>
+          <p className="text-[15px] text-text-secondary flex items-center gap-3">
+            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> OCR Pipeline Active. Awaiting payload.
+          </p>
+        </header>
 
         {/* Phase 1 Upgrade: Mode Tabs */}
           <div className="flex bg-[var(--color-border)] p-1 rounded-xl w-full max-w-[300px] mb-2 mx-auto md:mx-0">
@@ -344,7 +345,7 @@ export default function UploadPage() {
             </div>
           </div>
         </div>
-      </div>
+      </main>
     </div>
   );
 }
