@@ -250,7 +250,12 @@ router.post('/url', requireAuth, async (req, res) => {
 
     // 1. Scrape the URL
     const { data: html } = await axios.get(url, {
-      headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36' }
+      timeout: 8000,
+      headers: { 
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+        'Accept-Language': 'en-US,en;q=0.5'
+      }
     });
     
     const $ = cheerio.load(html);
@@ -260,7 +265,7 @@ router.post('/url', requireAuth, async (req, res) => {
     if (!imageUrl) imageUrl = $('img').first().attr('src'); // Fallback
     
     if (!imageUrl) {
-      return res.status(400).json({ success: false, message: 'Could not extract product image from URL.' });
+      return res.status(400).json({ success: false, message: 'Could not extract product image from URL. The site might be blocking scrapers. Please use screenshot upload instead.' });
     }
     
     if (imageUrl.startsWith('/')) {
@@ -269,7 +274,10 @@ router.post('/url', requireAuth, async (req, res) => {
     }
 
     // 2. Download the Image
-    const { data: imageBuffer } = await axios.get(imageUrl, { responseType: 'arraybuffer' });
+    const { data: imageBuffer } = await axios.get(imageUrl, { 
+      responseType: 'arraybuffer',
+      timeout: 8000 
+    });
     
     // Save to temp file so pipeline can process it
     const tempFileName = Date.now() + '_webpatrol.jpg';
@@ -296,10 +304,16 @@ router.post('/url', requireAuth, async (req, res) => {
     // 5. Run the background pipeline
     setImmediate(() => runBatchPipeline(batch, [tempPath], { forceEngine }));
 
-  } catch (err) {
-    console.error('URL Patrol Error:', err);
-    res.status(500).json({ success: false, message: err.message });
-  }
+    } catch (err) {
+      console.error('URL Patrol Error:', err.message);
+      let msg = err.message;
+      if (err.code === 'ECONNABORTED' || err.message.includes('timeout')) {
+         msg = 'Connection timed out. The website is too slow or blocking our scanner.';
+      } else if (err.response && (err.response.status === 403 || err.response.status === 503)) {
+         msg = 'The website blocked our automated scanner (anti-bot protection). Please use screenshot upload instead.';
+      }
+      res.status(500).json({ success: false, message: msg });
+    }
 });
 
 router.post('/', requireAuth, (req, res, next) => {
