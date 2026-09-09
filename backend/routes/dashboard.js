@@ -220,9 +220,10 @@ router.get('/admin/officers', requireAuth, async (req, res) => {
 router.get('/network', requireAuth, async (req, res) => {
   try {
     const rawScans = await sequelize.query(`
-      SELECT id, product_name, extracted_fields, overall_compliance
-      FROM scans
-      ORDER BY created_at DESC
+      SELECT s.id, p.product_name, s.extracted_fields, s.overall_compliance
+      FROM scans s
+      LEFT JOIN products p ON s.product_id = p.id
+      ORDER BY s.created_at DESC
       LIMIT 200
     `, { type: QueryTypes.SELECT });
 
