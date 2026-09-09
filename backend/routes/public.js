@@ -47,4 +47,22 @@ router.post('/report', (req, res, next) => {
   });
 });
 
+
+// TEMP DEBUG ROUTE
+const { sequelize, QueryTypes } = require('../models');
+router.get('/debug-network', async (req, res) => {
+  try {
+    const rawScans = await sequelize.query(`
+      SELECT id, product_name, extracted_fields, overall_compliance
+      FROM scans
+      ORDER BY created_at DESC
+      LIMIT 200
+    `, { type: sequelize.QueryTypes || QueryTypes.SELECT });
+    res.json({ success: true, count: rawScans.length, data: rawScans });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message, stack: err.stack });
+  }
+});
+
 module.exports = router;
+
