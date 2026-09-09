@@ -64,5 +64,25 @@ router.get('/debug-network', async (req, res) => {
   }
 });
 
+
+router.get('/debug-batch/:id', async (req, res) => {
+  try {
+    const { Batch, Scan, Product } = require('../models');
+    const batch = await Batch.findByPk(req.params.id, {
+      include: [{ 
+        model: Scan, 
+        as: 'scans',
+        include: [{ model: Product, as: 'product' }]
+      }]
+    });
+
+    if (!batch) return res.status(404).json({ error: 'Not found' });
+    res.json({ success: true, batch });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message, stack: err.stack });
+  }
+});
+
 module.exports = router;
+
 
