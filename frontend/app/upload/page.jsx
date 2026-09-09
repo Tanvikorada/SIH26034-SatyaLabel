@@ -59,11 +59,12 @@ export default function UploadPage() {
         headers: { 'Authorization': `Bearer ${sessionStorage.getItem('token')}` }
       });
       const json = await res.json();
-      if(json.status === 'complete' || json.status === 'completed') {
-        return json.scanId || json.scan_id;
+      const payload = json.data || json;
+      if(payload.status === 'complete' || payload.status === 'completed') {
+        return payload.scans?.[0]?.id || payload.scanId || payload.scan_id;
       }
-      if(json.status === 'failed') {
-        throw new Error(json.errorMessage || 'AI Analysis failed');
+      if(payload.status === 'failed') {
+        throw new Error(payload.error_message || payload.errorMessage || 'AI Analysis failed');
       }
       await new Promise(r => setTimeout(r, 2000));
       attempts++;
