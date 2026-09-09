@@ -227,7 +227,7 @@ export default function Dashboard() {
 
         {/* ── PHASE 4: Worst Offenders Brand Leaderboard ── */}
         {(stats.top_non_compliant || []).length > 0 && (
-          <div className="mt-8 bg-white dark:bg-[#11131a] rounded-xl border border-red-200 dark:border-red-900/30 shadow-sm p-6 lg:p-8">
+          <div className="mt-8 bg-white dark:bg-[#11131a] rounded-xl border border-slate-200 dark:border-slate-800/80 shadow-sm p-6 lg:p-8">
             <div className="flex items-center justify-between mb-6">
               <div>
                 <h2 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
@@ -238,7 +238,7 @@ export default function Dashboard() {
             </div>
             <div className="space-y-3">
               {(stats.top_non_compliant || []).map((brand, i) => (
-                <div key={i} className="flex items-center gap-4 p-4 rounded-xl bg-red-50 dark:bg-red-900/10 border border-red-100 dark:border-red-900/20">
+                <div key={i} className="flex items-center gap-4 p-4 rounded-xl bg-slate-50/40 dark:bg-slate-900/20 border border-slate-100 dark:border-slate-800/60 transition-colors hover:bg-slate-50 dark:hover:bg-slate-900/40">
                   <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-black shrink-0 ${i === 0 ? 'bg-red-500 text-white' : i === 1 ? 'bg-red-400 text-white' : 'bg-red-200 dark:bg-red-900/40 text-red-700 dark:text-red-300'}`}>
                     #{i + 1}
                   </div>
@@ -251,7 +251,7 @@ export default function Dashboard() {
                     </div>
                   </div>
                   <div className="shrink-0 text-right">
-                    <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 text-xs font-bold border border-red-200 dark:border-red-800">
+                    <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-red-600 dark:text-red-400 text-[11px] font-bold uppercase tracking-wider bg-red-50/50 dark:bg-red-900/10 border border-red-100 dark:border-red-900/20">
                       {brand.failScans} FAIL{brand.failScans !== 1 ? 'S' : ''}
                     </span>
                   </div>
@@ -265,3 +265,4 @@ export default function Dashboard() {
     </div>
   );
 }
+
