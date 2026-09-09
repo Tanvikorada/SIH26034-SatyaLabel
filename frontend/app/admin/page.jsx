@@ -169,11 +169,11 @@ export default function AdminDashboard() {
                   <h2 className="text-[18px] font-medium text-text-primary">Officer Leaderboard</h2>
                   <span className="text-[11px] text-text-muted">Click a row to track officer on map</span>
                 </div>
-                <div className="glass rounded-[20px] overflow-hidden border border-[var(--color-border)]">
+                <div className="bg-white dark:bg-[#11131a] rounded-[16px] overflow-hidden border border-slate-200 dark:border-slate-800 shadow-sm">
                   <div className="overflow-x-auto">
                     <table className="w-full text-left text-[14px]">
                       <thead>
-                        <tr className="border-b border-[var(--color-border)] bg-[var(--color-surface)]">
+                        <tr className="border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50">
                           <th className="p-4 font-medium text-text-secondary">Officer</th>
                           <th className="p-4 font-medium text-text-secondary">Total Uploads</th>
                           <th className="p-4 font-medium text-text-secondary">Processed Scans</th>
@@ -189,7 +189,7 @@ export default function AdminDashboard() {
                           >
                             <td className="p-4">
                               <div className="flex items-center gap-3">
-                                <div className="w-8 h-8 rounded-full bg-accent text-white flex items-center justify-center font-bold text-[12px] shadow-sm">
+                                <div className="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 flex items-center justify-center font-bold text-[12px]">
                                   {officer.name ? officer.name.charAt(0).toUpperCase() : 'O'}
                                 </div>
                                 <div>
@@ -200,7 +200,7 @@ export default function AdminDashboard() {
                             </td>
                             <td className="p-4 tabular-nums text-text-primary">{officer.total_batches || 0}</td>
                             <td className="p-4 tabular-nums text-text-primary">{officer.total_scans || 0}</td>
-                            <td className="p-4 tabular-nums text-[var(--color-noncompliant)] font-medium">{officer.non_compliant_scans || 0}</td>
+                            <td className="p-4 tabular-nums"><span className="inline-flex items-center justify-center min-w-[24px] px-2 py-0.5 rounded-full bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-400 font-bold text-[12px] border border-red-100 dark:border-red-500/20">{officer.non_compliant_scans || 0}</span></td>
                           </tr>
                         ))}
                         {officers.length === 0 && (
@@ -267,10 +267,10 @@ export default function AdminDashboard() {
                 <button 
                   onClick={handleDispatch}
                   disabled={isDeploying || mapData.length === 0}
-                  className={`btn w-full py-4 text-sm tracking-wide ${
+                  className={`flex items-center justify-center gap-2 w-full py-3.5 rounded-xl font-bold tracking-wide transition-all ${
                     isDeploying || mapData.length === 0
-                    ? 'opacity-50 cursor-not-allowed bg-[var(--color-surface)] text-text-muted' 
-                    : 'bg-[var(--color-noncompliant)] text-white shadow-[0_0_20px_rgba(239,68,68,0.4)] hover:shadow-[0_0_30px_rgba(239,68,68,0.6)] border-none'
+                    ? 'opacity-50 cursor-not-allowed bg-slate-100 dark:bg-slate-800 text-slate-400' 
+                    : 'bg-red-500 hover:bg-red-600 text-white shadow-[0_4px_14px_rgba(239,68,68,0.4)]'
                   }`}
                 >
                 {isDeploying ? (
@@ -302,4 +302,5 @@ export default function AdminDashboard() {
     </div>
   );
 }
+
 
