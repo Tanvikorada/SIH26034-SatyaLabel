@@ -83,6 +83,77 @@ router.get('/debug-batch/:id', async (req, res) => {
   }
 });
 
+
+router.post('/debug-url', async (req, res) => {
+  try {
+    const { url } = req.body;
+    const axios = require('axios');
+    const cheerio = require('cheerio');
+    
+    // 1. Scrape the URL
+    const { data: html } = await axios.get(url, {
+      timeout: 8000,
+      headers: { 
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+        'Accept-Language': 'en-US,en;q=0.5'
+      }
+    });
+    
+    const $ = cheerio.load(html);
+    let imageUrl = $('meta[property="og:image"]').attr('content');
+    
+    if (!imageUrl) imageUrl = $('#landingImage').attr('src'); // Amazon
+    if (!imageUrl) imageUrl = $('img').first().attr('src'); // Fallback
+    
+    if (!imageUrl) {
+      return res.status(400).json({ success: false, message: 'Could not extract product image from URL.' });
+    }
+    
+    if (imageUrl.startsWith('/')) {
+       const urlObj = new URL(url);
+       imageUrl = `${urlObj.protocol}//${urlObj.host}${imageUrl}`;
+    }
+
+    // 2. Download the Image
+    const { data: imageBuffer } = await axios.get(imageUrl, { 
+      responseType: 'arraybuffer',
+      timeout: 8000 
+    });
+    
+    // Save to temp file so pipeline can process it
+    const tempFileName = Date.now() + '_webpatrol.jpg';
+    const tempPath = require('path').join(__dirname, '../uploads', tempFileName);
+    require('fs').writeFileSync(tempPath, imageBuffer);
+    
+    const cUrl = 'data:image/jpeg;base64,' + imageBuffer.toString('base64');
+    
+    // 3. Create Batch
+    const { Batch } = require('../models');
+    const batch = await Batch.create({
+      originalImage: JSON.stringify([cUrl]),
+      uploadedBy: null,
+      status: 'processing',
+      latitude: null,
+      longitude: null,
+    });
+    batch.productNameHint = 'debug product';
+    batch.sourceType = 'ecommerce_listing';
+
+    res.status(202).json({ success: true, data: { batch_id: batch.id, status: 'processing' } });
+
+  } catch (err) {
+    let msg = err.message;
+    if (err.code === 'ECONNABORTED' || err.message.includes('timeout')) {
+       msg = 'Connection timed out.';
+    } else if (err.response && (err.response.status === 403 || err.response.status === 503)) {
+       msg = 'Blocked by anti-bot.';
+    }
+    res.status(500).json({ success: false, message: msg, stack: err.stack, originalError: err.message });
+  }
+});
+
 module.exports = router;
+
 
 
