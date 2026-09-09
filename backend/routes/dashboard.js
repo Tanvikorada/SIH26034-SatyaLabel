@@ -325,4 +325,33 @@ router.get('/predictions', requireAuth, async (req, res) => {
   }
 });
 
+//  GET /api/dashboard/public-reports 
+// Fetch reports uploaded by the public (uploaded_by IS NULL)
+router.get('/public-reports', requireAuth, async (req, res) => {
+  try {
+    const publicReports = await sequelize.query(`
+      SELECT 
+        s.id, s.status, s.overall_compliance, s.extracted_fields, s.created_at, 
+        s.total_violations, s.high_violations, s.original_image, s.processed_image,
+        b.latitude, b.longitude
+      FROM scans s
+      LEFT JOIN batches b ON s.batch_id = b.id
+      WHERE s.uploaded_by IS NULL
+      ORDER BY s.created_at DESC
+      LIMIT 100
+    `, { type: QueryTypes.SELECT });
+
+    // Try to parse extracted_fields if string
+    const formatted = publicReports.map(r => ({
+      ...r,
+      extracted_fields: typeof r.extracted_fields === 'string' ? JSON.parse(r.extracted_fields || '{}') : r.extracted_fields
+    }));
+    
+    return ok(res, formatted);
+  } catch (err) {
+    console.error('Error fetching public reports:', err);
+    return fail(res, 500, 'SERVER_ERROR', 'Could not fetch public reports');
+  }
+});
+
 module.exports = router;
