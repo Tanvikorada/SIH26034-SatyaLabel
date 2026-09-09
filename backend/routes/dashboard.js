@@ -219,14 +219,28 @@ router.get('/admin/officers', requireAuth, async (req, res) => {
 // ==========================================
 router.get('/network', requireAuth, async (req, res) => {
   try {
-    const scans = await sequelize.query(`
-      SELECT id, product_name, extracted_fields->>'manufacturer_name' as mfg, 
-             extracted_fields->>'brand_name' as brand, overall_compliance
+    const rawScans = await sequelize.query(`
+      SELECT id, product_name, extracted_fields, overall_compliance
       FROM scans
-      WHERE extracted_fields->>'manufacturer_name' IS NOT NULL
-         OR extracted_fields->>'brand_name' IS NOT NULL
-      LIMIT 100
+      ORDER BY created_at DESC
+      LIMIT 200
     `, { type: QueryTypes.SELECT });
+
+    const scans = rawScans.map(s => {
+      let ext = {};
+      if (typeof s.extracted_fields === 'string') {
+        try { ext = JSON.parse(s.extracted_fields); } catch(e) {}
+      } else if (typeof s.extracted_fields === 'object' && s.extracted_fields !== null) {
+        ext = s.extracted_fields;
+      }
+      return {
+        id: s.id,
+        product_name: s.product_name,
+        mfg: ext.manufacturer_name || ext.manufacturer,
+        brand: ext.brand_name || ext.brand,
+        overall_compliance: s.overall_compliance
+      };
+    }).filter(s => s.mfg || s.brand);
 
     const nodesMap = new Map();
     const edges = [];
@@ -243,7 +257,7 @@ router.get('/network', requireAuth, async (req, res) => {
         nodesMap.set(brandId, {
           id: brandId,
           group: 'brand',
-          label: brandId.substring(0, 20),
+          label: String(brandId).substring(0, 20),
           size: 20,
           complianceScore: 100
         });
@@ -255,7 +269,7 @@ router.get('/network', requireAuth, async (req, res) => {
       nodesMap.set(scanNodeId, {
         id: scanNodeId,
         group: scan.overall_compliance === 'POTENTIAL NON-COMPLIANCE' ? 'violation' : 'compliant',
-        label: (scan.product_name || 'Unknown Product').substring(0, 15),
+        label: String(scan.product_name || 'Unknown Product').substring(0, 15),
         size: 10
       });
       edges.push({ source: brandId, target: scanNodeId, value: 2 });
