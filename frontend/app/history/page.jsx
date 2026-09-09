@@ -27,7 +27,7 @@ function DeleteModal({ onConfirm, onCancel }) {
             Delete
           </button>
         </div>
-      </div>
+      </main>
     </div>
   );
 }
@@ -144,10 +144,14 @@ export default function HistoryPage() {
   useEffect(() => { fetchScans(); }, [fetchScans]);
 
   return (
-    <div className="min-h-screen bg-background text-text-primary">
+    <div className="min-h-screen bg-background text-text-primary pb-20 overflow-hidden relative">
+      <div className="orb-saffron"></div>
+      <div className="orb-blue"></div>
+      
       {deleteId && <DeleteModal onConfirm={confirmDelete} onCancel={() => setDeleteId(null)} />}
       <NavBar />
-      <div className="max-w-[1000px] mx-auto px-4 md:px-6 py-6 md:py-12">
+      
+      <main className="max-w-[1000px] mx-auto px-4 md:px-6 py-6 md:py-12 relative z-10 animate-fade-in">
 
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 gap-4">
@@ -155,7 +159,7 @@ export default function HistoryPage() {
             <h1 className="text-[24px] md:text-[32px] font-medium tracking-tight leading-[1.1] mb-2">Scan Repository</h1>
             <p className="text-[15px] text-text-secondary">Historical record of all compliance checks.</p>
           </div>
-          <button onClick={exportToCSV} className="mello-btn-secondary whitespace-nowrap flex items-center gap-2 px-4 py-2 border rounded">
+          <button onClick={exportToCSV} className="btn btn-secondary whitespace-nowrap flex items-center gap-2 px-4 py-2">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
             Export to CSV
           </button>
@@ -279,7 +283,7 @@ export default function HistoryPage() {
           </div>
         )}
 
-      </div>
+      </main>
     </div>
   );
 }

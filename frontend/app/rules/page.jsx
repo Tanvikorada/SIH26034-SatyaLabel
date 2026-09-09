@@ -83,22 +83,25 @@ export default function RulesPage() {
   if (loading) return <div className="min-h-screen bg-background text-text-primary animate-fade-in"><NavBar/><div className="p-10 text-text-secondary text-[14px]">Loading...</div></div>;
 
   return (
-    <div className="min-h-screen bg-background text-text-primary">
+    <div className="min-h-screen bg-background text-text-primary pb-20 overflow-hidden relative">
+      <div className="orb-saffron"></div>
+      <div className="orb-blue"></div>
+
       <NavBar />
-      <div className="max-w-[1000px] mx-auto px-4 md:px-6 py-6 md:py-12">
+      <main className="max-w-[1000px] mx-auto px-4 md:px-6 py-6 md:py-12 relative z-10 animate-fade-in">
         <h1 className="text-[24px] md:text-[32px] font-medium tracking-tight leading-[1.1] mb-2">Rules Config</h1>
         <p className="text-[15px] text-text-secondary mb-10">Manage Legal Metrology Act constraints.</p>
 
         <div className="flex gap-4 border-b border-border mb-8">
           <button 
             onClick={() => setActiveTab('violated')}
-            className={`pb-3 text-[14px] font-medium transition-colors border-b-2 ${activeTab === 'violated' ? 'border-[#f87171] text-[#f87171]' : 'border-transparent text-text-secondary hover:text-text-primary'}`}
+            className={`pb-3 text-[14px] font-medium transition-colors border-b-2 ${activeTab === 'violated' ? 'border-[var(--color-noncompliant)] text-[var(--color-noncompliant)]' : 'border-transparent text-text-secondary hover:text-text-primary'}`}
           >
             System-Wide Violations
           </button>
           <button 
             onClick={() => setActiveTab('all')}
-            className={`pb-3 text-[14px] font-medium transition-colors border-b-2 ${activeTab === 'all' ? 'border-blue-500 text-blue-500' : 'border-transparent text-text-secondary hover:text-text-primary'}`}
+            className={`pb-3 text-[14px] font-medium transition-colors border-b-2 ${activeTab === 'all' ? 'border-accent text-accent' : 'border-transparent text-text-secondary hover:text-text-primary'}`}
           >
             All 2011 Act Rules
           </button>
@@ -115,7 +118,7 @@ export default function RulesPage() {
               return (
                 <div key={i} className="glass border border-border/50 shadow-sm hover:-translate-y-1 hover:shadow-md transition-all duration-300 rounded-[24px] p-4 md:p-6 flex flex-col group hover:border-mist transition-colors relative overflow-hidden">
                   {violationStats && (
-                    <div className="absolute top-0 right-0 bg-[#f87171]/10 text-[#f87171] text-[11px] font-bold px-3 py-1 rounded-bl-lg">
+                    <div className="absolute top-0 right-0 bg-noncompliant-bg text-noncompliant text-[11px] font-bold px-3 py-1 rounded-bl-lg">
                       Failed {violationStats.count} times
                     </div>
                   )}
@@ -152,7 +155,7 @@ export default function RulesPage() {
             );
           })}
         </div>
-      </div>
+      </main>
     </div>
   );
 }

@@ -303,8 +303,8 @@ export default function ResultsPage({ params }) {
   // ─── Status helpers — covers all 5 statuses from the rules engine ───
   const overallStatusRaw = String(report.overallStatus || report.overall_compliance || '').toUpperCase();
   const getStatusConfig = (s) => {
-    if (s === 'PASS' || s === 'COMPLIANT')                 return { label: 'PASS', color: 'text-emerald-500', bg: 'bg-emerald-500/10', border: 'border-emerald-500/30' };
-    if (s === 'POTENTIAL NON-COMPLIANCE' || s === 'FAIL' || s === 'NON_COMPLIANT') return { label: 'NON-COMPLIANT', color: 'text-red-500', bg: 'bg-red-500/10', border: 'border-red-500/30' };
+    if (s === 'PASS' || s === 'COMPLIANT')                 return { label: 'PASS', color: 'text-pass', bg: 'bg-pass-bg', border: 'border-pass/30' };
+    if (s === 'POTENTIAL NON-COMPLIANCE' || s === 'FAIL' || s === 'NON_COMPLIANT') return { label: 'NON-COMPLIANT', color: 'text-[var(--color-noncompliant)]', bg: 'bg-noncompliant-bg', border: 'border-[var(--color-noncompliant)]/30' };
     if (s === 'MANUAL REVIEW' || s === 'NEEDS_REVIEW')     return { label: 'MANUAL REVIEW', color: 'text-amber-500', bg: 'bg-amber-500/10', border: 'border-amber-500/30' };
     if (s === 'NOT APPLICABLE')                            return { label: 'NOT APPLICABLE', color: 'text-slate-400', bg: 'bg-slate-500/10', border: 'border-slate-500/30' };
     return                                                        { label: s || 'NOT VERIFIED', color: 'text-blue-400', bg: 'bg-blue-500/10', border: 'border-blue-500/30' };
@@ -323,10 +323,12 @@ export default function ResultsPage({ params }) {
   const fields = report.extractedFields || report.extracted_fields || {};
 
   return (
-    <div className="min-h-screen bg-background text-text-primary pb-24">
+    <div className="min-h-screen bg-background text-text-primary pb-24 overflow-hidden relative">
+      <div className="orb-saffron"></div>
+      <div className="orb-blue"></div>
       <NavBar />
       
-      <main className="max-w-[1000px] mx-auto px-4 md:px-6 mt-4 md:mt-8">
+      <main className="max-w-[1000px] mx-auto px-4 md:px-6 mt-4 md:mt-8 relative z-10">
         {fields._is_fallback && (
           <div className="mb-6 p-4 glass rounded-[16px] border border-yellow-500/30 bg-yellow-500/5 flex items-start gap-4 animate-in fade-in slide-in-from-top-4">
             <div className="p-2 bg-yellow-500/10 rounded-full text-yellow-500 mt-0.5">
@@ -374,8 +376,8 @@ export default function ResultsPage({ params }) {
                 </div>
                 <div className="flex flex-col gap-[10px]">
                   {[
-                    { label: 'Pass',           count: ruleCounts.pass,       bar: 'bg-emerald-500', txt: 'text-emerald-500' },
-                    { label: 'Non-Compliant',  count: ruleCounts.fail,       bar: 'bg-red-500',     txt: 'text-red-500'     },
+                    { label: 'Pass',           count: ruleCounts.pass,       bar: 'bg-pass', txt: 'text-pass' },
+                    { label: 'Non-Compliant',  count: ruleCounts.fail,       bar: 'bg-[var(--color-noncompliant)]',     txt: 'text-[var(--color-noncompliant)]'     },
                     { label: 'Manual Review',  count: ruleCounts.manual,     bar: 'bg-amber-400',   txt: 'text-amber-400'   },
                     { label: 'Not Applicable', count: ruleCounts.na,         bar: 'bg-slate-400',   txt: 'text-slate-400'   },
                     { label: 'Not Verified',   count: ruleCounts.unverified, bar: 'bg-blue-400',    txt: 'text-blue-400'    },
@@ -475,7 +477,7 @@ export default function ResultsPage({ params }) {
             
             {/* FAILED RULES SECTION */}
             <div className="mb-8">
-              <h4 className="text-[10px] font-mono tracking-[0.2em] uppercase text-red-500 mb-4 flex items-center gap-2">
+              <h4 className="text-[10px] font-mono tracking-[0.2em] uppercase text-[var(--color-noncompliant)] mb-4 flex items-center gap-2">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg>
                 Violations & Warnings
               </h4>
@@ -486,10 +488,10 @@ export default function ResultsPage({ params }) {
                     <div key={'fail-'+i} className={`glass rounded-[12px] md:rounded-[16px] p-4 md:p-6 border-l-4 ${isReview ? 'border-l-amber-500' : 'border-l-red-500'}`}>
                       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-3">
                         <div className="flex items-center gap-3">
-                          <span className={`px-2 py-1 font-mono text-[11px] font-bold rounded ${isReview ? 'bg-amber-500/10 text-amber-500' : 'bg-red-500/10 text-red-500'}`}>{v.rule_id}</span>
+                          <span className={`px-2 py-1 font-mono text-[11px] font-bold rounded ${isReview ? 'bg-amber-500/10 text-amber-500' : 'bg-[var(--color-noncompliant)]/10 text-[var(--color-noncompliant)]'}`}>{v.rule_id}</span>
                           <h4 className="text-[16px] font-medium text-text-primary">{v.rule_title}</h4>
                         </div>
-                        <span className={`text-[11px] font-bold tracking-widest uppercase ${isReview ? 'text-amber-500' : 'text-red-500'}`}>{v.status}</span>
+                        <span className={`text-[11px] font-bold tracking-widest uppercase ${isReview ? 'text-amber-500' : 'text-[var(--color-noncompliant)]'}`}>{v.status}</span>
                       </div>
                       <p className="text-[14px] text-text-secondary leading-relaxed font-mono">
                         {v.detail || v.detail_text}
@@ -569,7 +571,7 @@ export default function ResultsPage({ params }) {
                       {fields.ingredient_analysis?.harmful_additives_found?.length > 0 ? (
                         <div className="flex flex-wrap gap-2">
                           {fields.ingredient_analysis.harmful_additives_found.map((add, i) => (
-                            <span key={i} className="px-3 py-1.5 bg-red-500/10 text-red-500 border border-red-500/20 rounded-lg text-[13px] font-medium">
+                            <span key={i} className="px-3 py-1.5 bg-[var(--color-noncompliant)]/10 text-[var(--color-noncompliant)] border border-red-500/20 rounded-lg text-[13px] font-medium">
                               {add}
                             </span>
                           ))}
@@ -657,7 +659,7 @@ export default function ResultsPage({ params }) {
             {report.latitude && report.longitude && (
               <div className="glass rounded-[16px] md:rounded-[20px] p-5 md:p-6 mb-6">
                 <h3 className="text-[12px] font-mono tracking-[0.2em] uppercase text-text-primary mb-4 flex items-center gap-2">
-                  <svg className="w-4 h-4 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+                  <svg className="w-4 h-4 text-pass" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
                   Scan Location (GPS)
                 </h3>
                 <div className="w-full h-[250px] md:h-[350px] rounded-xl overflow-hidden border border-[var(--color-border)] relative">

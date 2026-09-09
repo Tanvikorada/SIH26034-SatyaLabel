@@ -168,11 +168,16 @@ export default function UploadPage() {
   };
 
   return (
-    <div className="min-h-screen bg-background text-text-primary">
-      {loading && <div className="fixed inset-0 z-[99999] bg-background flex items-center justify-center"><DynamicLoader /></div>}
+    <div className="min-h-screen bg-background text-text-primary pb-20 overflow-hidden relative">
+      <div className="orb-saffron"></div>
+      <div className="orb-blue"></div>
+      
+      {loading && <div className="fixed inset-0 z-[99999] bg-black/80 backdrop-blur-xl flex items-center justify-center"><DynamicLoader /></div>}
       <NavBar />
-      <div className="max-w-[1000px] mx-auto px-6 py-12">
-        <h1 className="text-[32px] font-medium tracking-tight leading-[1.1] mb-2">Initialize Scan</h1>
+      
+      <main className="max-w-[1000px] mx-auto px-6 py-12 animate-fade-in relative z-10">
+        <header className="mb-10">
+          <h1 className="text-[32px] font-medium tracking-tight leading-[1.1] mb-2">Initialize Scan</h1>
         <p className="text-[15px] text-text-secondary mb-10 flex items-center gap-3">
           <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> OCR Pipeline Active. Awaiting payload.
         </p>
@@ -195,9 +200,9 @@ export default function UploadPage() {
             </button>
           </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-5 gap-0 md:gap-6 flex-1 md:flex-none min-h-[calc(100vh-140px)] h-auto md:h-auto">
+        <div className="grid grid-cols-1 md:grid-cols-5 gap-6 flex-1 md:flex-none min-h-[calc(100vh-140px)] h-auto md:h-auto">
           
-          <form onSubmit={activeMode === 'physical' ? handlePhysicalUpload : handleWebPatrolSubmit} className="mello-card p-4 md:p-8 col-span-3 flex flex-col gap-4 md:gap-6 h-full md:h-auto border-0 md:border md:shadow-sm bg-transparent md:bg-[var(--color-surface)]">
+          <form onSubmit={activeMode === 'physical' ? handlePhysicalUpload : handleWebPatrolSubmit} className="glass rounded-[24px] p-8 col-span-3 flex flex-col gap-6 border border-[var(--color-border)] shadow-xl relative z-10">
             
             {activeMode === 'physical' ? (
               // ========================= PHYSICAL SCAN UI =========================
@@ -324,15 +329,17 @@ export default function UploadPage() {
             </button>
           </form>
 
-          <div className="mello-card-flat p-6 col-span-2 flex flex-col h-[320px] md:h-[480px]">
+          <div className="glass rounded-[24px] p-6 col-span-2 flex flex-col h-[320px] md:h-[480px] border border-[var(--color-border)] shadow-xl relative z-10">
             <h3 className="text-[14px] font-medium tracking-tight mb-4 flex items-center gap-2">
-              <div className={`w-2 h-2 rounded-full ${loading ? 'bg-amber-500 animate-pulse' : 'bg-[var(--color-primary)]'}`}></div>
+              <div className={`w-2 h-2 rounded-full ${loading ? 'bg-amber-500 animate-pulse' : 'bg-pass'}`}></div>
               Processing Steps
             </h3>
-            <div className="flex-1 font-mono text-[12px] allow-select cursor-text leading-relaxed text-text-muted flex flex-col gap-2 overflow-y-auto bg-slate-50 rounded-xl p-5 border border-slate-200 shadow-inner">
-              {!loading && logs.length === 0 && <span>Awaiting input payload...</span>}
+            <div className="flex-1 font-mono text-[12px] allow-select cursor-text leading-relaxed text-text-muted flex flex-col gap-2 overflow-y-auto bg-[var(--color-background)] rounded-xl p-5 border border-[var(--color-border)] shadow-inner">
+              {!loading && logs.length === 0 && <span className="opacity-50">Awaiting input payload...</span>}
               {logs.map((log, i) => (
-                <span key={i} className="text-slate-700 font-medium animate-in fade-in slide-in-from-bottom-2 duration-300">{log}</span>
+                <span key={i} className="text-text-primary font-medium animate-in fade-in slide-in-from-bottom-2 duration-300">
+                  <span className="text-accent mr-2">&gt;</span>{log}
+                </span>
               ))}
             </div>
           </div>
