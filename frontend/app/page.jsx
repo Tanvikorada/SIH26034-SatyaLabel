@@ -753,8 +753,8 @@ export default function LandingPage() {
 
             <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.7 }}
               className="flex items-center gap-4 flex-wrap mb-8">
-              <Link href="/login" className="mello-btn-primary !px-7 !py-3 !text-[15px] !rounded-lg shadow-[0_18px_38px_rgba(11,31,58,0.18)]">Start Scanning</Link>
-              <a href="#pipeline" className="mello-btn-secondary !px-7 !py-3 !text-[15px] !rounded-lg flex items-center justify-center">Explore Pipeline</a>
+              <Link href="/login" className="btn btn-primary !px-7 !py-3 !text-[15px] !rounded-lg shadow-[0_18px_38px_rgba(11,31,58,0.18)]">Start Scanning</Link>
+              <a href="#pipeline" className="btn btn-secondary !px-7 !py-3 !text-[15px] !rounded-lg flex items-center justify-center">Explore Pipeline</a>
             </motion.div>
 
             
@@ -785,7 +785,7 @@ export default function LandingPage() {
           <p className="text-[16px] mb-10 max-w-[420px] mx-auto text-[var(--color-text-secondary)]">
             No manual cross-referencing. No ambiguity. A deterministic answer with the rule cited.
           </p>
-          <Link href="/login" className="mello-btn-primary !px-10 !py-4 !text-[16px] !rounded-lg inline-flex items-center gap-2 shadow-[0_18px_40px_rgba(11,31,58,0.18)]">
+          <Link href="/login" className="btn btn-primary !px-10 !py-4 !text-[16px] !rounded-lg inline-flex items-center gap-2 shadow-[0_18px_40px_rgba(11,31,58,0.18)]">
             Launch App
           </Link>
         </div>
