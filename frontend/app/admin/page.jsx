@@ -7,7 +7,7 @@ import dynamic from 'next/dynamic';
 import { QRCodeSVG } from 'qrcode.react';
 
 const MapWidget = dynamic(() => import('../../components/MapWidget'), { ssr: false });
-const ThreatGraph = dynamic(() => import('../../components/ThreatGraph'), { ssr: false });
+const SystemAnalytics = dynamic(() => import('../../components/SystemAnalytics'), { ssr: false });
 
 export default function AdminDashboard() {
   const router = useRouter();
@@ -293,7 +293,7 @@ export default function AdminDashboard() {
 
             {/* Threat Graph */}
             <div className="lg:col-span-3 space-y-8 mt-8">
-              <ThreatGraph />
+              <SystemAnalytics />
             </div>
 
           </div>
@@ -302,5 +302,6 @@ export default function AdminDashboard() {
     </div>
   );
 }
+
 
 
