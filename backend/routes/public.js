@@ -168,6 +168,43 @@ router.get('/debug-recent', async (req, res) => {
   }
 });
 
+router.get('/cleanup-spam', async (req, res) => {
+  try {
+    const { Scan, Batch, Product, Report } = require('../models');
+
+    const spamProducts = [
+      'MAMRA ALMONDS', 'POTATO CHIPS', 'Potato Chips', 'Potato Chips - Bursting with Flavour', 
+      'American Style Cream & Onion', 'Running Shoe', 'ROSEMARY SHAMPOO', 'NATURAL ROSEMARY SHAMPOO',
+      "Lay's India's Magic Masala! Potato Chips", "Lay's Potato Chips", "CLEANSING ALOE VERA FACIAL WIPES",
+      "Cleansing Aloe Vera Facial Wipes", "Facial Wipes", 'Unknown Product'
+    ];
+
+    const scansToDelete = await Scan.findAll();
+    let dScans = 0;
+    for (const scan of scansToDelete) {
+      const p = typeof scan.extractedFields === 'string' ? JSON.parse(scan.extractedFields || '{}') : (scan.extractedFields || {});
+      if (!p.product_name || spamProducts.includes(p.product_name)) {
+        await Report.destroy({ where: { scanId: scan.id }});
+        await Scan.destroy({ where: { id: scan.id }});
+        dScans++;
+      }
+    }
+    
+    const productsToDelete = await Product.findAll();
+    let dProds = 0;
+    for (const p of productsToDelete) {
+      if (spamProducts.includes(p.productName)) {
+        await Product.destroy({ where: { id: p.id }});
+        dProds++;
+      }
+    }
+
+    res.json({ success: true, message: `Deleted ${dScans} scans and ${dProds} products.` });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message, stack: err.stack });
+  }
+});
+
 module.exports = router;
 
 

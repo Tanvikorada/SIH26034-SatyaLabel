@@ -799,13 +799,13 @@ function checkContradictoryDeclarations(fields) {
 // ─── COMPATIBILITY WRAPPERS FOR SPEC-02 TEST CONTRACT ─────────────────────
 
 function normalizeLegacyStatus(status) {
-  if (status === null || status === undefined || status === '') return 'pass';
+  if (status === null || status === undefined || status === '') return 'PASS';
   const s = String(status).trim().toLowerCase();
-  if (s === 'pass') return 'pass';
-  if (s.includes('potential non-compliance') || s.includes('fail')) return 'fail';
+  if (s === 'pass') return 'PASS';
+  if (s.includes('potential non-compliance') || s.includes('fail')) return 'POTENTIAL NON-COMPLIANCE';
   if (s.includes('manual review') || s.includes('not verified') || s.includes('not applicable') || s.includes('review') || s.includes('estimated')) return 'MANUAL REVIEW';
-  if (s.includes('na')) return 'pass';
-  return 'pass';
+  if (s.includes('na')) return 'NOT APPLICABLE';
+  return 'PASS';
 }
 
 function normalizeLegacyConfidence(confidence) {
@@ -1077,16 +1077,16 @@ function validateCompliance(fieldsMap = {}, rawText = '', options = {}) {
     confidence: normalizeLegacyConfidence(r.confidence),
   }));
 
-  const violations = mappedResults.filter(r => r.status === 'fail');
-  const passes = mappedResults.filter(r => r.status === 'pass');
-  const reviewCount = mappedResults.filter(r => r.status === 'estimated').length;
-  const highViolations = mappedResults.filter(r => r.severity === 'high' && r.status === 'fail').length;
+  const violations = mappedResults.filter(r => r.status === 'POTENTIAL NON-COMPLIANCE');
+  const passes = mappedResults.filter(r => r.status === 'PASS');
+  const reviewCount = mappedResults.filter(r => r.status === 'MANUAL REVIEW').length;
+  const highViolations = mappedResults.filter(r => r.severity === 'high' && r.status === 'POTENTIAL NON-COMPLIANCE').length;
   const totalRulesChecked = mappedResults.length;
   const complianceScore = totalRulesChecked > 0 ? Math.round((passes.length / totalRulesChecked) * 100) : 0;
 
-  let overallCompliance = 'compliant';
-  if (violations.length > 0) overallCompliance = 'non_compliant';
-  else if (reviewCount > 0) overallCompliance = 'needs_review';
+  let overallCompliance = 'PASS';
+  if (violations.length > 0) overallCompliance = 'POTENTIAL NON-COMPLIANCE';
+  else if (reviewCount > 0) overallCompliance = 'MANUAL REVIEW';
 
   return {
     results: mappedResults,
