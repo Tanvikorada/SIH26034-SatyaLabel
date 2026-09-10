@@ -70,8 +70,8 @@ export default function RootLayout({ children }) {
           
           <ClientThemeSync />
         </ThemeProvider>
-                  <Script id="register-sw" strategy="afterInteractive">
-            {
+                            <Script id="register-sw" strategy="afterInteractive" dangerouslySetInnerHTML={{
+            __html: `
               if ('serviceWorker' in navigator) {
                 window.addEventListener('load', function() {
                   navigator.serviceWorker.register('/sw.js').then(
@@ -80,13 +80,14 @@ export default function RootLayout({ children }) {
                   );
                 });
               }
-            }
-          </Script>
+            `
+          }} />
           <Toaster position="top-right" />
       </body>
     </html>
   )
 }
+
 
 
 
