@@ -223,7 +223,18 @@ router.get('/verify/:id', async (req, res) => {
   }
 });
 
+router.get('/debug-fails', async (req, res) => {
+  try {
+    const { Batch } = require('../models');
+    const failed = await Batch.findAll({ where: { status: 'failed' }, order: [['createdAt', 'DESC']], limit: 5 });
+    res.json(failed);
+  } catch (error) {
+    res.status(500).json({ error: error.message, stack: error.stack });
+  }
+});
+
 module.exports = router;
+
 
 
 
