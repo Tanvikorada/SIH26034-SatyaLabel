@@ -220,7 +220,7 @@ export default function MapWidget({ markers = [], height = '400px', focusLocatio
                       {/* Automated Enforcement Action */}
                       <div className="mt-3 space-y-2">
                         <button 
-                          onClick={() => window.open(`https://www.google.com/maps/dir/?api=1&destination=${marker.latitude},${marker.longitude}`, '_blank')}
+                          onClick={() => window.open(`https://www.google.com/maps/dir/?api=1&destination=${marker.latitude || marker.lat},${marker.longitude || marker.lng}`, '_blank')}
                           className="w-full bg-[#1A73E8] hover:bg-[#1557B0] text-white py-1.5 rounded-[18px] text-[12px] font-medium flex items-center justify-center gap-1.5 transition-colors shadow-sm"
                         >
                           <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M21.71 11.29l-9-9c-.39-.39-1.02-.39-1.41 0l-9 9c-.39.39-.39 1.02 0 1.41l9 9c.39.39 1.02.39 1.41 0l9-9c.39-.38.39-1.01 0-1.41zM14 14.5V12h-4v3H8v-4c0-.55.45-1 1-1h5V7.5l3.5 3.5-3.5 3.5z"/></svg>
