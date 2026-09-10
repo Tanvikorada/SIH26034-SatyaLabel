@@ -147,9 +147,7 @@ export default function UploadPage() {
     try {
       let rawText = '';
       try {
-        const { data: { text } } = await Tesseract.recognize(files[0], 'eng', {
-           logger: m => console.log(m)
-        });
+        const { data: { text } } = await Tesseract.recognize(files[0], 'eng');
         rawText = text;
         toast.loading('Local OCR complete. Sending to AI Brain...', { id: toastId });
       } catch (tessErr) {
