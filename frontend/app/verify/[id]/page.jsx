@@ -203,7 +203,7 @@ export default function VerifyProductPage({ params }) {
                   <input type="file" accept="image/*" capture="environment" onChange={handleFile} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" />
                 </div>
 
-                <button type="submit" disabled={!file || submitting} className={\`btn w-full py-4 text-sm tracking-wide \${!file ? 'opacity-50 cursor-not-allowed bg-[var(--color-surface)] text-text-muted' : 'btn-primary'}\`}>
+                <button type="submit" disabled={!file || submitting} className={`btn w-full py-4 text-sm tracking-wide ${!file ? 'opacity-50 cursor-not-allowed bg-[var(--color-surface)] text-text-muted' : 'btn-primary'}`}>
                   {submitting ? 'Encrypting & Sending...' : 'Submit to Authorities'}
                 </button>
              </form>
