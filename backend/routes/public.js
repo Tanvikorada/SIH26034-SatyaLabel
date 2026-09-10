@@ -210,7 +210,7 @@ router.get('/cleanup-spam', async (req, res) => {
 });
 
 
-router.get('/verify/:id', publicApiLimiter, async (req, res) => {
+router.get('/verify/:id', async (req, res) => {
   try {
     const { Product } = require('../models');
     const product = await Product.findByPk(req.params.id);
@@ -224,6 +224,7 @@ router.get('/verify/:id', publicApiLimiter, async (req, res) => {
 });
 
 module.exports = router;
+
 
 
 
