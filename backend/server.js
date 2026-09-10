@@ -10,7 +10,7 @@ const config = require('./config');
 const { syncDatabase } = require('./models');
 
 // ─── ROUTES ──────────────────────────────────────────────────────────────────
-const scansRouter    = require('./routes/scans');
+const scansRouter    = require('./routes/scans').router;
 const reportsRouter  = require('./routes/reports');
 const dashboardRouter = require('./routes/dashboard');
 const authRouter     = require('./routes/auth');
@@ -128,3 +128,4 @@ app.listen(config.server.port, () => {
 startServer();
 
 module.exports = app;
+

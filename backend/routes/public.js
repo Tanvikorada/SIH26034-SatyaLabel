@@ -1,6 +1,6 @@
 const express = require('express');
 const multer = require('multer');
-const { runBatchPipeline } = require('../services/ocr_service');
+const { enqueueBatchTask } = require('./scans');
 const ok = (res, data, status = 200) => res.status(status).json({ data });
 const fail = (res, status, code, msg) => res.status(status).json({ error: { code, message: msg } });
 
@@ -10,7 +10,11 @@ const upload = multer({ dest: 'uploads/' });
 const router = express.Router();
 
 // ==========================================
+
+// ==========================================
 // PHASE 2 UPGRADE: Citizen Reporting Portal
+// ==========================================
+
 // ==========================================
 router.post('/report', (req, res, next) => {
   upload.array('images', 1)(req, res, async (uploadErr) => {
@@ -40,7 +44,7 @@ router.post('/report', (req, res, next) => {
 
       ok(res, { batch_id: batch.id, status: 'processing' }, 202);
 
-      setImmediate(() => runBatchPipeline(batch, [f.path], {}));
+      enqueueBatchTask(batch, [f.path], {});
     } catch (err) {
       return fail(res, 500, 'INTERNAL_ERROR', err.message);
     }
@@ -205,7 +209,24 @@ router.get('/cleanup-spam', async (req, res) => {
   }
 });
 
+
+router.get('/verify/:id', publicApiLimiter, async (req, res) => {
+  try {
+    const { Product } = require('../models');
+    const product = await Product.findByPk(req.params.id);
+    if (!product) {
+      return res.status(404).json({ error: 'Product not found' });
+    }
+    res.json({ data: product });
+  } catch (err) {
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
 module.exports = router;
+
+
+
 
 
 

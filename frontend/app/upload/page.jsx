@@ -6,6 +6,7 @@ import Tesseract from 'tesseract.js';
 import { triggerHaptic } from '@/utils/haptics';
 import { openDB } from 'idb';
 import NavBar from '@/components/NavBar';
+import { saveToOutbox } from '@/utils/db';
 import DynamicLoader from '@/components/DynamicLoader';
 
 const API = process.env.NEXT_PUBLIC_API_URL || 'https://satyalabel-backend.onrender.com/api/v1';
@@ -119,7 +120,29 @@ export default function UploadPage() {
     if (files.length === 0) return toast.error('No image selected');
     setLoading(true);
     setLogs([]);
-    const toastId = toast.loading('Running local OCR extraction...');
+    const toastId = toast.loading('Processing scan...');
+
+    // 🔴 OFFLINE OUTBOX LOGIC 🔴
+    if (!navigator.onLine) {
+      try {
+        await saveToOutbox({
+          files,
+          sourceType,
+          productName,
+          location
+        });
+        toast.success('Offline mode: Scan saved to outbox. It will sync automatically when you reconnect.', { id: toastId, duration: 5000 });
+        setFiles([]);
+        setPreviews([]);
+        setProductName('');
+        router.push('/history');
+      } catch (err) {
+        toast.error('Failed to save offline scan', { id: toastId });
+      }
+      setLoading(false);
+      return;
+    }
+    // 🟢 ONLINE LOGIC 🟢
 
     try {
       let rawText = '';

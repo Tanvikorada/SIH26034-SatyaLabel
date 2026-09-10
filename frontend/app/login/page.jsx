@@ -6,13 +6,17 @@ import { toast } from 'sonner';
 const API = process.env.NEXT_PUBLIC_API_URL || 'https://satyalabel-backend.onrender.com/api/v1';
 
 export default function Login() {
-  const [email, setEmail]       = useState('');
-  const [password, setPassword] = useState('');
-  const [loading, setLoading]   = useState(false);
-  const [demoMode, setDemoMode] = useState(false);
   const router = useRouter();
+  const [isRegistering, setIsRegistering] = useState(false);
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [demoMode, setDemoMode] = useState(false);
 
+  // Reusable core login function
   const doLogin = useCallback(async (loginEmail, loginPassword) => {
+    if (!loginEmail || !loginPassword) return toast.error('Enter email and password');
     setLoading(true);
     const toastId = toast.loading('Authenticating...');
     try {
@@ -21,45 +25,68 @@ export default function Login() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: loginEmail, password: loginPassword }),
       });
-      if (!res.ok) throw new Error('Auth failed');
       const data = await res.json();
-
+      
       if (data.token) {
         sessionStorage.setItem('token', data.token);
         sessionStorage.setItem('email', loginEmail);
-        // Role comes from the server response — not from email string
         sessionStorage.setItem('role', data.user?.role || 'officer');
         toast.success('Login successful', { id: toastId });
         router.push('/dashboard');
       } else {
-        throw new Error('No token in response');
+        throw new Error(data.error?.message || data.error || 'Login failed');
       }
-    } catch {
-      toast.error('Login failed. Check your credentials.', { id: toastId });
+    } catch (err) {
+      toast.error(err.message || 'Login failed. Check your credentials.', { id: toastId });
     } finally {
       setLoading(false);
     }
   }, [router]);
 
-  const handleLogin = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    doLogin(email, password);
+    if (isRegistering) {
+      if (!name || !email || !password) return toast.error('Enter all fields');
+      setLoading(true);
+      const toastId = toast.loading('Creating account...');
+      try {
+        const res = await fetch(`${API}/auth/register`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name, email, password, role: 'officer' }),
+        });
+        const data = await res.json();
+        
+        if (data.token || res.ok) {
+          toast.success('Account created! Logging in...', { id: toastId });
+          await doLogin(email, password);
+        } else {
+          throw new Error(data.error?.message || data.error || 'Registration failed');
+        }
+      } catch (err) {
+        toast.error(err.message || 'Registration failed.', { id: toastId });
+        setLoading(false);
+      }
+    } else {
+      doLogin(email, password);
+    }
   };
 
   // Quick login: fill AND immediately submit
   const handleQuickLogin = (roleEmail) => {
+    setIsRegistering(false);
     setEmail(roleEmail);
     setPassword('password');
     doLogin(roleEmail, 'password');
   };
 
-  // Explicit demo mode — separated clearly from real auth
+  // Explicit demo mode - separated clearly from real auth
   const enterDemoMode = () => {
     sessionStorage.setItem('token', 'demo-token');
     sessionStorage.setItem('email', 'demo@satyalabel.gov.in');
     sessionStorage.setItem('role', 'officer');
     setDemoMode(true);
-    toast.info('Demo mode activated — data is simulated', { duration: 4000 });
+    toast.info('Demo mode activated - data is simulated', { duration: 4000 });
     setTimeout(() => router.push('/dashboard'), 800);
   };
 
@@ -72,8 +99,6 @@ export default function Login() {
       {/* Glass panel */}
       <div className="w-full max-w-[440px] glass backdrop-blur-3xl border border-border/50 shadow-2xl rounded-[32px] p-8 sm:p-12 z-10 animate-fade-in relative">
         <div className="absolute inset-0 bg-gradient-to-b from-white/5 to-transparent rounded-[32px] pointer-events-none" />
-
-        {/* Logo */}
         <div className="flex items-center gap-4 mb-10 relative z-10">
           <div className="w-10 h-10 rounded-[12px] bg-gradient-to-br from-accent to-blue-700 flex items-center justify-center shadow-lg shadow-accent/20 border border-white/20">
             <svg className="w-6 h-6 text-white drop-shadow-md" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -83,13 +108,25 @@ export default function Login() {
           <span className="font-bold tracking-tight text-[22px]">SatyaLabel</span>
         </div>
 
-        <h1 className="text-[32px] font-semibold tracking-tight leading-[1.1] mb-2 relative z-10">Sign in</h1>
+        <h1 className="text-[32px] font-semibold tracking-tight leading-[1.1] mb-2 relative z-10">
+          {isRegistering ? 'Create Account' : 'Sign in'}
+        </h1>
         <p className="text-[15px] text-text-secondary mb-8 relative z-10">
-          Enter your department credentials to access the compliance platform.
+          {isRegistering ? 'Register as a new field officer to begin scanning.' : 'Enter your department credentials to access the compliance platform.'}
         </p>
 
-        {/* Login form */}
-        <form onSubmit={handleLogin} className="flex flex-col gap-4 mb-6 relative z-10">
+        {/* Auth form */}
+        <form onSubmit={handleSubmit} className="flex flex-col gap-4 mb-6 relative z-10">
+          {isRegistering && (
+            <input
+              type="text"
+              placeholder="Full Name"
+              className="w-full bg-black/10 dark:bg-white/5 border border-border/50 rounded-[16px] px-5 py-4 text-[15px] focus:outline-none focus:border-accent transition-colors backdrop-blur-sm"
+              value={name}
+              onChange={e => setName(e.target.value)}
+              required
+            />
+          )}
           <input
             type="email"
             placeholder="Email address"
@@ -111,9 +148,20 @@ export default function Login() {
             className="w-full bg-text-primary text-background hover:scale-[1.02] active:scale-[0.98] transition-transform rounded-[16px] px-5 py-4 font-semibold text-[15px] mt-4 shadow-xl disabled:opacity-60 disabled:pointer-events-none"
             disabled={loading}
           >
-            {loading ? 'Authenticating...' : 'Continue →'}
+            {loading ? 'Authenticating...' : (isRegistering ? 'Sign Up' : 'Continue')}
           </button>
         </form>
+
+        {/* Toggle Mode */}
+        <div className="text-center relative z-10 mb-6">
+          <button 
+            type="button" 
+            onClick={() => setIsRegistering(!isRegistering)}
+            className="text-[14px] text-text-secondary hover:text-text-primary transition-colors font-medium"
+          >
+            {isRegistering ? 'Already have an account? Sign in' : "Don't have an account? Sign up"}
+          </button>
+        </div>
 
         {/* Quick demo & demo mode */}
         <div className="border-t border-border/50 pt-6 relative z-10">
@@ -121,28 +169,25 @@ export default function Login() {
           <div className="grid grid-cols-2 gap-3 mb-3">
             <button
               type="button"
-              onClick={() => handleQuickLogin('officer@gov.in')}
-              disabled={loading}
-              className="glass border border-border/50 rounded-[12px] py-3 text-[13px] font-semibold hover:bg-black/5 dark:hover:bg-white/5 transition-colors shadow-sm disabled:opacity-60"
+              onClick={() => handleQuickLogin('admin@gov.in')}
+              className="py-3 px-4 rounded-[12px] bg-black/10 dark:bg-white/5 hover:bg-black/20 dark:hover:bg-white/10 transition-colors border border-border/50 text-[13px] font-medium"
             >
-              Field Officer
+              Admin
             </button>
             <button
               type="button"
-              onClick={() => handleQuickLogin('admin@gov.in')}
-              disabled={loading}
-              className="glass border border-border/50 rounded-[12px] py-3 text-[13px] font-semibold hover:bg-black/5 dark:hover:bg-white/5 transition-colors shadow-sm disabled:opacity-60"
+              onClick={() => handleQuickLogin('officer@gov.in')}
+              className="py-3 px-4 rounded-[12px] bg-black/10 dark:bg-white/5 hover:bg-black/20 dark:hover:bg-white/10 transition-colors border border-border/50 text-[13px] font-medium"
             >
-              System Admin
+              Officer
             </button>
           </div>
           <button
             type="button"
             onClick={enterDemoMode}
-            disabled={loading || demoMode}
-            className="w-full text-[12px] text-text-muted hover:text-text-secondary transition-colors py-2 disabled:opacity-40"
+            className="w-full py-3 px-4 rounded-[12px] bg-accent/10 hover:bg-accent/20 text-accent transition-colors border border-accent/20 text-[13px] font-semibold"
           >
-            Enter Demo Mode (offline preview)
+            {demoMode ? 'Starting Demo...' : 'Enter Demo Mode (No DB required)'}
           </button>
         </div>
       </div>

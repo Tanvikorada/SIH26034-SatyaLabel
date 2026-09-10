@@ -5,6 +5,7 @@ import { Toaster } from 'sonner'
 import Script from 'next/script'
 import { ThemeProvider } from 'next-themes'
 import BottomNav from '../components/BottomNav'
+import OfflineSyncManager from '../components/OfflineSyncManager'
 import SplashScreen from '../components/SplashScreen'
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' })
@@ -40,7 +41,12 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <head></head>
+              <head>
+          <link rel="manifest" href="/manifest.json" />
+          <meta name="apple-mobile-web-app-capable" content="yes" />
+          <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+          <meta name="apple-mobile-web-app-title" content="SatyaLabel" />
+        </head>
       <body className={`${inter.variable} ${sourceSerif.variable} font-sans pb-24 md:pb-0 overflow-x-hidden w-full`}>
         <SplashScreen />
         <ThemeProvider
@@ -60,12 +66,28 @@ export default function RootLayout({ children }) {
           </div>
           {children}
           <BottomNav />
+            <OfflineSyncManager />
           
           <ClientThemeSync />
         </ThemeProvider>
-        <Toaster position="top-right" />
+                  <Script id="register-sw" strategy="afterInteractive">
+            {
+              if ('serviceWorker' in navigator) {
+                window.addEventListener('load', function() {
+                  navigator.serviceWorker.register('/sw.js').then(
+                    function(registration) { console.log('SW registered: ', registration.scope); },
+                    function(err) { console.log('SW registration failed: ', err); }
+                  );
+                });
+              }
+            }
+          </Script>
+          <Toaster position="top-right" />
       </body>
     </html>
   )
 }
+
+
+
 

@@ -104,6 +104,30 @@ const emitProgress = (batchId, step, message) => {
   });
 };
 
+// Simple In-Memory Queue to prevent server crashes from concurrent LLM calls
+const taskQueue = [];
+let isProcessingQueue = false;
+async function processQueue() {
+  if (isProcessingQueue) return;
+  isProcessingQueue = true;
+  while (taskQueue.length > 0) {
+    const task = taskQueue.shift();
+    try {
+      await task();
+    } catch (e) {
+      console.error("[QUEUE] Task failed", e);
+    }
+  }
+  isProcessingQueue = false;
+}
+
+function enqueueBatchTask(batch, filePaths, metadata) {
+  taskQueue.push(async () => {
+    await runBatchPipeline(batch, filePaths, metadata);
+  });
+  processQueue();
+}
+
 async function runBatchPipeline(batch, imagePath, metadata = {}) {
   let finalScanId = null;
   let finalStatus = 'failed';
@@ -302,7 +326,7 @@ router.post('/url', requireAuth, async (req, res) => {
     res.status(202).json({ success: true, data: { batch_id: batch.id, status: 'processing' } });
 
     // 5. Run the background pipeline
-    setImmediate(() => runBatchPipeline(batch, [tempPath], { forceEngine }));
+    enqueueBatchTask(batch, [tempPath], { forceEngine });
 
     } catch (err) {
       console.error('URL Patrol Error:', err.message);
@@ -385,7 +409,7 @@ router.post('/', requireAuth, (req, res, next) => {
 
         ok(res, { batch_id: batch.id, status: 'processing' }, 202);
 
-        setImmediate(() => runBatchPipeline(batch, filePaths, { forceEngine: req.body.forceEngine, rawText }));
+        enqueueBatchTask(batch, filePaths, { forceEngine: req.body.forceEngine, rawText });
 
       } catch (err) {
       return fail(res, 500, 'INTERNAL_ERROR', err.message);
@@ -530,6 +554,7 @@ router.get('/', requireAuth, async (req, res) => {
     const { Op } = require('sequelize');
 
     const where = {};
+    if (req.user && req.user.role !== 'admin') where.uploadedBy = req.user.id;
     if (statusFilter)  where.status = statusFilter;
     if (compliance) where.overallCompliance = compliance;
 
@@ -916,7 +941,9 @@ router.put('/:id', requireAuth, async (req, res) => {
   }
 });
 
-module.exports = router;
+module.exports = { router, enqueueBatchTask, runBatchPipeline };
+
+
 
 
 
