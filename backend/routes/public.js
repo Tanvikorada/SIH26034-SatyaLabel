@@ -233,7 +233,19 @@ router.get('/debug-fails', async (req, res) => {
   }
 });
 
+router.get('/version', (req, res) => {
+  const config = require('../config');
+  res.json({
+    gemini_enabled: config.gemini?.enabled,
+    gemini_key_prefix: config.gemini?.apiKey?.substring(0, 10),
+    groq_enabled: config.groq?.enabled,
+    nvidia_enabled: config.nvidia?.enabled,
+    node_version: process.version,
+    timestamp: new Date().toISOString()
+  });
+});
 module.exports = router;
+
 
 
 
