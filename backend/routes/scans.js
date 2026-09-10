@@ -941,7 +941,17 @@ router.put('/:id', requireAuth, async (req, res) => {
   }
 });
 
+  router.get('/debug-failed', async (req, res) => {
+    try {
+      const { Batch } = require('../models');
+      const failed = await Batch.findAll({ where: { status: 'failed' }, order: [['created_at', 'DESC']], limit: 5 });
+      res.json(failed);
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  });
 module.exports = { router, enqueueBatchTask, runBatchPipeline };
+
 
 
 
