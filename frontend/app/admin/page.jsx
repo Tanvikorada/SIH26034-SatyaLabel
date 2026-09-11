@@ -93,7 +93,7 @@ export default function AdminDashboard() {
             <h1 className="text-[32px] font-medium tracking-tight leading-[1.1] mb-2">Central Command</h1>
             <p className="text-[15px] text-text-secondary">Enterprise Enforcement & Monitoring Console.</p>
           </div>
-          <button onClick={() => setShowQR(true)} className="flex items-center gap-2 px-4 py-2.5 bg-white dark:bg-[#11131a] border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 rounded-[12px] font-semibold text-[13px] hover:border-orange-500 hover:text-orange-500 dark:hover:border-orange-500/50 dark:hover:text-orange-400 shadow-sm transition-all">
+          <button onClick={() => setShowQR(true)} className="flex items-center gap-2 px-4 py-2.5 bg-white  border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 rounded-[12px] font-semibold text-[13px] hover:border-orange-500 hover:text-orange-500 dark:hover:border-orange-500/50 dark:hover:text-orange-400 shadow-sm transition-all">
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm14 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z" /></svg>
             Jury Live Demo QR
           </button>
@@ -133,7 +133,7 @@ export default function AdminDashboard() {
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {highRiskBrands.map((brand, idx) => (
-                    <div key={idx} className="bg-white dark:bg-[#11131a] rounded-[16px] p-5 border border-slate-200 dark:border-slate-800/80 hover:border-red-500/30 transition-all relative overflow-hidden group shadow-sm">
+                    <div key={idx} className="bg-white  rounded-[16px] p-5 border border-slate-200 dark:border-slate-800/80 hover:border-red-500/30 transition-all relative overflow-x-hidden group shadow-sm">
                       <div className="absolute top-0 right-0 w-32 h-32 bg-[var(--color-noncompliant)]/5 rounded-full blur-2xl -mr-10 -mt-10 pointer-events-none"></div>
                       <div className="flex justify-between items-start mb-2 relative">
                         <div>
@@ -169,7 +169,7 @@ export default function AdminDashboard() {
                   <h2 className="text-[18px] font-medium text-text-primary">Officer Leaderboard</h2>
                   <span className="text-[11px] text-text-muted">Click a row to track officer on map</span>
                 </div>
-                <div className="bg-white dark:bg-[#11131a] rounded-[16px] overflow-hidden border border-slate-200 dark:border-slate-800 shadow-sm">
+                <div className="bg-white  rounded-[16px] overflow-hidden border border-slate-200 dark:border-slate-800 shadow-sm">
                   <div className="overflow-x-auto">
                     <table className="w-full text-left text-[14px]">
                       <thead>
@@ -246,7 +246,7 @@ export default function AdminDashboard() {
               </div>
 
               <div className="glass rounded-[20px] p-2 border border-[var(--color-border)] relative shadow-sm">
-                <div className="w-full h-[450px] rounded-[14px] overflow-hidden relative bg-[var(--color-surface)]">
+                <div className="w-full h-[450px] rounded-[14px] overflow-x-hidden relative bg-[var(--color-surface)]">
                   {mapData.length > 0 ? (
                     <MapWidget 
                       markers={mapMode === 'forecast' ? forecastData : mapData} 
@@ -302,6 +302,8 @@ export default function AdminDashboard() {
     </div>
   );
 }
+
+
 
 
 

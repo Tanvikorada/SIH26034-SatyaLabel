@@ -165,7 +165,7 @@ function PixelsToPenalty() {
           {/* Frame 1: Pixels */}
           <div className="border-b md:border-b-0 md:border-r border-[var(--color-border)] p-8 flex flex-col items-center justify-center min-h-[260px] relative bg-transparent">
             <div className="absolute top-3 left-3 text-[10px] font-mono text-[var(--color-text-muted)]">01_PIXELS</div>
-            <div className="w-24 h-32 bg-transparent border border-[var(--color-border)] shadow-sm relative overflow-hidden flex flex-col p-2 gap-2">
+            <div className="w-24 h-32 bg-transparent border border-[var(--color-border)] shadow-sm relative overflow-x-hidden flex flex-col p-2 gap-2">
                <div className="w-full h-3 bg-[var(--color-border)] rounded-sm" />
                <div className="w-3/4 h-2 bg-[var(--color-border)] rounded-sm opacity-50" />
                <div className="w-1/2 h-2 bg-[var(--color-border)] rounded-sm opacity-50" />
@@ -238,7 +238,7 @@ function PixelsToPenalty() {
 
 function InteractivePipelineCard({ title, icon: Icon, children }) {
   return (
-    <div className="mello-card p-8 flex flex-col gap-5 h-full relative overflow-hidden group border border-[var(--color-border)] hover:border-[var(--color-text-muted)] transition-colors bg-[var(--color-surface)] rounded-xl">
+    <div className="mello-card p-8 flex flex-col gap-5 h-full relative overflow-x-hidden group border border-[var(--color-border)] hover:border-[var(--color-text-muted)] transition-colors bg-[var(--color-surface)] rounded-xl">
       <div className="flex items-center gap-3 mb-2 relative z-10">
         <div className="w-8 h-8 rounded-full bg-transparent border border-[var(--color-border)] flex items-center justify-center text-[var(--color-primary)]">
           <Icon size={16} />
@@ -262,7 +262,7 @@ function UploadMicroApp() {
 
   return (
     <div className="flex flex-col gap-4 h-full cursor-pointer" onClick={() => setState(s => s === 'empty' ? 'uploaded' : 'empty')}>
-      <div className="flex-1 border-2 border-dashed border-[var(--color-border)] rounded-lg bg-transparent flex items-center justify-center p-4 overflow-hidden relative transition-all duration-300 group-hover:border-[var(--color-primary)]">
+      <div className="flex-1 border-2 border-dashed border-[var(--color-border)] rounded-lg bg-transparent flex items-center justify-center p-4 overflow-x-hidden relative transition-all duration-300 group-hover:border-[var(--color-primary)]">
         <AnimatePresence mode="wait">
           {state === 'empty' ? (
             <motion.div key="e" exit={{opacity: 0, scale: 0.9}} className="flex flex-col items-center gap-2 opacity-50">
@@ -299,7 +299,7 @@ function OCRMicroApp() {
 
   return (
     <div className="flex flex-col gap-4 h-full cursor-pointer" onClick={() => setState('scanning')}>
-      <div className="flex-1 border border-[var(--color-border)] rounded-lg bg-transparent p-3 relative overflow-hidden flex flex-col justify-end transition-all">
+      <div className="flex-1 border border-[var(--color-border)] rounded-lg bg-transparent p-3 relative overflow-x-hidden flex flex-col justify-end transition-all">
         {state === 'idle' && <div className="opacity-50 m-auto text-center text-xs font-mono">Awaiting Image...</div>}
         {state === 'scanning' && (
           <div className="absolute inset-0 flex flex-col">
@@ -336,7 +336,7 @@ function RuleMicroApp() {
 
   return (
     <div className="flex flex-col gap-4 h-full cursor-pointer" onClick={() => setActive(a => (a+1)%3)}>
-      <div className="flex-1 border border-[var(--color-border)] rounded-lg bg-transparent p-4 flex items-center justify-center relative overflow-hidden">
+      <div className="flex-1 border border-[var(--color-border)] rounded-lg bg-transparent p-4 flex items-center justify-center relative overflow-x-hidden">
          <AnimatePresence mode="wait">
            <motion.div key={active} initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -10 }}
              className="w-full h-full flex flex-col justify-between border border-[var(--color-border)] rounded bg-transparent p-3">
@@ -681,7 +681,7 @@ export default function LandingPage() {
   
 
   return (
-    <div className="min-h-screen flex flex-col relative overflow-hidden"
+    <div className="min-h-screen flex flex-col relative overflow-x-hidden"
       style={{ background: 'var(--color-background)', color: 'var(--color-text-primary)' }}>
 
       <GrainCanvas />
@@ -804,3 +804,4 @@ export default function LandingPage() {
     </div>
   );
 }
+

@@ -115,7 +115,7 @@ export default function PublicReportPage() {
 
   if (submitted) {
     return (
-      <div className="min-h-screen bg-background text-text-primary flex flex-col items-center justify-center p-6 text-center relative overflow-hidden">
+      <div className="min-h-screen bg-background text-text-primary flex flex-col items-center justify-center p-6 text-center relative overflow-x-hidden">
         <div className="orb-saffron"></div>
         <div className="orb-blue"></div>
         <div className="z-10 animate-fade-in glass p-8 rounded-3xl max-w-sm flex flex-col items-center">
@@ -131,7 +131,7 @@ export default function PublicReportPage() {
   }
 
   return (
-    <div className="min-h-[100dvh] bg-background text-text-primary flex flex-col items-center justify-center p-4 py-8 relative overflow-hidden">
+    <div className="min-h-[100dvh] bg-background text-text-primary flex flex-col items-center justify-center p-4 py-8 relative overflow-x-hidden">
       <div className="orb-saffron"></div>
       <div className="orb-blue"></div>
       <div className="w-full max-w-md glass rounded-[24px] p-6 shadow-2xl z-10 animate-fade-in my-auto">
@@ -205,3 +205,4 @@ export default function PublicReportPage() {
     </div>
   );
 }
+

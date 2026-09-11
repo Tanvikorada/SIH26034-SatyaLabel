@@ -55,7 +55,7 @@ export default function AdminReports() {
   };
 
   return (
-    <div className="min-h-screen bg-background relative overflow-hidden flex flex-col">
+    <div className="min-h-screen bg-background relative overflow-x-hidden flex flex-col">
       {/* Background Orbs */}
       <div className="orb-saffron"></div>
       <div className="orb-blue"></div>
@@ -259,4 +259,5 @@ export default function AdminReports() {
     </div>
   );
 }
+
 

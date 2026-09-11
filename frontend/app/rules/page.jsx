@@ -83,7 +83,7 @@ export default function RulesPage() {
   if (loading) return <div className="min-h-screen bg-background text-text-primary animate-fade-in"><NavBar/><div className="p-10 text-text-secondary text-[14px]">Loading...</div></div>;
 
   return (
-    <div className="min-h-screen bg-background text-text-primary pb-20 overflow-hidden relative">
+    <div className="min-h-screen bg-background text-text-primary pb-20 overflow-x-hidden relative">
       <div className="orb-saffron"></div>
       <div className="orb-blue"></div>
 
@@ -116,7 +116,7 @@ export default function RulesPage() {
             .map((r, i) => {
               const violationStats = stats?.top_violated_rules?.find(tr => tr.rule_id === r.rule_id);
               return (
-                <div key={i} className="glass border border-border/50 shadow-sm hover:-translate-y-1 hover:shadow-md transition-all duration-300 rounded-[24px] p-4 md:p-6 flex flex-col group hover:border-mist transition-colors relative overflow-hidden">
+                <div key={i} className="glass border border-border/50 shadow-sm hover:-translate-y-1 hover:shadow-md transition-all duration-300 rounded-[24px] p-4 md:p-6 flex flex-col group hover:border-mist transition-colors relative overflow-x-hidden">
                   {violationStats && (
                     <div className="absolute top-0 right-0 bg-noncompliant-bg text-noncompliant text-[11px] font-bold px-3 py-1 rounded-bl-lg">
                       Failed {violationStats.count} times
@@ -159,3 +159,4 @@ export default function RulesPage() {
     </div>
   );
 }
+

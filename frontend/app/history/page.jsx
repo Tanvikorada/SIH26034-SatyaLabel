@@ -10,7 +10,7 @@ const API = process.env.NEXT_PUBLIC_API_URL || 'https://satyalabel-backend.onren
 function DeleteModal({ onConfirm, onCancel }) {
   return (
     <div className="fixed inset-0 z-[99999] flex items-center justify-center bg-black/60 backdrop-blur-md px-4 transition-all">
-      <div className="bg-[var(--color-surface)] rounded-[24px] p-6 max-w-sm w-full border border-[var(--color-border)] shadow-2xl relative overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+      <div className="bg-[var(--color-surface)] rounded-[24px] p-6 max-w-sm w-full border border-[var(--color-border)] shadow-2xl relative overflow-x-hidden animate-in fade-in zoom-in-95 duration-200">
         {/* Red accent bar at the top for destructive action */}
         <div className="absolute top-0 left-0 w-full h-1.5 bg-red-500"></div>
         
@@ -144,7 +144,7 @@ export default function HistoryPage() {
   useEffect(() => { fetchScans(); }, [fetchScans]);
 
   return (
-    <div className="min-h-screen bg-background text-text-primary pb-20 overflow-hidden relative">
+    <div className="min-h-screen bg-background text-text-primary pb-20 overflow-x-hidden relative">
       <div className="orb-saffron"></div>
       <div className="orb-blue"></div>
       

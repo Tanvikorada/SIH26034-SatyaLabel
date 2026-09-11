@@ -48,10 +48,10 @@ export default function Dashboard() {
     if (v === 'PASS' || v === 'COMPLIANT') return 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800/50';
     if (v === 'MANUAL REVIEW' || v === 'NEEDS_REVIEW') return 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400 border-amber-200 dark:border-amber-800/50';
     if (v === 'POTENTIAL NON-COMPLIANCE' || v === 'NON_COMPLIANT' || v === 'FAILED' || v === 'FAIL') return 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400 border-red-200 dark:border-red-800/50';
-    return 'bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-400 border-slate-200 dark:border-slate-700';
+    return 'bg-slate-100 text-slate-800 dark:bg-slate-800  border-slate-200 ';
   };
 
-  if (!stats) return <div className="min-h-screen bg-white dark:bg-black text-slate-900 dark:text-white"><NavBar /><div className="p-10 flex items-center justify-center h-[60vh] text-slate-500 font-mono text-sm"><Activity className="animate-pulse mr-3" /> INITIALIZING DASHBOARD...</div></div>;
+  if (!stats) return <div className="min-h-screen bg-white dark:bg-black text-[var(--color-primary)] "><NavBar /><div className="p-10 flex items-center justify-center h-[60vh] text-slate-500 font-mono text-sm"><Activity className="animate-pulse mr-3" /> INITIALIZING DASHBOARD...</div></div>;
 
   const compliancePct = stats.total_scans ? Math.round(((stats.compliant_count ?? stats.compliant ?? 0) / (stats.total_scans || 1)) * 100) : 0;
   
@@ -69,7 +69,7 @@ export default function Dashboard() {
   });
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-black text-slate-900 dark:text-slate-100">
+    <div className="min-h-screen bg-[var(--color-background)] text-[var(--color-primary)] ">
       <NavBar />
       
       <main className="max-w-7xl mx-auto px-6 py-10">
@@ -81,9 +81,9 @@ export default function Dashboard() {
                 <span className="w-1.5 h-1.5 rounded-full bg-[#1E3A8A] dark:bg-blue-400 mr-1.5 animate-pulse" />
                 Live Telemetry
               </span>
-              <span className="text-sm font-medium text-slate-500 dark:text-slate-400">Department of Consumer Affairs</span>
+              <span className="text-sm font-medium text-slate-500 ">Department of Consumer Affairs</span>
             </div>
-            <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-slate-900 dark:text-white">Central Operations</h1>
+            <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-[var(--color-primary)] ">Central Operations</h1>
           </div>
           <div className="flex items-center gap-4">
             <button onClick={() => router.push('/upload')} className="bg-[#1E3A8A] hover:bg-[#16335C] text-white px-5 py-2.5 rounded-lg text-sm font-medium transition-colors shadow-sm flex items-center gap-2">
@@ -99,28 +99,28 @@ export default function Dashboard() {
               label: 'Total Inspections', 
               value: stats.total_scans || 0, 
               icon: <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="opacity-40"/><path d="M12 16V12M12 8H12.01" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>, 
-              color: 'text-blue-500 dark:text-blue-400', bg: 'bg-white dark:bg-[#11131a]', border: 'border-blue-200 dark:border-blue-900/50' 
+              color: 'text-blue-500 dark:text-blue-400', bg: 'bg-white ', border: 'border-blue-200 dark:border-blue-900/50' 
             },
             { 
               label: 'Verified Compliant', 
               value: stats.compliant_count ?? stats.compliant ?? 0, 
               icon: <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z" fill="currentColor" fillOpacity="0.15" stroke="currentColor" strokeWidth="2"/><path d="M8 12.5L10.5 15L16 9" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>, 
-              color: 'text-emerald-500 dark:text-emerald-400', bg: 'bg-white dark:bg-[#11131a]', border: 'border-emerald-200 dark:border-emerald-900/50' 
+              color: 'text-emerald-500 dark:text-emerald-400', bg: 'bg-white ', border: 'border-emerald-200 dark:border-emerald-900/50' 
             },
             { 
               label: 'Violations Detected', 
               value: stats.non_compliant_count ?? stats.violations ?? 0, 
               icon: <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M12 4L4 18H20L12 4Z" fill="currentColor" fillOpacity="0.15" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/><path d="M12 10V14M12 17H12.01" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>, 
-              color: 'text-red-500 dark:text-red-400', bg: 'bg-white dark:bg-[#11131a]', border: 'border-red-200 dark:border-red-900/50' 
+              color: 'text-red-500 dark:text-red-400', bg: 'bg-white ', border: 'border-red-200 dark:border-red-900/50' 
             },
             { 
               label: 'Awaiting Review', 
               value: stats.needs_review_count ?? stats.manual_review ?? 0, 
               icon: <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z" fill="currentColor" fillOpacity="0.15" stroke="currentColor" strokeWidth="2"/><path d="M12 7V12L15 15" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>, 
-              color: 'text-amber-500 dark:text-amber-400', bg: 'bg-white dark:bg-[#11131a]', border: 'border-amber-200 dark:border-amber-900/50' 
+              color: 'text-amber-500 dark:text-amber-400', bg: 'bg-white ', border: 'border-amber-200 dark:border-amber-900/50' 
             },
           ].map((card, i) => (
-            <div key={i} className={`p-4 sm:p-6 rounded-xl border ${card.border} ${card.bg} shadow-sm hover:shadow-md transition-shadow relative overflow-hidden group`}>
+            <div key={i} className={`p-4 sm:p-6 rounded-xl border ${card.border} ${card.bg} shadow-sm hover:shadow-md transition-shadow relative overflow-x-hidden group`}>
               <div className="flex justify-between items-start mb-4">
                 <div className={`p-2.5 rounded-lg bg-slate-50 dark:bg-[#1c1f2b] ${card.color}`}>
                   {card.icon}
@@ -132,8 +132,8 @@ export default function Dashboard() {
                 )}
               </div>
               <div>
-                <h3 className="text-xl sm:text-3xl font-bold tracking-tight text-slate-900 dark:text-white mb-1">{card.value.toLocaleString()}</h3>
-                <p className="text-[11px] sm:text-xs font-medium leading-tight text-slate-500 dark:text-slate-400">{card.label}</p>
+                <h3 className="text-xl sm:text-3xl font-bold tracking-tight text-[var(--color-primary)]  mb-1">{card.value.toLocaleString()}</h3>
+                <p className="text-[11px] sm:text-xs font-medium leading-tight text-slate-500 ">{card.label}</p>
               </div>
               <div className={[`absolute bottom-0 left-0 w-full h-1 opacity-0 group-hover:opacity-100 transition-opacity`, i===0?'bg-blue-500':i===1?'bg-emerald-500':i===2?'bg-red-500':'bg-amber-500'].join(' ')} />
             </div>
@@ -144,14 +144,14 @@ export default function Dashboard() {
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
           
           {/* Analytics Chart */}
-          <div className="lg:col-span-3 bg-white dark:bg-[#11131a] rounded-xl border border-slate-200 dark:border-slate-800/80 shadow-sm p-4 md:p-6 lg:p-8 min-w-0 overflow-hidden">
+          <div className="lg:col-span-3 bg-[var(--color-surface)] rounded-xl border border-slate-200  shadow-sm p-4 md:p-6 lg:p-8 min-w-0 overflow-hidden">
             <div className="flex items-center justify-between mb-8">
               <div>
-                <h2 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                <h2 className="text-lg font-bold text-[var(--color-primary)]  flex items-center gap-2">
                   <TrendingUp size={18} className="text-[#1E3A8A] dark:text-blue-400" />
                   Primary Violation Vectors
                 </h2>
-                <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">Volume of non-compliance events by specific metrology rules.</p>
+                <p className="text-sm text-slate-500  mt-1">Volume of non-compliance events by specific metrology rules.</p>
               </div>
             </div>
             
@@ -166,7 +166,7 @@ export default function Dashboard() {
                            <span className="text-[13px] font-medium text-slate-700 dark:text-slate-300 group-hover:text-[#1E3A8A] dark:group-hover:text-blue-400 transition-colors">
                              {item.rule_id}
                            </span>
-                           <span className="text-[12px] font-bold text-slate-900 dark:text-white">
+                           <span className="text-[12px] font-bold text-[var(--color-primary)] ">
                              {item.count} <span className="text-slate-400 dark:text-slate-500 font-normal ml-1">scans</span>
                            </span>
                         </div>
@@ -183,9 +183,9 @@ export default function Dashboard() {
             </div>
 
           {/* Activity Feed */}
-          <div className="lg:col-span-2 bg-white dark:bg-[#11131a] rounded-xl border border-slate-200 dark:border-slate-800/80 shadow-sm p-6 lg:p-8 flex flex-col">
+          <div className="lg:col-span-2 bg-[var(--color-surface)] rounded-xl border border-slate-200  shadow-sm p-6 lg:p-8 flex flex-col">
             <div className="flex items-center justify-between mb-6">
-              <h2 className="text-lg font-bold text-slate-900 dark:text-white">Recent Log</h2>
+              <h2 className="text-lg font-bold text-[var(--color-primary)] ">Recent Log</h2>
               <button onClick={() => router.push('/history')} className="text-sm font-medium text-[#1E3A8A] dark:text-blue-400 hover:underline flex items-center gap-1">
                 View All <ArrowUpRight size={14} />
               </button>
@@ -201,10 +201,10 @@ export default function Dashboard() {
                   <div 
                     key={i} 
                     onClick={() => scan.id && scan.id !== '---' && router.push(`/results/${scan.id}`)}
-                    className="flex flex-col p-4 rounded-lg border border-slate-100 dark:border-slate-800/60 bg-slate-50/50 dark:bg-slate-900/20 hover:bg-slate-100 dark:hover:bg-slate-800/50 hover:border-slate-200 dark:hover:border-slate-700 cursor-pointer transition-all"
+                    className="flex flex-col p-4 rounded-lg border border-slate-100 dark:border-slate-800/60 bg-slate-50/50  hover:bg-slate-100  hover:border-slate-200  cursor-pointer transition-all"
                   >
                     <div className="flex justify-between items-start mb-2">
-                      <span className="font-semibold text-slate-900 dark:text-slate-100 truncate pr-4 text-sm">{scan.product_name || 'Unidentified Package'}</span>
+                      <span className="font-semibold text-[var(--color-primary)]  truncate pr-4 text-sm">{scan.product_name || 'Unidentified Package'}</span>
                       <span className="text-xs font-mono text-slate-400 shrink-0">{timeStr}</span>
                     </div>
                     <div className="flex items-center justify-between">
@@ -227,26 +227,26 @@ export default function Dashboard() {
 
         {/* ── PHASE 4: Worst Offenders Brand Leaderboard ── */}
         {(stats.top_non_compliant || []).length > 0 && (
-          <div className="mt-8 bg-white dark:bg-[#11131a] rounded-xl border border-slate-200 dark:border-slate-800/80 shadow-sm p-6 lg:p-8">
+          <div className="mt-8 bg-[var(--color-surface)] rounded-xl border border-slate-200  shadow-sm p-6 lg:p-8">
             <div className="flex items-center justify-between mb-6">
               <div>
-                <h2 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                <h2 className="text-lg font-bold text-[var(--color-primary)]  flex items-center gap-2">
                   <span className="text-red-500">🏴</span> Repeat Non-Compliance Offenders
                 </h2>
-                <p className="text-sm text-slate-500 dark:text-slate-400 mt-0.5">Brands with the most failed scans across all inspections</p>
+                <p className="text-sm text-slate-500  mt-0.5">Brands with the most failed scans across all inspections</p>
               </div>
             </div>
             <div className="space-y-3">
               {(stats.top_non_compliant || []).map((brand, i) => (
-                <div key={i} className="flex items-center gap-4 p-4 rounded-xl bg-slate-50/40 dark:bg-slate-900/20 border border-slate-100 dark:border-slate-800/60 transition-colors hover:bg-slate-50 dark:hover:bg-slate-900/40">
+                <div key={i} className="flex items-center gap-4 p-4 rounded-xl bg-slate-50/40  border border-slate-100 dark:border-slate-800/60 transition-colors hover:bg-slate-50 dark:hover:bg-slate-900/40">
                   <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-black shrink-0 ${i === 0 ? 'bg-red-500 text-white' : i === 1 ? 'bg-red-400 text-white' : 'bg-red-200 dark:bg-red-900/40 text-red-700 dark:text-red-300'}`}>
                     #{i + 1}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <div className="font-semibold text-slate-900 dark:text-slate-100 text-sm truncate">
+                    <div className="font-semibold text-[var(--color-primary)]  text-sm truncate">
                       {brand.productName || 'Unknown Product'}
                     </div>
-                    <div className="text-xs text-slate-500 dark:text-slate-400 truncate">
+                    <div className="text-xs text-slate-500  truncate">
                       {brand.brandName || 'Unknown Brand'} · {brand.totalScans} scan{brand.totalScans !== 1 ? 's' : ''} total
                     </div>
                   </div>
@@ -265,5 +265,7 @@ export default function Dashboard() {
     </div>
   );
 }
+
+
 
 
