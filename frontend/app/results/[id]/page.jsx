@@ -323,7 +323,7 @@ export default function ResultsPage({ params }) {
   const fields = report.extractedFields || report.extracted_fields || {};
 
   return (
-    <div className="min-h-screen bg-background text-text-primary pb-24 overflow-hidden relative">
+    <div className="min-h-screen bg-background text-text-primary pb-24 overflow-x-hidden relative">
       <div className="orb-saffron"></div>
       <div className="orb-blue"></div>
       <NavBar />
@@ -342,7 +342,7 @@ export default function ResultsPage({ params }) {
         )}
         
         {/* HERO SECTION */}
-          <div className="glass rounded-[20px] md:rounded-[24px] p-4 md:p-8 mb-6 md:mb-8 relative overflow-hidden">
+          <div className="glass rounded-[20px] md:rounded-[24px] p-4 md:p-8 mb-6 md:mb-8 relative overflow-x-hidden">
             <div className="absolute top-0 right-0 w-64 h-64 bg-accent/5 rounded-full blur-[80px] -mr-32 -mt-32"></div>
             
             {/* Top row: Verdict badge and ID */}
@@ -746,4 +746,5 @@ export default function ResultsPage({ params }) {
     </div>
   );
 }
+
 

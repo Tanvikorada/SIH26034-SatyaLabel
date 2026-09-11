@@ -93,7 +93,7 @@ export default function VerifyProductPage({ params }) {
   // If successfully submitted
   if (submitted) {
     return (
-      <div className="min-h-screen bg-background text-text-primary flex flex-col items-center justify-center p-6 text-center relative overflow-hidden">
+      <div className="min-h-screen bg-background text-text-primary flex flex-col items-center justify-center p-6 text-center relative overflow-x-hidden">
         <div className="orb-saffron"></div>
         <div className="orb-blue"></div>
         <div className="z-10 animate-fade-in glass p-8 rounded-3xl max-w-sm flex flex-col items-center">
@@ -111,7 +111,7 @@ export default function VerifyProductPage({ params }) {
   }
 
   return (
-    <div className="min-h-screen bg-background text-text-primary flex flex-col relative overflow-hidden pb-20">
+    <div className="min-h-screen bg-background text-text-primary flex flex-col relative overflow-x-hidden pb-20">
       <div className="orb-saffron"></div>
       <div className="orb-blue opacity-50"></div>
       
@@ -213,3 +213,4 @@ export default function VerifyProductPage({ params }) {
     </div>
   );
 }
+
