@@ -15,7 +15,7 @@ export default function BottomNav() {
     setRole(sessionStorage.getItem('role') || '');
   }, []);
 
-  if (!mounted || pathname === '/login' || pathname === '/') return null;
+  if (!mounted || pathname === '/login' || pathname === '/' || pathname.startsWith('/report') || pathname.startsWith('/verify')) return null;
 
   return (
     <div className="md:hidden fixed bottom-0 left-0 right-0 z-[9999] bg-[var(--color-background)] border-t border-[var(--color-border)] shadow-[0_-10px_40px_rgba(0,0,0,0.05)] pb-[env(safe-area-inset-bottom)]">
@@ -56,4 +56,5 @@ export default function BottomNav() {
     </div>
   );
 }
+
 

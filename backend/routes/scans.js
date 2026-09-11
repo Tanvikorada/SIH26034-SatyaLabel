@@ -169,7 +169,11 @@ async function runBatchPipeline(batch, imagePath, metadata = {}) {
     emitProgress(batch.id, 4, 'Computing compliance vectors...');
     const { results, violations, stats } = await validateCompliance(fieldsMap, ocrResult.text, metadata);
   
-    const aiAnalysis = await generateAIAuditorAnalysis(fieldsMap, violations, ocrResult.text);
+          if (metadata.complaintText) {
+        fieldsMap._user_complaint_text = metadata.complaintText;
+      }
+      
+      const aiAnalysis = await generateAIAuditorAnalysis(fieldsMap, violations, ocrResult.text);
     if (aiAnalysis) fieldsMap._ai_analysis = aiAnalysis;
 
     const productName = fieldsMap.product_name || batch.productNameHint || 'Unknown Product';
@@ -951,6 +955,7 @@ router.put('/:id', requireAuth, async (req, res) => {
     }
   });
 module.exports = { router, enqueueBatchTask, runBatchPipeline };
+
 
 
 

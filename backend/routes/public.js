@@ -44,7 +44,7 @@ router.post('/report', (req, res, next) => {
 
       ok(res, { batch_id: batch.id, status: 'processing' }, 202);
 
-      enqueueBatchTask(batch, [f.path], {});
+      enqueueBatchTask(batch, [f.path], { complaintText: req.body.complaintText || '' });
     } catch (err) {
       return fail(res, 500, 'INTERNAL_ERROR', err.message);
     }
@@ -245,6 +245,7 @@ router.get('/version', (req, res) => {
   });
 });
 module.exports = router;
+
 
 
 
