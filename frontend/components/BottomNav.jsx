@@ -17,44 +17,39 @@ export default function BottomNav() {
 
   if (!mounted || pathname === '/login' || pathname === '/' || pathname.startsWith('/report') || pathname.startsWith('/verify')) return null;
 
-  return (
-    <div className="md:hidden fixed bottom-0 left-0 right-0 z-[9999] bg-[var(--color-background)] border-t border-[var(--color-border)] shadow-[0_-10px_40px_rgba(0,0,0,0.05)] pb-[env(safe-area-inset-bottom)]">
-      <div className="flex items-center justify-around px-2 h-[72px] pb-2">
-        
-        <Link onClick={() => triggerHaptic('light')} href="/dashboard" className="flex flex-col items-center justify-center w-full h-full gap-1 active:scale-95 transition-transform">
-          <LayoutDashboard size={20} className={pathname.includes('/dashboard') ? 'text-[#1E3A8A]' : 'text-[var(--color-text-muted)]'} />
-          <span className={`text-[10px] font-semibold tracking-wide ${pathname.includes('/dashboard') ? 'text-[#1E3A8A]' : 'text-[var(--color-text-muted)]'}`}>Dashboard</span>
-        </Link>
-        
-        <Link onClick={() => triggerHaptic('light')} href="/history" className="flex flex-col items-center justify-center w-full h-full gap-1 active:scale-95 transition-transform">
-          <Clock size={20} className={pathname.includes('/history') ? 'text-[#1E3A8A]' : 'text-[var(--color-text-muted)]'} />
-          <span className={`text-[10px] font-semibold tracking-wide ${pathname.includes('/history') ? 'text-[#1E3A8A]' : 'text-[var(--color-text-muted)]'}`}>History</span>
-        </Link>
+  const navItems = [
+    { name: 'Dashboard', path: '/dashboard', icon: LayoutDashboard },
+    { name: 'Scan', path: '/upload', icon: ScanLine },
+    { name: 'History', path: '/history', icon: Clock },
+    ...(role === 'admin' ? [{ name: 'Rules', path: '/rules', icon: ShieldAlert }] : []),
+    { name: 'Settings', path: '/settings', icon: Settings }
+  ];
 
-        {/* Floating Action Button for Scan */}
-        <Link onClick={() => triggerHaptic('light')} href="/upload" className="flex flex-col items-center justify-end w-full h-full gap-1 active:scale-95 transition-transform relative pb-1">
-          <div className="absolute -top-5 bg-[#1E3A8A] text-white w-[52px] h-[52px] rounded-full flex items-center justify-center shadow-lg border-4 border-[var(--color-background)] z-10">
-            <ScanLine size={24} />
-          </div>
-          <span className="text-[10px] font-semibold tracking-wide text-[#1E3A8A] mt-auto">Scan</span>
-        </Link>
-        
-        
-          {role === 'admin' && (
-          <Link onClick={() => triggerHaptic('light')} href="/rules" className="flex flex-col items-center justify-center w-full h-full gap-1 active:scale-95 transition-transform">
-            <ShieldAlert size={20} className={pathname.includes('/rules') ? 'text-[#1E3A8A]' : 'text-[var(--color-text-muted)]'} />
-            <span className={`text-[10px] font-semibold tracking-wide ${pathname.includes('/rules') ? 'text-[#1E3A8A]' : 'text-[var(--color-text-muted)]'}`}>Rules</span>
-          </Link>
-        )}
-        
-        <Link onClick={() => triggerHaptic('light')} href="/settings" className="flex flex-col items-center justify-center w-full h-full gap-1 active:scale-95 transition-transform">
-          <Settings size={20} className={pathname.includes('/settings') ? 'text-[#1E3A8A]' : 'text-[var(--color-text-muted)]'} />
-          <span className={`text-[10px] font-semibold tracking-wide ${pathname.includes('/settings') ? 'text-[#1E3A8A]' : 'text-[var(--color-text-muted)]'}`}>Settings</span>
-        </Link>
-        
+  return (
+    <div className="md:hidden fixed bottom-0 left-0 right-0 z-[9999] bg-[var(--color-surface)] border-t border-[var(--color-border)] shadow-[0_-2px_16px_rgba(0,0,0,0.03)] pb-[env(safe-area-inset-bottom)]">
+      <div className="flex items-center justify-around px-1 h-[60px]">
+        {navItems.map((item) => {
+          const isActive = pathname.startsWith(item.path);
+          const Icon = item.icon;
+          return (
+            <Link 
+              key={item.name}
+              onClick={() => triggerHaptic('light')} 
+              href={item.path} 
+              className="flex flex-col items-center justify-center flex-1 h-full gap-[3px] active:scale-95 transition-all duration-200"
+            >
+              <Icon 
+                size={22} 
+                strokeWidth={isActive ? 2.5 : 2} 
+                className={`transition-colors ${isActive ? 'text-[var(--color-primary)]' : 'text-[var(--color-text-muted)]'}`} 
+              />
+              <span className={`text-[10px] tracking-wide transition-colors ${isActive ? 'font-bold text-[var(--color-primary)]' : 'font-medium text-[var(--color-text-muted)]'}`}>
+                {item.name}
+              </span>
+            </Link>
+          );
+        })}
       </div>
     </div>
   );
 }
-
-
