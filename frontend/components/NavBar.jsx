@@ -42,12 +42,12 @@ export default function NavBar() {
 
   const links = [
     { name: 'Dashboard', path: '/dashboard', icon: <LayoutDashboard size={18} /> },
-    { name: 'Scan Upload', path: '/upload', icon: <ScanLine size={18} /> },
-    { name: 'Scan History', path: '/history', icon: <Clock size={18} /> },
+    { name: 'Scan', path: '/upload', icon: <ScanLine size={18} /> },
+    { name: 'History', path: '/history', icon: <Clock size={18} /> },
     ...(role === 'admin' ? [
-      { name: 'Rules Engine', path: '/rules', icon: <ShieldAlert size={18} /> },
-      { name: 'Admin Hub', path: '/admin', icon: <Shield size={18} /> },
-      { name: 'Public Grievances', path: '/reports', icon: <FileText size={18} /> },
+      { name: 'Rules', path: '/rules', icon: <ShieldAlert size={18} /> },
+      { name: 'Admin', path: '/admin', icon: <Shield size={18} /> },
+      { name: 'Reports', path: '/reports', icon: <FileText size={18} /> },
       { name: 'Settings', path: '/settings', icon: <Settings size={18} /> }
     ] : [])
   ];
@@ -195,3 +195,4 @@ export default function NavBar() {
     </>
   );
 }
+
