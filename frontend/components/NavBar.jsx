@@ -88,7 +88,7 @@ export default function NavBar() {
                 <Link 
                   key={l.name} 
                   href={l.path} 
-                  className={`text-[13px] font-medium px-4 py-2 rounded-lg transition-all whitespace-nowrap ${
+                  className={`text-[13px] font-medium px-3 py-2 rounded-lg transition-all whitespace-nowrap ${
                     isActive 
                       ? 'bg-white/15 text-white shadow-inner' 
                       : 'text-white/75 hover:text-white hover:bg-white/10'
@@ -195,4 +195,5 @@ export default function NavBar() {
     </>
   );
 }
+
 
