@@ -34,7 +34,7 @@ export default function NavBar() {
     ...(role === 'admin' ? [
       { name: 'Rules', path: '/rules' },
       { name: 'Admin', path: '/admin' },
-      { name: 'Reports', path: '/admin/reports' },
+      { name: 'Reports', path: '/reports' },
         { name: 'Settings', path: '/settings' }
     ] : [])
   ];
@@ -168,5 +168,6 @@ export default function NavBar() {
     </>
   );
 }
+
 
 
