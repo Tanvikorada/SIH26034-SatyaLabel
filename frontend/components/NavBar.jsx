@@ -10,16 +10,28 @@ export default function NavBar() {
   const [email, setEmail] = useState('');
   const [role, setRole] = useState('');
   const [menuOpen, setMenuOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
     setEmail(sessionStorage.getItem('email') || 'officer@gov.in');
     setRole(sessionStorage.getItem('role') || '');
+    setMounted(true);
   }, []);
 
   // Close mobile menu when route changes
   useEffect(() => {
     setMenuOpen(false);
   }, [pathname]);
+
+  // Lock body scroll when mobile menu is open
+  useEffect(() => {
+    if (menuOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+    return () => { document.body.style.overflow = 'unset'; };
+  }, [menuOpen]);
 
   const handleLogout = () => {
     sessionStorage.removeItem('token');
@@ -44,10 +56,10 @@ export default function NavBar() {
 
   return (
     <>
-      <nav className="w-full h-[calc(72px+env(safe-area-inset-top))] pt-[env(safe-area-inset-top)] flex items-center justify-between px-4 lg:px-8 sticky top-0 z-50 bg-[#1E3A8A] shadow-md border-b border-[#162d6e] transition-all">
+      <nav className="w-full h-[72px] flex items-center justify-between px-4 lg:px-8 sticky top-0 z-50 bg-[#1E3A8A] shadow-lg border-b border-[#162d6e]">
         
         {/* Left: Government Branding */}
-        <Link href="/dashboard" className="flex items-center gap-3 shrink-0 group">
+        <Link href="/dashboard" className="flex items-center gap-3 shrink-0 group z-50">
           <div className="flex items-center justify-center shrink-0">
             <img 
               src="https://upload.wikimedia.org/wikipedia/commons/5/55/Emblem_of_India.svg" 
@@ -67,18 +79,18 @@ export default function NavBar() {
           </div>
         </Link>
 
-        {/* Center: Navigation Links (Desktop) */}
-        <div className="hidden xl:flex items-center justify-center flex-1 min-w-0 px-2 overflow-x-auto no-scrollbar mask-edges">
-          <div className="flex items-center gap-1 2xl:gap-2">
+        {/* Center: Navigation Links (Desktop) - Removed horizontal scroll */}
+        <div className="hidden xl:flex items-center justify-center flex-1 px-4 z-50">
+          <div className="flex items-center gap-2">
             {links.map(l => {
               const isActive = pathname === l.path || pathname.startsWith(l.path + '/');
               return (
                 <Link 
                   key={l.name} 
                   href={l.path} 
-                  className={`text-[13px] font-medium px-3.5 py-2 rounded-lg transition-all whitespace-nowrap ${
+                  className={`text-[13px] font-medium px-4 py-2 rounded-lg transition-all whitespace-nowrap ${
                     isActive 
-                      ? 'bg-white/15 text-white shadow-[0_2px_10px_rgba(0,0,0,0.1)]' 
+                      ? 'bg-white/15 text-white shadow-inner' 
                       : 'text-white/75 hover:text-white hover:bg-white/10'
                   }`}
                 >
@@ -90,7 +102,7 @@ export default function NavBar() {
         </div>
 
         {/* Right Side: Profile & Logout (Desktop) */}
-        <div className="hidden xl:flex items-center gap-3 shrink-0 ml-auto">
+        <div className="hidden xl:flex items-center gap-3 shrink-0 ml-auto z-50">
           <div className="flex items-center gap-2.5 px-3.5 py-1.5 rounded-full bg-white/5 border border-white/10">
             <div className="w-6 h-6 rounded-full bg-white/20 flex items-center justify-center text-white text-[11px] font-bold shadow-sm">
               {email ? email.charAt(0).toUpperCase() : 'O'}
@@ -106,7 +118,7 @@ export default function NavBar() {
         </div>
 
         {/* Right Side: Mobile Hamburger */}
-        <div className="xl:hidden flex items-center gap-3 shrink-0">
+        <div className="xl:hidden flex items-center gap-3 shrink-0 z-50">
           <button onClick={handleLogout} className="hidden sm:block bg-white/10 hover:bg-white/20 text-white border border-white/20 py-1.5 px-3 text-[12px] font-semibold rounded-full transition-all">
             Log out
           </button>
@@ -120,54 +132,66 @@ export default function NavBar() {
         </div>
       </nav>
 
-      {/* Professional Gov-Style Mobile Dropdown */}
-      {menuOpen && (
-        <div className="xl:hidden fixed inset-0 z-40 bg-black/50 backdrop-blur-sm pt-[calc(72px+env(safe-area-inset-top))]">
-          <div className="bg-[#1E3A8A] w-full shadow-2xl animate-fade-in flex flex-col max-h-[80vh] overflow-y-auto">
-            
-            {/* User Profile Header */}
-            <div className="flex items-center gap-4 p-5 border-b border-[#162d6e] bg-[#162d6e]/50">
-              <div className="w-12 h-12 rounded-full bg-white flex items-center justify-center text-[#1E3A8A] text-xl font-bold shadow-sm">
-                {email ? email.charAt(0).toUpperCase() : 'O'}
-              </div>
-              <div className="flex flex-col">
-                <span className="text-white font-semibold text-sm mb-1">{email}</span>
-                <span className="text-blue-200 text-[11px] uppercase tracking-wider font-bold">{role === 'admin' ? 'Administrator' : 'Field Officer'}</span>
-              </div>
-            </div>
+      {/* Smooth Mobile Dropdown Container */}
+      <div 
+        className={`xl:hidden fixed inset-0 z-40 flex flex-col pointer-events-none`}
+        style={{ top: '72px' }}
+      >
+        {/* Backdrop (Fades in) */}
+        <div 
+          onClick={() => setMenuOpen(false)}
+          className={`absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity duration-300 pointer-events-auto ${
+            menuOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'
+          }`}
+        />
 
-            {/* Navigation Links */}
-            <div className="flex flex-col py-2">
-              {links.map(l => {
-                const isActive = pathname === l.path || pathname.startsWith(l.path + '/');
-                return (
-                  <Link 
-                    key={l.name} 
-                    href={l.path} 
-                    className={`flex items-center gap-4 px-6 py-4 transition-colors ${
-                      isActive 
-                        ? 'bg-white/10 text-white border-l-4 border-white' 
-                        : 'text-blue-100 hover:bg-white/5 border-l-4 border-transparent'
-                    }`}
-                  >
-                    <span className={isActive ? 'text-white' : 'text-blue-300'}>{l.icon}</span>
-                    <span className="font-medium text-[15px]">{l.name}</span>
-                  </Link>
-                )
-              })}
+        {/* Menu Panel (Slides down smoothly) */}
+        <div 
+          className={`relative w-full bg-[#1E3A8A] shadow-2xl transition-transform duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] pointer-events-auto flex flex-col max-h-[85vh] origin-top border-b border-[#162d6e] ${
+            menuOpen ? 'translate-y-0 opacity-100' : '-translate-y-full opacity-0'
+          }`}
+        >
+          {/* User Profile Header */}
+          <div className="flex items-center gap-4 p-5 border-b border-white/10 bg-black/10">
+            <div className="w-12 h-12 rounded-full bg-white/10 flex items-center justify-center text-white text-xl font-bold shadow-sm border border-white/20">
+              {email ? email.charAt(0).toUpperCase() : 'O'}
             </div>
-            
-            {/* Footer Logout */}
-            <div className="p-5 border-t border-[#162d6e]">
-              <button onClick={handleLogout} className="flex items-center justify-center gap-2 w-full bg-white/10 hover:bg-white/20 text-white border border-white/20 py-3.5 rounded-lg font-bold transition-all">
-                <LogOut size={18} />
-                Sign Out
-              </button>
+            <div className="flex flex-col">
+              <span className="text-white font-semibold text-sm mb-1">{email}</span>
+              <span className="text-blue-200 text-[11px] uppercase tracking-wider font-bold">{role === 'admin' ? 'Administrator' : 'Field Officer'}</span>
             </div>
-            
+          </div>
+
+          {/* Navigation Links */}
+          <div className="flex flex-col py-2 overflow-y-auto custom-scrollbar">
+            {links.map((l, i) => {
+              const isActive = pathname === l.path || pathname.startsWith(l.path + '/');
+              return (
+                <Link 
+                  key={l.name} 
+                  href={l.path} 
+                  className={`flex items-center gap-4 px-6 py-4 transition-colors ${
+                    isActive 
+                      ? 'bg-white/10 text-white border-l-4 border-white' 
+                      : 'text-blue-100 hover:bg-white/5 border-l-4 border-transparent'
+                  }`}
+                >
+                  <span className={isActive ? 'text-white' : 'text-blue-300'}>{l.icon}</span>
+                  <span className="font-medium text-[15px]">{l.name}</span>
+                </Link>
+              )
+            })}
+          </div>
+          
+          {/* Footer Logout */}
+          <div className="p-5 border-t border-white/10 bg-black/5">
+            <button onClick={handleLogout} className="flex items-center justify-center gap-2 w-full bg-red-500 hover:bg-red-600 text-white py-3.5 rounded-lg font-bold transition-colors shadow-md">
+              <LogOut size={18} />
+              Secure Sign Out
+            </button>
           </div>
         </div>
-      )}
+      </div>
     </>
   );
 }
