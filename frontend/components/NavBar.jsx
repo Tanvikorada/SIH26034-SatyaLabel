@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { LayoutDashboard, ScanLine, Clock, ShieldAlert, Shield, FileText, Settings, LogOut, ChevronRight, X, Menu } from 'lucide-react';
+import { LayoutDashboard, ScanLine, Clock, ShieldAlert, Shield, FileText, Settings, LogOut, Menu, X } from 'lucide-react';
 
 export default function NavBar() {
   const pathname = usePathname();
@@ -112,87 +112,59 @@ export default function NavBar() {
           </button>
           <button 
             onClick={() => setMenuOpen(!menuOpen)} 
-            className="p-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white border border-white/10 transition-colors shadow-sm"
+            className={`p-2 rounded-md transition-colors ${menuOpen ? 'bg-white/20 text-white' : 'bg-transparent text-white hover:bg-white/10'}`}
             aria-label="Toggle menu"
           >
-            {menuOpen ? <X size={20} /> : <Menu size={20} />}
+            {menuOpen ? <X size={24} /> : <Menu size={24} />}
           </button>
         </div>
       </nav>
 
-      {/* Premium Mobile Menu Drawer */}
+      {/* Professional Gov-Style Mobile Dropdown */}
       {menuOpen && (
-        <div className="xl:hidden fixed inset-0 z-[100] flex justify-end">
-          
-          {/* Backdrop */}
-          <div 
-            className="absolute inset-0 bg-[#0B1F3A]/70 backdrop-blur-md transition-opacity animate-fade-in"
-            onClick={() => setMenuOpen(false)}
-          ></div>
-          
-          {/* Sliding Glass Drawer */}
-          <div className="relative w-[85%] max-w-sm h-full bg-[#0A1628]/95 backdrop-blur-2xl border-l border-white/10 shadow-2xl flex flex-col transform transition-transform duration-300 ease-out">
+        <div className="xl:hidden fixed inset-0 z-40 bg-black/50 backdrop-blur-sm pt-[calc(72px+env(safe-area-inset-top))]">
+          <div className="bg-[#1E3A8A] w-full shadow-2xl animate-fade-in flex flex-col max-h-[80vh] overflow-y-auto">
             
-            {/* Drawer Header */}
-            <div className="flex items-center justify-between p-6 border-b border-white/10">
-              <span className="font-bold text-xl text-white tracking-wide">Menu</span>
-              <button 
-                onClick={() => setMenuOpen(false)}
-                className="p-2.5 rounded-full bg-white/5 hover:bg-white/10 border border-white/10 text-white transition-all shadow-sm active:scale-95"
-              >
-                <X size={20} />
-              </button>
-            </div>
-
-            {/* Profile Section */}
-            <div className="p-6 border-b border-white/10 bg-gradient-to-br from-white/5 to-transparent">
-              <span className="text-orange-400 text-[10px] uppercase font-bold tracking-[0.15em] mb-4 block opacity-80">Active Session</span>
-              <div className="flex items-center gap-4">
-                <div className="w-14 h-14 rounded-full bg-gradient-to-br from-orange-500 to-orange-700 flex items-center justify-center text-white text-2xl font-bold shadow-lg border border-orange-400/50">
-                  {email ? email.charAt(0).toUpperCase() : 'O'}
-                </div>
-                <div className="flex flex-col">
-                  <span className="text-white font-bold text-lg mb-0.5 truncate max-w-[180px]">{email}</span>
-                  <span className="text-emerald-400 text-xs font-bold tracking-wider">{role === 'admin' ? 'System Administrator' : 'Field Officer'}</span>
-                </div>
+            {/* User Profile Header */}
+            <div className="flex items-center gap-4 p-5 border-b border-[#162d6e] bg-[#162d6e]/50">
+              <div className="w-12 h-12 rounded-full bg-white flex items-center justify-center text-[#1E3A8A] text-xl font-bold shadow-sm">
+                {email ? email.charAt(0).toUpperCase() : 'O'}
+              </div>
+              <div className="flex flex-col">
+                <span className="text-white font-semibold text-sm mb-1">{email}</span>
+                <span className="text-blue-200 text-[11px] uppercase tracking-wider font-bold">{role === 'admin' ? 'Administrator' : 'Field Officer'}</span>
               </div>
             </div>
 
             {/* Navigation Links */}
-            <div className="flex-1 overflow-y-auto p-4 space-y-2 custom-scrollbar">
-              {links.map((l, index) => {
+            <div className="flex flex-col py-2">
+              {links.map(l => {
                 const isActive = pathname === l.path || pathname.startsWith(l.path + '/');
                 return (
                   <Link 
                     key={l.name} 
                     href={l.path} 
-                    className={`flex items-center justify-between px-4 py-4 rounded-2xl transition-all group ${
+                    className={`flex items-center gap-4 px-6 py-4 transition-colors ${
                       isActive 
-                        ? 'bg-orange-500/15 border border-orange-500/30 text-white shadow-[0_0_20px_rgba(245,158,11,0.05)]' 
-                        : 'border border-transparent text-white/60 hover:bg-white/5 hover:text-white hover:border-white/10'
+                        ? 'bg-white/10 text-white border-l-4 border-white' 
+                        : 'text-blue-100 hover:bg-white/5 border-l-4 border-transparent'
                     }`}
                   >
-                    <div className="flex items-center gap-4">
-                      <div className={`p-2.5 rounded-xl transition-colors ${
-                        isActive ? 'bg-orange-500 text-white shadow-lg shadow-orange-500/20' : 'bg-white/5 text-white/50 group-hover:text-white group-hover:bg-white/15'
-                      }`}>
-                        {l.icon}
-                      </div>
-                      <span className="font-semibold text-[15px]">{l.name}</span>
-                    </div>
-                    <ChevronRight size={18} className={isActive ? 'text-orange-400' : 'text-white/20 group-hover:text-white/50 transition-colors'} />
+                    <span className={isActive ? 'text-white' : 'text-blue-300'}>{l.icon}</span>
+                    <span className="font-medium text-[15px]">{l.name}</span>
                   </Link>
                 )
               })}
             </div>
             
             {/* Footer Logout */}
-            <div className="p-6 border-t border-white/10 bg-white/5">
-              <button onClick={handleLogout} className="flex items-center justify-center gap-2 w-full bg-red-500 hover:bg-red-600 text-white py-4 rounded-2xl font-bold transition-all shadow-[0_4px_20px_rgba(239,68,68,0.3)] active:scale-[0.98]">
+            <div className="p-5 border-t border-[#162d6e]">
+              <button onClick={handleLogout} className="flex items-center justify-center gap-2 w-full bg-white/10 hover:bg-white/20 text-white border border-white/20 py-3.5 rounded-lg font-bold transition-all">
                 <LogOut size={18} />
-                Secure Sign Out
+                Sign Out
               </button>
             </div>
+            
           </div>
         </div>
       )}
