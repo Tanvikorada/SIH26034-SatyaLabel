@@ -55,14 +55,14 @@ export default function AdminReports() {
   };
 
   return (
-    <div className="min-h-screen bg-background relative overflow-hidden flex flex-col md:flex-row">
+    <div className="min-h-screen bg-background relative overflow-hidden flex flex-col">
       {/* Background Orbs */}
       <div className="orb-saffron"></div>
       <div className="orb-blue"></div>
 
       <NavBar />
 
-      <main className="flex-1 p-6 md:p-10 lg:ml-64 relative z-10 animate-fade-in max-w-7xl mx-auto w-full">
+      <main className="flex-1 p-6 md:p-10 relative z-10 animate-fade-in max-w-7xl mx-auto w-full">
         <header className="mb-8">
           <h1 className="text-3xl font-black text-text-primary mb-2">Public Grievances</h1>
           <p className="text-text-secondary text-sm">Review incoming reports from citizens and dispatch enforcement teams.</p>
@@ -259,3 +259,4 @@ export default function AdminReports() {
     </div>
   );
 }
+
