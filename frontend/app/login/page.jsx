@@ -91,7 +91,7 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen relative overflow-hidden bg-background flex items-center justify-center p-6 text-text-primary font-sans selection:bg-accent/30">
+    <div className="min-h-screen relative overflow-x-hidden bg-background flex items-center justify-center p-6 text-text-primary font-sans selection:bg-accent/30">
       {/* Ambient orbs */}
       <div className="absolute top-[-15%] left-[-10%] w-[500px] h-[500px] bg-accent/20 rounded-full blur-[100px] mix-blend-screen pointer-events-none animate-pulse" />
       <div className="absolute bottom-[-15%] right-[-10%] w-[600px] h-[600px] bg-blue-500/20 rounded-full blur-[120px] mix-blend-screen pointer-events-none" style={{ animation: 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite' }} />
