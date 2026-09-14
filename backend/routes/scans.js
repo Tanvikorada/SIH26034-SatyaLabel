@@ -461,6 +461,43 @@ router.get('/batch/:id/stream', requireAuth, async (req, res) => {
   });
 });
 
+router.post('/batch/:id/analyze', requireAuth, async (req, res) => {
+  try {
+    const { Batch } = require('../models');
+    const batch = await Batch.findByPk(req.params.id);
+    if (!batch) return fail(res, 404, 'NOT_FOUND', 'Batch not found');
+    
+    let rawText = '';
+    if (batch.errorMessage && batch.errorMessage.includes('"pending_public":true')) {
+       try {
+         const parsed = JSON.parse(batch.errorMessage);
+         if (parsed.complaint) rawText = parsed.complaint;
+         delete parsed.pending_public;
+         batch.errorMessage = JSON.stringify(parsed);
+         batch.status = 'processing';
+         await batch.save();
+       } catch(e) {}
+    }
+
+    let tempPath = null;
+    if (batch.originalImage) {
+      try {
+        const imgs = JSON.parse(batch.originalImage);
+        if (imgs && imgs.length > 0 && imgs[0].startsWith('data:image')) {
+          const base64Data = imgs[0].replace(/^data:image\/\w+;base64,/, '');
+          tempPath = require('path').join(__dirname, '../uploads', 'analyze_' + Date.now() + '.jpg');
+          require('fs').writeFileSync(tempPath, base64Data, 'base64');
+        }
+      } catch(e) { console.error('Image write error', e); }
+    }
+    
+    enqueueBatchTask(batch, tempPath ? [tempPath] : [], { rawText });
+    ok(res, { message: 'Analysis triggered successfully' });
+  } catch(err) {
+    fail(res, 500, 'INTERNAL_ERROR', err.message);
+  }
+});
+
 router.get('/batch/:id', requireAuth, async (req, res) => {
   try {
     const { Batch, Scan, Product } = require('../models');
@@ -471,6 +508,44 @@ router.get('/batch/:id', requireAuth, async (req, res) => {
         include: [{ model: Product, as: 'product' }]
       }]
     });
+
+    if (!batch) return fail(res, 404, 'BATCH_NOT_FOUND', 'Batch not found');
+
+    const formattedScans = (batch.scans || []).map(formatScanSummary);
+    
+    let computedStatus = batch.status;
+    let userComplaint = null;
+
+    if (batch.errorMessage && batch.errorMessage.includes('"pending_public":true')) {
+      try {
+        const parsedErr = JSON.parse(batch.errorMessage);
+        if (parsedErr.pending_public && (!batch.scans || batch.scans.length === 0)) {
+           computedStatus = 'pending_review';
+        }
+        if (parsedErr.complaint) {
+           userComplaint = parsedErr.complaint;
+        }
+      } catch(e) {}
+    }
+
+    ok(res, {
+      id: batch.id,
+      batch_id: batch.id,
+      status: computedStatus,
+      user_complaint: userComplaint,
+      original_image: batch.originalImage,
+      error_message: batch.errorMessage,
+      latitude: batch.latitude,
+      longitude: batch.longitude,
+      scans: formattedScans,
+      overall_compliance: formattedScans.length > 0 ? formattedScans[0].overall_compliance : null,
+      extracted_fields: (batch.scans && batch.scans.length > 0) ? (typeof batch.scans[0].extractedFields === 'string' ? JSON.parse(batch.scans[0].extractedFields) : batch.scans[0].extractedFields) : {},
+      total_violations: formattedScans.length > 0 ? formattedScans[0].total_violations : 0
+    });
+  } catch (err) {
+    fail(res, 500, 'INTERNAL_ERROR', err.message);
+  }
+});
 
     if (!batch) return fail(res, 404, 'BATCH_NOT_FOUND', 'Batch not found');
 
@@ -955,6 +1030,9 @@ router.put('/:id', requireAuth, async (req, res) => {
     }
   });
 module.exports = { router, enqueueBatchTask, runBatchPipeline };
+
+
+
 
 
 
