@@ -39,12 +39,16 @@ router.post('/report', (req, res, next) => {
         latitude: req.body.latitude ? parseFloat(req.body.latitude) : null,
         longitude: req.body.longitude ? parseFloat(req.body.longitude) : null,
       });
-      batch.productNameHint = "Public Report";
+            batch.productNameHint = "Public Report";
       batch.sourceType = 'physical_label';
+      
+      // Store complaint in error_message temporarily as JSON
+      const complaintText = req.body.complaintText || '';
+      batch.errorMessage = JSON.stringify({ pending_public: true, complaint: complaintText });
+      await batch.save();
 
-      ok(res, { batch_id: batch.id, status: 'processing' }, 202);
-
-      enqueueBatchTask(batch, [f.path], { complaintText: req.body.complaintText || '' });
+      // DO NOT enqueue the AI task immediately. Let the admin trigger it.
+      res.status(202).json({ success: true, data: { batch_id: batch.id, status: 'pending_review' } });
     } catch (err) {
       return fail(res, 500, 'INTERNAL_ERROR', err.message);
     }
@@ -245,6 +249,7 @@ router.get('/version', (req, res) => {
   });
 });
 module.exports = router;
+
 
 
 

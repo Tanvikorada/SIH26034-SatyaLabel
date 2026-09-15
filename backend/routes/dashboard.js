@@ -362,34 +362,60 @@ router.get('/predictions', requireAuth, async (req, res) => {
 });
 
 // GET /api/v1/dashboard/public-reports
-// Fetch scans uploaded by the public (uploaded_by IS NULL)
 router.get('/public-reports', requireAuth, async (req, res) => {
   try {
     const publicReports = await sequelize.query(`
       SELECT 
-        s.id, s.status, s.overall_compliance, s.extracted_fields, s.created_at, 
-        s.total_violations, s.high_violations, s.image_path,
-        b.latitude, b.longitude, b.original_image
-      FROM scans s
-      LEFT JOIN batches b ON s.batch_id = b.id
-      WHERE s.uploaded_by IS NULL
-      ORDER BY s.created_at DESC
+        b.id as batch_id, b.status as batch_status, b.created_at, b.original_image, b.latitude, b.longitude, b.error_message,
+        s.id as scan_id, s.status as scan_status, s.overall_compliance, s.extracted_fields, s.total_violations, s.image_path
+      FROM batches b
+      LEFT JOIN scans s ON s.batch_id = b.id
+      WHERE b.uploaded_by IS NULL
+      ORDER BY b.created_at DESC
       LIMIT 100
-    `, { type: QueryTypes.SELECT });
+    `, { type: require('sequelize').QueryTypes.SELECT });
 
-    const formatted = publicReports.map(r => ({
-      ...r,
-      extracted_fields: typeof r.extracted_fields === 'string'
-        ? JSON.parse(r.extracted_fields || '{}')
-        : (r.extracted_fields || {})
-    }));
+    const formatted = publicReports.map(r => {
+      let ext = r.extracted_fields;
+      if (typeof ext === 'string') {
+        try { ext = JSON.parse(ext); } catch(e) { ext = {}; }
+      }
+      
+      let complaint = null;
+      let pendingPublic = false;
+      if (r.error_message && r.error_message.includes('"pending_public":true')) {
+        try {
+          const parsedErr = JSON.parse(r.error_message);
+          complaint = parsedErr.complaint;
+          pendingPublic = true;
+        } catch(e) {}
+      }
 
-    return ok(res, formatted);
+      return {
+        id: r.scan_id || r.batch_id,
+        batch_id: r.batch_id,
+        scan_id: r.scan_id,
+        status: r.scan_id ? r.scan_status : (pendingPublic ? 'pending_review' : r.batch_status),
+        overall_compliance: r.overall_compliance || (pendingPublic ? 'PENDING AI REVIEW' : 'UNSCANNED'),
+        extracted_fields: ext || {},
+        created_at: r.created_at,
+        total_violations: r.total_violations || 0,
+        latitude: r.latitude,
+        longitude: r.longitude,
+        original_image: r.original_image,
+        user_complaint: complaint || (ext && ext._user_complaint_text) || null,
+        pending_public: pendingPublic
+      };
+    });
+
+    return res.json({ success: true, data: formatted });
   } catch (err) {
     console.error('Error fetching public reports:', err);
-    return fail(res, 500, 'SERVER_ERROR', 'Could not fetch public reports');
+    return res.status(500).json({ error: { code: 'SERVER_ERROR', message: 'Could not fetch public reports' } });
   }
 });
 
 module.exports = router;
+
+
 
