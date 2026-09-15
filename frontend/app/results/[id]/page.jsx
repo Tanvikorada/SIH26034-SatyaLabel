@@ -269,7 +269,7 @@ export default function ResultsPage({ params }) {
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      window.open(url, '_blank');
+      a.download = "Government_Report_" + report.id.slice(0,8) + ".pdf"; document.body.appendChild(a); a.click(); document.body.removeChild(a); window.URL.revokeObjectURL(url);
       toast.success('PDF Downloaded Successfully');
     } catch (e) {
       toast.error('Could not generate PDF');
@@ -746,5 +746,7 @@ export default function ResultsPage({ params }) {
     </div>
   );
 }
+
+
 
 

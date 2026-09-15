@@ -41,7 +41,9 @@ export default function Dashboard() {
       }
     };
     fetchStats();
-  }, [router]);
+      const interval = setInterval(fetchStats, 30000);
+      return () => clearInterval(interval);
+    }, [router]);
 
   const getBadgeClass = (s) => {
     const v = String(s).toUpperCase();
@@ -265,6 +267,8 @@ export default function Dashboard() {
     </div>
   );
 }
+
+
 
 
 

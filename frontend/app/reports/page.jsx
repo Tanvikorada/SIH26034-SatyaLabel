@@ -77,7 +77,7 @@ export default function AdminReports() {
             <div className="glass rounded-[24px] p-6 shadow-xl border border-[var(--color-border)] h-[700px] flex flex-col">
               <h2 className="text-lg font-bold mb-4 px-2">Incoming Feed</h2>
               <div className="flex-1 overflow-y-auto pr-2 space-y-3">
-                {reports.map((report) => {
+                {reports.length === 0 && <div className="flex flex-col items-center justify-center h-full text-[var(--color-text-muted)] opacity-50"><svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path strokeLinecap="round" strokeLinejoin="round" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"></path></svg><span className="mt-4 text-sm">No public reports in queue.</span></div>} {reports.map((report) => {
                   const isPending = report.status === 'pending_review' || report.pending_public;
                   return (
                     <div 
@@ -259,5 +259,6 @@ export default function AdminReports() {
     </div>
   );
 }
+
 
 
