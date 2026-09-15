@@ -705,7 +705,7 @@ export default function LandingPage() {
         </div>
       </div>
       <div className="flex items-center gap-4">
-        <ThemeToggle />
+        
         <a href="#pipeline" className="text-[13px] font-medium text-white/80 hover:text-white transition-colors hidden sm:block">How it Works</a>
         <Link href="/login" className="bg-white text-[#1E3A8A] hover:bg-white/90 px-4 py-1.5 rounded-full text-[13px] font-bold shadow-sm transition-all">Access Console</Link>
       </div>
