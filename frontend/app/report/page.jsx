@@ -149,17 +149,31 @@ export default function PublicReportPage() {
         <form onSubmit={handleSubmit} className="flex flex-col gap-5">
           <div className="relative w-full aspect-[4/3] rounded-xl overflow-hidden bg-[var(--color-surface)] border-2 border-dashed border-[var(--color-border)] hover:border-accent transition-colors flex flex-col items-center justify-center group cursor-pointer">
             {preview ? (
-              <img src={preview} className="w-full h-full object-cover" />
-            ) : (
-              <div className="flex flex-col items-center gap-2 p-6 text-center pointer-events-none">
-                <div className="w-12 h-12 rounded-full bg-background flex items-center justify-center mb-2 group-hover:scale-110 transition-transform">
-                  <svg className="w-6 h-6 text-accent" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+                <>
+                  <img src={preview} className="w-full h-full object-cover" />
+                  <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity">
+                    <span className="text-white text-sm font-medium tracking-wide">Tap to Change</span>
+                  </div>
+                  <input type="file" accept="image/*" onChange={handleFile} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" />
+                </>
+              ) : (
+                <div className="flex flex-col items-center gap-4 w-full relative z-10 px-4">
+                  <span className="text-sm font-semibold text-text-primary mb-2">1. Upload Product Label</span>
+                  <div className="flex gap-4 w-full justify-center">
+                    <div className="relative flex flex-col items-center gap-2 py-4 rounded-xl border border-[var(--color-border)] bg-background hover:border-accent cursor-pointer transition-colors w-[130px] shadow-sm hover:shadow-md group/btn">
+                      <svg className="w-6 h-6 text-accent group-hover/btn:scale-110 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+                      <span className="text-[12px] font-medium text-text-primary">Camera</span>
+                      <input type="file" accept="image/*" capture="environment" onChange={handleFile} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" />
+                    </div>
+                    <div className="relative flex flex-col items-center gap-2 py-4 rounded-xl border border-[var(--color-border)] bg-background hover:border-accent cursor-pointer transition-colors w-[130px] shadow-sm hover:shadow-md group/btn">
+                      <svg className="w-6 h-6 text-accent group-hover/btn:scale-110 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                      <span className="text-[12px] font-medium text-text-primary">Gallery</span>
+                      <input type="file" accept="image/*" onChange={handleFile} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" />
+                    </div>
+                  </div>
+                  <span className="text-[10px] text-text-muted mt-2">Ensure text is readable and clear</span>
                 </div>
-                <span className="text-sm font-medium text-text-primary">1. Tap to Take Photo</span>
-                <span className="text-[10px] text-text-muted">Ensure text is readable</span>
-              </div>
-            )}
-            <input type="file" accept="image/*" capture="environment" onChange={handleFile} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" />
+              )}
           </div>
 
           <div className="flex flex-col gap-2">
