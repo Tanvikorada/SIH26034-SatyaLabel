@@ -193,6 +193,8 @@ export default function ResultsPage({ params }) {
       };
       addRow('Case Reference ID', report.id);
       addRow('Date of Inspection', today);
+        const locationText = report.latitude && report.longitude ? `${report.latitude}, ${report.longitude}` : 'Location not tagged';
+        addRow('Scan Location (GPS)', locationText);
       addRow('Inspecting Officer', officerEmail);
       addRow('Product Name', productName + (brandName ? ` (${brandName})` : ''));
       addRow('Manufacturer / Marketer', mfrName);
@@ -746,6 +748,7 @@ export default function ResultsPage({ params }) {
     </div>
   );
 }
+
 
 
 

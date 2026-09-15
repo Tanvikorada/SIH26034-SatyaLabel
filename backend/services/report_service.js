@@ -356,6 +356,7 @@ async function generateReport({ scan, product, extractedFields, violations, stat
     ['Product',       san(product?.product_name || fields.product_name || 'Unknown')],
     ['Officer/User',  san(scan.user?.name || scan.officer_name || 'Not Logged')],
     ['Scan Date',     fmtDate(scan.created_at)],
+    ['Location (GPS)', scan.latitude && scan.longitude ? `${scan.latitude}, ${scan.longitude}` : 'Not tagged'],
     ['Source Type',   san(scan.source_type || 'Physical Label')],
     ['Overall Status', overallStatus],
   ];
@@ -698,3 +699,5 @@ function generateCSV(scanData) {
 }
 
 module.exports = { generateReport, generateCSV };
+
+
