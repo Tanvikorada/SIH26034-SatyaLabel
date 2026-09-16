@@ -50,10 +50,13 @@ export default function RulesPage() {
   const [stats, setStats] = useState(null);
   const [activeTab, setActiveTab] = useState('violated');
   const [loading, setLoading] = useState(true);
+  const [role, setRole] = useState('');
   const router = useRouter();
 
   useEffect(() => {
-    if (!sessionStorage.getItem('token') || sessionStorage.getItem('role') !== 'admin') return router.push('/dashboard');
+    if (!sessionStorage.getItem('token')) return router.push('/dashboard');
+    const r = sessionStorage.getItem('role');
+    setRole(r || 'officer');
     const fetchRules = async () => {
       try {
         const API = process.env.NEXT_PUBLIC_API_URL || 'https://satyalabel-backend.onrender.com/api/v1';
@@ -89,8 +92,11 @@ export default function RulesPage() {
 
       <NavBar />
       <main className="max-w-[1000px] mx-auto px-4 md:px-6 py-6 md:py-12 relative z-10 animate-fade-in">
-        <h1 className="text-[24px] md:text-[32px] font-medium tracking-tight leading-[1.1] mb-2">Rules Config</h1>
-        <p className="text-[15px] text-text-secondary mb-10">Manage Legal Metrology Act constraints.</p>
+        <div className="flex items-center gap-3 mb-2">
+          <h1 className="text-[24px] md:text-[32px] font-medium tracking-tight leading-[1.1]">Rules Directory</h1>
+          {role !== 'admin' && <span className="px-2 py-0.5 bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20 rounded text-[10px] font-bold tracking-widest uppercase">Read-Only</span>}
+        </div>
+        <p className="text-[15px] text-text-secondary mb-10">Reference the Legal Metrology Act constraints and AI configurations.</p>
 
         <div className="flex gap-4 border-b border-border mb-8">
           <button 

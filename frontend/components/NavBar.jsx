@@ -44,8 +44,8 @@ export default function NavBar() {
     { name: 'Dashboard', path: '/dashboard', icon: <LayoutDashboard size={18} /> },
     { name: 'Scan', path: '/upload', icon: <ScanLine size={18} /> },
     { name: 'History', path: '/history', icon: <Clock size={18} /> },
-    ...(role === 'admin' ? [
-      { name: 'Rules', path: '/rules', icon: <ShieldAlert size={18} /> },
+    { name: 'Rules', path: '/rules', icon: <ShieldAlert size={18} /> },
+      ...(role === 'admin' ? [
       { name: 'Admin', path: '/admin', icon: <Shield size={18} /> },
       { name: 'Reports', path: '/reports', icon: <FileText size={18} /> },
       { name: 'Settings', path: '/settings', icon: <Settings size={18} /> }

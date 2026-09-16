@@ -21,7 +21,7 @@ export default function BottomNav() {
     { name: 'Dashboard', path: '/dashboard', icon: LayoutDashboard },
     { name: 'Scan', path: '/upload', icon: ScanLine },
     { name: 'History', path: '/history', icon: Clock },
-    ...(role === 'admin' ? [{ name: 'Rules', path: '/rules', icon: ShieldAlert }] : []),
+    { name: 'Rules', path: '/rules', icon: ShieldAlert },
     { name: 'Settings', path: '/settings', icon: Settings }
   ];
 
